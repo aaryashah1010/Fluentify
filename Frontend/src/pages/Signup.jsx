@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import validator from 'validator';
+import { signup } from '../routes/auth';
 
 const Signup = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'learner' });
@@ -13,24 +15,30 @@ const Signup = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const validateForm = () => {
+    if (!validator.isEmail(form.email)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+    if (form.password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
+    if (!validateForm()) {
+      setLoading(false);
+      return;
+    }
     try {
-      const res = await fetch(`/api/auth/signup/${form.role}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.name, email: form.email, password: form.password })
-      });
-      const data = await res.json();
+      const data = await signup(form.role, form.name, form.email, form.password);
       if (data.token) {
-        if (form.role === 'learner') {
-          navigate('/dashboard');
-        } else {
-          navigate('/admin-dashboard');
-        }
+        navigate(form.role === 'learner' ? '/dashboard' : '/admin-dashboard');
       } else {
         setError(data.error || 'Signup failed');
       }
@@ -42,151 +50,126 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-900 via-teal-900 to-cyan-900 p-4">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-teal-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-950 p-4">
+      <div className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-lg rounded-2xl p-8">
+        
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-14 h-14 bg-emerald-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-md">
+            <UserPlus className="w-7 h-7 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create Account</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">Join us to get started</p>
+        </div>
 
-      <div className="relative w-full max-w-md">
-        {/* Glass Card */}
-        <div className="backdrop-blur-lg bg-white bg-opacity-10 border border-white border-opacity-20 rounded-2xl shadow-2xl p-8 relative overflow-hidden">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-cyan-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <UserPlus className="w-8 h-8 text-black" />
-            </div>
-            <h2 className="text-3xl font-bold text-black mb-2">Join Us</h2>
-            <p className="text-gray-300">Create your account to get started</p>
+        <form className="space-y-5" onSubmit={handleSubmit}>
+          {/* Role */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">I want to be a</label>
+            <select
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+              className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+            >
+              <option value="learner">Learner</option>
+              <option value="admin">Admin</option>
+            </select>
           </div>
 
-          <div className="space-y-5">
-            {/* Role Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">I want to be a</label>
-              <div className="relative">
-                <select 
-                  name="role" 
-                  value={form.role} 
-                  onChange={handleChange}
-                  className="w-full bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 appearance-none backdrop-blur-sm"
-                >
-                  <option value="learner" className="bg-gray-800">Learner</option>
-                  <option value="admin" className="bg-gray-800">Admin</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </div>
-              </div>
+          {/* Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                name="name"
+                type="text"
+                placeholder="Enter your full name"
+                value={form.name}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-300 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+              />
             </div>
+          </div>
 
-            {/* Name Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  name="name"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={form.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl pl-10 pr-4 py-3 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
-                />
-              </div>
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                value={form.email}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-300 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+              />
             </div>
+          </div>
 
-            {/* Email Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  name="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl pl-10 pr-4 py-3 text-black
-                   placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
-                />
-              </div>
-            </div>
-
-            {/* Password Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Create a password"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                  className="w-full bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl pl-10 pr-12 py-3 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              <div className="mt-1 text-xs text-gray-400">
-                Password should be at least 8 characters
-              </div>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-50 rounded-xl p-3 text-red-200 text-sm text-center">
-                {error}
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-emerald-500 to-cyan-600 hover:from-emerald-600 hover:to-cyan-700 text-black font-semibold py-3 rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-opacity-30 border-t-white rounded-full animate-spin mr-2"></div>
-                  Creating Account...
-                </div>
-              ) : (
-                'Create Account'
-              )}
-            </button>
-
-            {/* Terms */}
-            <div className="text-center text-xs text-gray-400">
-              By signing up, you agree to our{' '}
-              <button className="text-emerald-400 hover:text-emerald-300 underline">
-                Terms of Service
-              </button>{' '}
-              and{' '}
-              <button className="text-emerald-400 hover:text-emerald-300 underline">
-                Privacy Policy
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Create a password"
+                value={form.password}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-300 dark:border-gray-700 rounded-lg pl-10 pr-10 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Password must be at least 8 characters</p>
           </div>
 
-          {/* Footer */}
-          <div className="mt-4 text-center">
-            <span>Already have an account? </span>
-            <button type="button" className="text-blue-600 underline" onClick={() => navigate('/login')}>Login</button>
-          </div>
+          {/* Error */}
+          {error && (
+            <div className="bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg p-2 text-red-600 dark:text-red-200 text-sm text-center">
+              {error}
+            </div>
+          )}
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-medium py-2.5 rounded-lg transition-colors shadow-md"
+          >
+            {loading ? 'Creating Account...' : 'Create Account'}
+          </button>
+
+          {/* Terms */}
+          <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+            By signing up, you agree to our{' '}
+            <button className="text-emerald-600 hover:text-emerald-500 underline">Terms of Service</button>{' '}
+            and{' '}
+            <button className="text-emerald-600 hover:text-emerald-500 underline">Privacy Policy</button>
+          </p>
+        </form>
+
+        {/* Footer */}
+        <div className="mt-6 text-center text-sm">
+          <span className="text-gray-500 dark:text-gray-400">Already have an account?</span>{' '}
+          <button
+            onClick={() => navigate('/login')}
+            className="text-emerald-600 hover:text-emerald-500 font-medium"
+          >
+            Log In
+          </button>
         </div>
       </div>
     </div>

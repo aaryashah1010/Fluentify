@@ -4,6 +4,7 @@ import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import Auth from './pages/Auth';
 import './App.css';
 
 function ProtectedRoute({ children, role }) {
@@ -29,6 +30,7 @@ function App() {
     <Routes>
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/auth" element={<Auth />} />
       <Route path="/dashboard" element={
         <ProtectedRoute role="learner">
           <Dashboard />
@@ -39,7 +41,7 @@ function App() {
           <AdminDashboard />
         </ProtectedRoute>
       } />
-      <Route path="*" element={<Navigate to="/login" />} />
+      <Route path="*" element={<Navigate to="/Login" />} />
     </Routes>
   );
 }
