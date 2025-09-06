@@ -39,6 +39,7 @@ const Login = () => {
       const data = await login(form.role, form.email, form.password);
       if (data.token) {
         localStorage.setItem('jwt', data.token);
+        console.log("Token saved to localStorage:", data.token);
         if (form.role === 'learner') {
           navigate('/dashboard');
         } else {

@@ -1,10 +1,11 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
-import Auth from './pages/Auth';
+import LearnerPreferences from './pages/LearnerPreferences';
+import { getLearnerPreferences } from './routes/preferences';
 import './App.css';
 
 function ProtectedRoute({ children, role }) {
@@ -13,7 +14,6 @@ function ProtectedRoute({ children, role }) {
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
     if (role && payload.role !== role) return <Navigate to="/login" />;
-    // Optionally check exp
     if (payload.exp * 1000 < Date.now()) {
       localStorage.removeItem('jwt');
       return <Navigate to="/login" />;
@@ -25,12 +25,67 @@ function ProtectedRoute({ children, role }) {
   }
 }
 
+function PreferencesRoute() {
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const token = localStorage.getItem('jwt');
+  const location = useLocation();
+
+  useEffect(() => {
+    let mounted = true;
+
+    const checkUserStatus = async () => {
+      if (!token) {
+        navigate('/login', { replace: true });
+        return;
+      }
+
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+      
+        if (payload.hasPreferences) {
+          const isFromForm = location.state?.fromForm;
+          
+          if (!isFromForm) {
+            navigate('/dashboard', { replace: true });
+            return;
+          }
+        }
+
+        if (mounted) {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error checking user status:', error);
+        localStorage.removeItem('jwt');
+        navigate('/login', { replace: true });
+      }
+    };
+
+    checkUserStatus();
+
+    return () => {
+      mounted = false;
+    };
+  }, [token, navigate, location]);
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
+  return <LearnerPreferences />;
+}
+
 function App() {
   return (
     <Routes>
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/auth" element={<Auth />} />
+      <Route path="/preferences" element={
+        <ProtectedRoute role="learner">
+          <PreferencesRoute />
+        </ProtectedRoute>
+      } />
       <Route path="/dashboard" element={
         <ProtectedRoute role="learner">
           <Dashboard />
@@ -41,7 +96,7 @@ function App() {
           <AdminDashboard />
         </ProtectedRoute>
       } />
-      <Route path="*" element={<Navigate to="/Login" />} />
+      <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );
 }

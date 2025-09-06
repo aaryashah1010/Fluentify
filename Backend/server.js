@@ -4,6 +4,7 @@ const cors = require("cors");
 
 const db = require("./config/db"); 
 const authRoutes = require("./routes/auth");
+const preferencesRoutes = require('./routes/preferences');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -31,6 +32,8 @@ app.get("/db-check", async (req, res) => {
 
 // Auth routes
 app.use("/api/auth", authRoutes);
+// Preferences routes
+app.use('/api/preferences', preferencesRoutes);
 
 app.listen(port, () => {
   console.log(`🚀 Server running at http://localhost:${port}`);

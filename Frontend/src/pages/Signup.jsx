@@ -3,7 +3,7 @@ import { Eye, EyeOff, Mail, Lock, User, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { signup } from '../routes/auth';
-
+import LearnerPreferences from './LearnerPreferences';
 const Signup = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'learner' });
   const [error, setError] = useState('');
@@ -38,7 +38,13 @@ const Signup = () => {
     try {
       const data = await signup(form.role, form.name, form.email, form.password);
       if (data.token) {
-        navigate(form.role === 'learner' ? '/dashboard' : '/admin-dashboard');
+          localStorage.setItem("jwt", data.token);
+          console.log("Token stored in localStorage:", data.token);
+        if (form.role === 'learner') {
+          navigate('/preferences');
+        } else {
+          navigate('/admin-dashboard');
+        }
       } else {
         setError(data.error || 'Signup failed');
       }
