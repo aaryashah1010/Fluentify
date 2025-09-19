@@ -1,4 +1,3 @@
-# this is epics file
 # 📌 Epic & Sprint Breakdown with User Stories
 
 ---
