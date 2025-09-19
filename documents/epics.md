@@ -14,10 +14,6 @@
   - **Front:** As a learner/admin, I want a secure login system, so that I can safely access the platform.  
   - **Back:** Given I enter valid credentials, When I log in, Then I should be authenticated securely, or else receive an error message.
 
-### Deliverable
-- Documentation  
-- Database schema  
-- Working registration + login/signup with authentication  
 
 ---
 
@@ -29,12 +25,6 @@
 - **USL3: AI-Generated Personalized Curriculum**  
 - **USL4: Real-Time Chat with AI Tutor (basic text chat)**  
 - **USL5: Pronunciation Feedback**
-
-#### Deliverable
-- Learner dashboard with filters  
-- AI-suggested curriculum  
-- Text-based AI chat  
-- Pronunciation feedback  
 
 #### Non-Functional Requirements
 - **USNFR1:** System Performance  
@@ -49,10 +39,6 @@
 - **USL13: Analytics & Monitoring**  
 - **USL10: Help Bot (support on both dashboards)**  
 
-#### Deliverable
-- Admin dashboard with learner/content management  
-- Analytics dashboard  
-- Help bot integrated for both learners & admins  
 
 #### Non-Functional Requirements
 - **USNFR3:** Scalability  
@@ -69,11 +55,6 @@
 - **USL8: Progress Report**  
 - **USL9: Gamification (points, streaks, badges)**  
 
-#### Deliverable
-- Role-play practice  
-- Progress reports  
-- Gamification features (points, streaks, badges)  
-
 ---
 
 ### Sprint 5 (Leaderboards & Contests)
@@ -82,9 +63,6 @@
   - **Front:** As a learner, I want to compete with peers weekly, so that I stay motivated through competition.  
   - **Back:** Given I complete lessons, When scores are calculated, Then leaderboards/weekly contest rankings should update in real time.  
 
-#### Deliverable
-- Leaderboards  
-- Contest system integrated with gamification  
 
 ---
 
@@ -97,14 +75,5 @@
 - **Added: Automated Emails & Motivational Messages**  
   - Sends reminders for inactivity, milestone achievements, and encouragement (text/email).  
 
-#### Deliverable
-- AI-driven reminders  
-- Motivational nudges  
-- Adaptive difficulty for personalized learning  
 
 ---
-
-# Summary
-- Keeps all **Epics** intact  
-- Slots in all **User Stories + NFRs** properly  
-- Adds **Leaderboards/Weekly Contest** + **AI Motivational Messaging** for completeness
