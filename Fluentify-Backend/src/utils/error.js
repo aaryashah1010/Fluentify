@@ -70,6 +70,15 @@ const ERRORS = {
   LEARNER_ONLY_ROUTE: new RequestError("Learner access required", 20010, 403),
   SIGNUP_FAILED: new RequestError("Signup failed", 20011, 400),
   LOGIN_FAILED: new RequestError("Login failed", 20012, 400),
+  WEAK_PASSWORD: new RequestError("Password does not meet security requirements", 20013, 400),
+  INVALID_EMAIL: new RequestError("Invalid email address", 20014, 400),
+  DISPOSABLE_EMAIL: new RequestError("Temporary or disposable email addresses are not allowed", 20015, 400),
+  EMAIL_NOT_VERIFIED: new RequestError("Email address not verified", 20016, 401),
+  OTP_EXPIRED: new RequestError("OTP has expired", 20017, 400),
+  INVALID_OTP: new RequestError("Invalid OTP code", 20018, 400),
+  OTP_RATE_LIMIT: new RequestError("Too many OTP requests. Please try again later", 20019, 429),
+  OTP_SEND_FAILED: new RequestError("Failed to send OTP email", 20020, 500),
+  MAX_OTP_ATTEMPTS: new RequestError("Maximum OTP verification attempts exceeded", 20021, 429),
   
   // Course Management Errors (3xxxx) 
   COURSE_NOT_FOUND: new RequestError("Course not found", 30001, 404),

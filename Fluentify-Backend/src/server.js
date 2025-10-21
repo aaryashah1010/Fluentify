@@ -4,6 +4,8 @@ import cors from "cors";
 
 import db, { connectToDatabase, gracefulShutdown } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
+import emailVerificationRoutes from './routes/emailVerification.js';
+import forgotPasswordRoutes from './routes/forgotPassword.js';
 import preferencesRoutes from './routes/preferences.js';
 import courseRoutes from './routes/courses.js';
 import progressRoutes from './routes/progress.js';
@@ -61,6 +63,10 @@ app.get("/db-check", async (req, res) => {
 
 // Auth routes
 app.use("/api/auth", authRoutes);
+// Email verification routes
+app.use('/api/email-verification', emailVerificationRoutes);
+// Forgot password routes
+app.use('/api/forgot-password', forgotPasswordRoutes);
 // Preferences routes
 app.use('/api/preferences', preferencesRoutes);
 // Course routes

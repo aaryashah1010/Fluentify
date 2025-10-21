@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
+import EmailVerification from './pages/EmailVerification';
+import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import LearnerPreferences from './pages/LearnerPreferences';
@@ -83,6 +85,8 @@ function App() {
     <Routes>
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/email-verification" element={<EmailVerification />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/preferences" element={
         <ProtectedRoute role="learner">
           <PreferencesRoute />

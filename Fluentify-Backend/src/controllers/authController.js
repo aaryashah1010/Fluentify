@@ -3,6 +3,9 @@ import authRepository from '../repositories/authRepository.js';
 import { createAuthToken } from '../utils/jwt.js';
 import { authResponse, successResponse } from '../utils/response.js';
 import { ERRORS } from '../utils/error.js';
+import { validatePassword } from '../utils/passwordValidator.js';
+import { validateEmail } from '../utils/emailValidator.js';
+import { validateName } from '../utils/nameValidator.js';
 
 class AuthController {
   /**
@@ -14,6 +17,38 @@ class AuthController {
 
       if (!name || !email || !password) {
         throw ERRORS.MISSING_REQUIRED_FIELDS;
+      }
+
+      // Validate name format (no numbers or special characters)
+      const nameValidation = validateName(name);
+      if (!nameValidation.isValid) {
+        const error = new Error('Invalid name format');
+        error.statusCode = 400;
+        error.details = {
+          errors: nameValidation.errors
+        };
+        throw error;
+      }
+
+      // Validate email format and check for disposable emails
+      const emailValidation = validateEmail(email);
+      if (!emailValidation.isValid) {
+        if (emailValidation.isDisposable) {
+          throw ERRORS.DISPOSABLE_EMAIL;
+        }
+        throw ERRORS.INVALID_EMAIL;
+      }
+
+      // Validate password strength
+      const passwordValidation = validatePassword(password, email, name);
+      if (!passwordValidation.isValid) {
+        const error = { ...ERRORS.WEAK_PASSWORD };
+        error.details = {
+          errors: passwordValidation.errors,
+          suggestions: passwordValidation.suggestions,
+          requirements: passwordValidation.requirements
+        };
+        throw error;
       }
 
       // Check if email already exists
@@ -71,6 +106,38 @@ class AuthController {
 
       if (!name || !email || !password) {
         throw ERRORS.MISSING_REQUIRED_FIELDS;
+      }
+
+      // Validate name format (no numbers or special characters)
+      const nameValidation = validateName(name);
+      if (!nameValidation.isValid) {
+        const error = new Error('Invalid name format');
+        error.statusCode = 400;
+        error.details = {
+          errors: nameValidation.errors
+        };
+        throw error;
+      }
+
+      // Validate email format and check for disposable emails
+      const emailValidation = validateEmail(email);
+      if (!emailValidation.isValid) {
+        if (emailValidation.isDisposable) {
+          throw ERRORS.DISPOSABLE_EMAIL;
+        }
+        throw ERRORS.INVALID_EMAIL;
+      }
+
+      // Validate password strength
+      const passwordValidation = validatePassword(password, email, name);
+      if (!passwordValidation.isValid) {
+        const error = { ...ERRORS.WEAK_PASSWORD };
+        error.details = {
+          errors: passwordValidation.errors,
+          suggestions: passwordValidation.suggestions,
+          requirements: passwordValidation.requirements
+        };
+        throw error;
       }
 
       // Check if email already exists

@@ -16,9 +16,14 @@ const errorHandler = (error, req, res, next) => {
 
   // Handle RequestError (our custom errors)
   if (error instanceof RequestError) {
-    return res.status(error.statusCode).json(
-      errorResponse(error.message, error.code)
-    );
+    const response = errorResponse(error.message, error.code);
+    
+    // Preserve additional details if they exist (e.g., password validation details)
+    if (error.details) {
+      response.error.details = error.details;
+    }
+    
+    return res.status(error.statusCode).json(response);
   }
 
   // Handle JWT specific errors

@@ -92,6 +92,40 @@ class AuthRepository {
   async rollbackTransaction() {
     await db.query('ROLLBACK');
   }
+
+  /**
+   * Mark email as verified for a user
+   */
+  async markEmailVerified(email, role) {
+    const table = role === 'learner' ? 'learners' : 'admins';
+    const result = await db.query(
+      `UPDATE ${table} SET email_verified = TRUE, updated_at = NOW() WHERE email = $1 RETURNING *`,
+      [email]
+    );
+    return result.rows[0] || null;
+  }
+
+  /**
+   * Update learner password
+   */
+  async updateLearnerPassword(email, passwordHash) {
+    const result = await db.query(
+      `UPDATE learners SET password_hash = $1, updated_at = NOW() WHERE email = $2 RETURNING *`,
+      [passwordHash, email]
+    );
+    return result.rows[0] || null;
+  }
+
+  /**
+   * Update admin password
+   */
+  async updateAdminPassword(email, passwordHash) {
+    const result = await db.query(
+      `UPDATE admins SET password_hash = $1, updated_at = NOW() WHERE email = $2 RETURNING *`,
+      [passwordHash, email]
+    );
+    return result.rows[0] || null;
+  }
 }
 
 export default new AuthRepository();
