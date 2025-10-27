@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Login, Signup } from '../modules/auth';
 import { Dashboard, LearnerPreferences, CoursePage, LessonPage } from '../modules/learner';
-import { AdminDashboard } from '../modules/admin';
+import { AdminDashboard, ModuleManagementLayout, CourseEditorPage } from '../modules/admin';
 import './App.css';
 
 function ProtectedRoute({ children, role }) {
@@ -91,6 +91,26 @@ function App() {
       <Route path="/admin-dashboard" element={
         <ProtectedRoute role="admin">
           <AdminDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/modules/*" element={
+        <ProtectedRoute role="admin">
+          <ModuleManagementLayout />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/course/new" element={
+        <ProtectedRoute role="admin">
+          <CourseEditorPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/course/edit/:courseId" element={
+        <ProtectedRoute role="admin">
+          <CourseEditorPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/course/view/:courseId" element={
+        <ProtectedRoute role="admin">
+          <CourseEditorPage />
         </ProtectedRoute>
       } />
       <Route path="/course/:courseId" element={
