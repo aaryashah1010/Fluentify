@@ -6,16 +6,157 @@ import { ERRORS } from '../utils/error.js';
 
 class CourseController {
   /**
-   * Generate a new course for a learner
+   * Generate a new course for a learner (streaming with SSE)
+   */
+  async generateCourseStream(req, res, next) {
+    try {
+      const { language, expectedDuration, expertise = 'Beginner' } = req.query;
+      const userId = req.user.id;
+
+      console.log('📥 Starting streaming course generation...');
+      console.log('🌍 Language:', language);
+      console.log('⏱️  Duration:', expectedDuration);
+      console.log('🎓 Expertise:', expertise);
+
+      if (!language || !expectedDuration) {
+        throw ERRORS.MISSING_REQUIRED_FIELDS;
+      }
+
+      // Allow multiple courses for same language with different duration/expertise
+      // Users can create multiple courses!
+
+      // Set up SSE headers
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.flushHeaders();
+
+      // Helper function to send SSE events
+      const sendEvent = (event, data) => {
+        res.write(`event: ${event}\n`);
+        res.write(`data: ${JSON.stringify(data)}\n\n`);
+      };
+
+      console.log(`🚀 Generating course outline...`);
+      
+      // Generate course outline first with expertise level
+      const outline = await geminiService.generateCourseOutline(language, expectedDuration, expertise);
+      
+      // Create initial course record in database
+      const courseData = {
+        course: {
+          title: `${language} Learning Journey`,
+          language: language,
+          duration: expectedDuration,
+          totalLessons: 0,
+          generatedAt: new Date().toISOString(),
+          version: '1.0',
+          units: []
+        },
+        metadata: {
+          language,
+          totalUnits: outline.units.length,
+          totalLessons: 0,
+          estimatedTotalTime: 0
+        }
+      };
+
+      const courseId = await courseRepository.createCourse(userId, language, expectedDuration, courseData);
+      
+      // Initialize progress (unlock first unit)
+      await progressRepository.initializeCourseProgress(courseId, userId);
+
+      // Send course created event
+      sendEvent('course_created', {
+        courseId,
+        language,
+        totalUnits: outline.units.length,
+        message: 'Course created, generating units...'
+      });
+
+      console.log(`Course ${courseId} created, generating ${outline.units.length} units...`);
+
+      const units = [];
+      let totalLessons = 0;
+      let totalTime = 0;
+
+      // Generate each unit one by one
+      for (let i = 0; i < outline.units.length; i++) {
+        const unitOutline = outline.units[i];
+        
+        // Send unit generating event
+        sendEvent('unit_generating', {
+          unitNumber: i + 1,
+          totalUnits: outline.units.length,
+          title: unitOutline.title,
+          message: `Generating Unit ${i + 1}: ${unitOutline.title}...`
+        });
+
+        console.log(`  📝 Generating Unit ${i + 1}: ${unitOutline.title}...`);
+        
+        // Generate the unit content with expertise level
+        const unit = await geminiService.generateUnit(language, unitOutline, i + 1, expertise);
+        units.push(unit);
+
+        totalLessons += unit.lessons.length;
+        totalTime += parseInt(unit.estimatedTime) || 150;
+
+        // Update course data with new unit
+        courseData.course.units = units;
+        courseData.course.totalLessons = totalLessons;
+        courseData.metadata.totalLessons = totalLessons;
+        courseData.metadata.estimatedTotalTime = totalTime;
+
+        // Save unit to database immediately
+        await courseRepository.updateCourseData(courseId, courseData);
+        await courseRepository.populateCourseStructure(courseId, { course: { units: [unit] } });
+
+        // Send unit generated event
+        sendEvent('unit_generated', {
+          unitNumber: i + 1,
+          totalUnits: outline.units.length,
+          unit: unit,
+          progress: `${i + 1}/${outline.units.length}`,
+          message: `Unit ${i + 1} completed!`
+        });
+
+        console.log(`  ✅ Unit ${i + 1} saved to database`);
+      }
+
+      // Send course complete event
+      sendEvent('course_complete', {
+        courseId,
+        language,
+        totalUnits: units.length,
+        totalLessons,
+        estimatedTotalTime: totalTime,
+        message: 'Course generation complete!'
+      });
+
+      console.log(`🎉 Course ${courseId} generation complete!`);
+      res.end();
+
+    } catch (error) {
+      console.error('Error in streaming course generation:', error);
+      // Send error event
+      res.write(`event: error\n`);
+      res.write(`data: ${JSON.stringify({ message: error.message })}\n\n`);
+      res.end();
+    }
+  }
+
+  /**
+   * Generate a new course for a learner (legacy - non-streaming)
    */
   async generateCourse(req, res, next) {
     try {
-      const { language, expectedDuration } = req.body;
+      const { language, expectedDuration, expertise = 'Beginner' } = req.body;
       const userId = req.user.id;
 
       console.log('📥 Received request body:', req.body);
       console.log('🌍 Language:', language);
       console.log('⏱️  Duration:', expectedDuration);
+      console.log('🎓 Expertise:', expertise);
 
       if (!language && !expectedDuration) {
         throw ERRORS.MISSING_REQUIRED_FIELDS;
@@ -27,17 +168,13 @@ class CourseController {
         throw ERRORS.DURATION_REQUIRED;
       }
 
-      // Check if user already has an active course for this language
-      const existingCourse = await courseRepository.findActiveCourseByLanguage(userId, language);
-
-      if (existingCourse) {
-        throw ERRORS.DUPLICATE_ACTIVE_COURSE;
-      }
+      // Allow multiple courses for same language with different duration/expertise
+      // Users can create multiple courses!
 
       console.log(`🚀 Starting course generation for ${language}...`);
       
-      // Generate course content using Gemini (chunked generation)
-      const courseData = await geminiService.generateCourse(language, expectedDuration);
+      // Generate course content using Gemini with expertise level
+      const courseData = await geminiService.generateCourse(language, expectedDuration, expertise);
 
       console.log('Saving course to database...');
       
@@ -76,6 +213,11 @@ class CourseController {
           id: course.id,
           language: course.language,
           title: course.title || `${course.language} Course`,
+          description: course.description,
+          expectedDuration: course.expected_duration,
+          totalUnits: course.total_units || 0,
+          totalLessons: course.total_lessons || 0,
+          estimatedTotalTime: course.estimated_total_time || 0,
           createdAt: course.created_at,
           progress: {
             totalXp: course.total_xp || 0,
@@ -401,6 +543,34 @@ class CourseController {
       }, unitCompleted ? 'Unit completed! Next unit unlocked!' : 'Lesson completed!'));
     } catch (error) {
       console.error('Error completing lesson (legacy):', error);
+      next(error);
+    }
+  }
+
+  /**
+   * Delete a course completely (all related data)
+   */
+  async deleteCourse(req, res, next) {
+    try {
+      const { courseId } = req.params;
+      const userId = req.user.id;
+
+      console.log(`🗑️  Deleting course ${courseId} for user ${userId}...`);
+
+      const deleted = await courseRepository.deleteCourse(courseId, userId);
+
+      if (!deleted) {
+        throw ERRORS.COURSE_NOT_FOUND;
+      }
+
+      console.log(`✅ Course ${courseId} deleted successfully`);
+
+      res.json(successResponse(
+        { courseId: parseInt(courseId) },
+        'Course and all related data deleted successfully!'
+      ));
+    } catch (error) {
+      console.error('Error deleting course:', error);
       next(error);
     }
   }

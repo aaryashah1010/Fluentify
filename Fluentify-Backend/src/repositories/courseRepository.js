@@ -40,6 +40,26 @@ class CourseRepository {
   }
 
   /**
+   * Update course data (for streaming generation)
+   */
+  async updateCourseData(courseId, courseData) {
+    const totalLessons = courseData.metadata?.totalLessons || 0;
+    const totalUnits = courseData.metadata?.totalUnits || 0;
+    const estimatedTotalTime = courseData.metadata?.estimatedTotalTime || 0;
+
+    await db.query(
+      `UPDATE courses 
+       SET course_data = $1, 
+           total_lessons = $2, 
+           total_units = $3, 
+           estimated_total_time = $4,
+           updated_at = NOW()
+       WHERE id = $5`,
+      [courseData, totalLessons, totalUnits, estimatedTotalTime, courseId]
+    );
+  }
+
+  /**
    * Populate course_units and course_lessons tables from courseData
    */
   async populateCourseStructure(courseId, courseData) {
@@ -157,6 +177,33 @@ class CourseRepository {
     );
     const row = result.rows[0];
     return row ? { course_data: row.course_data } : null;
+  }
+
+  /**
+   * Delete course and all related data (CASCADE)
+   */
+  async deleteCourse(courseId, userId) {
+    // Verify course belongs to user
+    const course = await db.query(
+      'SELECT * FROM courses WHERE id = $1 AND learner_id = $2',
+      [courseId, userId]
+    );
+
+    if (course.rows.length === 0) {
+      return false; // Course not found or doesn't belong to user
+    }
+
+    // Delete course (CASCADE will handle all related tables)
+    // The database foreign keys with ON DELETE CASCADE will automatically delete:
+    // - course_units
+    // - course_lessons
+    // - unit_progress
+    // - lesson_progress
+    // - exercise_attempts
+    // - user_stats
+    await db.query('DELETE FROM courses WHERE id = $1 AND learner_id = $2', [courseId, userId]);
+
+    return true;
   }
 
   /**
