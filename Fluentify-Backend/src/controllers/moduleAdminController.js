@@ -1,4 +1,5 @@
 import moduleAdminService from '../services/moduleAdminService.js';
+import analyticsService from '../services/analyticsService.js';
 
 class ModuleAdminController {
   // ==================== Language Operations ====================
@@ -40,6 +41,25 @@ class ModuleAdminController {
     try {
       const adminId = req.user.id; // From auth middleware
       const result = await moduleAdminService.createCourse(adminId, req.body);
+      
+      // Track admin module usage for analytics
+      try {
+        await analyticsService.trackAdminModuleUsage(
+          adminId,
+          req.body.language,
+          'CREATE_COURSE',
+          {
+            courseId: result.data?.id,
+            details: {
+              title: req.body.title,
+              expectedDuration: req.body.expectedDuration
+            }
+          }
+        );
+      } catch (analyticsError) {
+        console.error('Error tracking admin course creation analytics:', analyticsError);
+      }
+      
       res.status(201).json(result);
     } catch (error) {
       next(error);
@@ -97,7 +117,28 @@ class ModuleAdminController {
   async createUnit(req, res, next) {
     try {
       const { courseId } = req.params;
+      const adminId = req.user.id;
       const result = await moduleAdminService.createUnit(courseId, req.body);
+      
+      // Track admin module usage for analytics
+      try {
+        await analyticsService.trackAdminModuleUsage(
+          adminId,
+          req.body.language || 'Unknown',
+          'CREATE_UNIT',
+          {
+            courseId: parseInt(courseId),
+            unitId: result.data?.id,
+            details: {
+              title: req.body.title,
+              difficulty: req.body.difficulty
+            }
+          }
+        );
+      } catch (analyticsError) {
+        console.error('Error tracking admin unit creation analytics:', analyticsError);
+      }
+      
       res.status(201).json(result);
     } catch (error) {
       next(error);
@@ -141,7 +182,28 @@ class ModuleAdminController {
   async createLesson(req, res, next) {
     try {
       const { unitId } = req.params;
+      const adminId = req.user.id;
       const result = await moduleAdminService.createLesson(unitId, req.body);
+      
+      // Track admin module usage for analytics
+      try {
+        await analyticsService.trackAdminModuleUsage(
+          adminId,
+          req.body.language || 'Unknown',
+          'CREATE_LESSON',
+          {
+            unitId: parseInt(unitId),
+            lessonId: result.data?.id,
+            details: {
+              title: req.body.title,
+              lessonType: req.body.lessonType
+            }
+          }
+        );
+      } catch (analyticsError) {
+        console.error('Error tracking admin lesson creation analytics:', analyticsError);
+      }
+      
       res.status(201).json(result);
     } catch (error) {
       next(error);

@@ -32,6 +32,10 @@ const ModuleManagementLayout = () => {
         <Routes>
           <Route index element={<LanguageListPage />} />
           <Route path=":language" element={<CourseListPage />} />
+          {/* Course Editor routes */}
+          <Route path="course/new" element={<CourseEditorPage />} />
+          <Route path="course/edit/:courseId" element={<CourseEditorPage />} />
+          <Route path="course/view/:courseId" element={<CourseEditorPage />} />
           <Route path="*" element={<Navigate to="/admin/modules" replace />} />
         </Routes>
       </main>
