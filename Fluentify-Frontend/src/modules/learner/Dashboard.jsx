@@ -91,6 +91,13 @@ const Dashboard = () => {
                 Talk with AI
               </Button>
               <Button
+                onClick={() => navigate('/chat')}
+                variant="outline"
+                icon={<MessageCircle className="w-4 h-4" />}
+              >
+                Chat with AI Tutor
+              </Button>
+              <Button
                 onClick={() => setShowGenerateForm(true)}
                 loading={streamState.isGenerating}
                 disabled={streamState.isGenerating}
