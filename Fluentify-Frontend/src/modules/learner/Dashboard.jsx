@@ -4,7 +4,7 @@ import { LogOut, BookOpen, MessageCircle } from 'lucide-react';
 import { useCourses } from '../../hooks/useCourses';
 import { useLogout } from '../../hooks/useAuth';
 import { useStreaming } from '../../contexts/StreamingContext';
-import { Button, SkeletonCourseCard, VoiceAIModal } from '../../components';
+import { Button, SkeletonCourseCard, VoiceAIModal, FloatingChatWidget } from '../../components';
 import { CourseCard, CourseGenerationForm, GeneratingCourseCard } from './components';
 
 const Dashboard = () => {
@@ -155,6 +155,9 @@ const Dashboard = () => {
         isOpen={showVoiceAI} 
         onClose={() => setShowVoiceAI(false)} 
       />
+
+      {/* Floating Chat Widget */}
+      <FloatingChatWidget />
     </div>
   );
 };

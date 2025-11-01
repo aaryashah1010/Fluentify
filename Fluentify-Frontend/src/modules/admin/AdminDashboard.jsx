@@ -28,8 +28,8 @@ const AdminDashboard = () => {
       description: 'View platform statistics and insights',
       icon: BarChart3,
       color: 'purple',
-      path: '#',
-      disabled: true,
+      path: '/admin/analytics',
+      disabled: false,
     },
     {
       title: 'Settings',

@@ -187,3 +187,79 @@ export const deleteLesson = async (lessonId) => {
   
   return handleResponse(response);
 };
+
+// ==================== Analytics Operations ====================
+
+/**
+ * Get comprehensive platform analytics
+ * @returns {Promise<{success: boolean, data: Object}>}
+ */
+export const getAnalytics = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/analytics`, {
+    headers: getAuthHeader(),
+  });
+  
+  return handleResponse(response);
+};
+
+/**
+ * Get analytics for a specific time period
+ * @param {number} days - Number of days to look back (default: 30)
+ * @returns {Promise<{success: boolean, data: Object}>}
+ */
+export const getAnalyticsForPeriod = async (days = 30) => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/analytics/period?days=${days}`, {
+    headers: getAuthHeader(),
+  });
+  
+  return handleResponse(response);
+};
+
+/**
+ * Get language distribution statistics
+ * @returns {Promise<{success: boolean, data: Object}>}
+ */
+export const getLanguageDistribution = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/analytics/languages`, {
+    headers: getAuthHeader(),
+  });
+  
+  return handleResponse(response);
+};
+
+/**
+ * Get module usage statistics (Admin vs AI)
+ * @returns {Promise<{success: boolean, data: Object}>}
+ */
+export const getModuleUsage = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/analytics/modules`, {
+    headers: getAuthHeader(),
+  });
+  
+  return handleResponse(response);
+};
+
+/**
+ * Get user engagement metrics
+ * @returns {Promise<{success: boolean, data: Object}>}
+ */
+export const getUserEngagement = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/analytics/engagement`, {
+    headers: getAuthHeader(),
+  });
+  
+  return handleResponse(response);
+};
+
+/**
+ * Get lesson completion trends
+ * @param {number} days - Number of days to look back (default: 30)
+ * @returns {Promise<{success: boolean, data: Object}>}
+ */
+export const getLessonCompletionTrends = async (days = 30) => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/analytics/trends?days=${days}`, {
+    headers: getAuthHeader(),
+  });
+  
+  return handleResponse(response);
+};

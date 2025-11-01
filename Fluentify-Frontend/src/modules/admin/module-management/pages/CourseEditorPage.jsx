@@ -101,7 +101,7 @@ const CourseEditorPage = () => {
     try {
       if (isNewCourse) {
         const result = await createCourse(courseData);
-        navigate(`/admin/course/edit/${result.id}`);
+        navigate(`/admin/modules/course/edit/${result.id}`);
       } else {
         await updateCourse(courseId, courseData);
       }

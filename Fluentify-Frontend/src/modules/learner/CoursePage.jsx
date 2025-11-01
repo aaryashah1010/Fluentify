@@ -4,7 +4,7 @@ import { BookOpen, Target, Award, Flame } from 'lucide-react';
 import { useCourseDetails } from '../../hooks/useCourses';
 import { useStreaming } from '../../contexts/StreamingContext';
 import { calculateProgress, calculateTotalXP } from '../../utils/courseHelpers';
-import { PageHeader, SkeletonPageHeader, SkeletonCard, SkeletonUnitCard } from '../../components';
+import { PageHeader, SkeletonPageHeader, SkeletonCard, SkeletonUnitCard, FloatingChatWidget } from '../../components';
 import { StatCard, UnitCard } from './components';
 
 const CoursePage = () => {
@@ -210,6 +210,9 @@ const CoursePage = () => {
           ))}
         </div>
       </main>
+
+      {/* Floating Chat Widget */}
+      <FloatingChatWidget />
     </div>
   );
 };

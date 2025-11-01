@@ -1,6 +1,7 @@
 import express from 'express';
 import authMiddleware, { adminOnly } from '../middlewares/authMiddleware.js';
 import moduleAdminController from '../controllers/moduleAdminController.js';
+import analyticsRoutes from './analytics.js';
 
 const router = express.Router();
 
@@ -46,5 +47,9 @@ router.put('/lessons/:lessonId', moduleAdminController.updateLesson);
 
 // Delete a lesson
 router.delete('/lessons/:lessonId', moduleAdminController.deleteLesson);
+
+// ==================== Analytics Routes ====================
+// Analytics routes (already protected by admin middleware)
+router.use('/analytics', analyticsRoutes);
 
 export default router;
