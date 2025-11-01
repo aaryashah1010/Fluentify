@@ -4,7 +4,7 @@ import { LogOut, BookOpen, MessageCircle } from 'lucide-react';
 import { useCourses } from '../../hooks/useCourses';
 import { useLogout } from '../../hooks/useAuth';
 import { useStreaming } from '../../contexts/StreamingContext';
-import { Button, SkeletonCourseCard, VoiceAIModal } from '../../components';
+import { Button, SkeletonCourseCard, VoiceAIModal, FloatingChatWidget } from '../../components';
 import { CourseCard, CourseGenerationForm, GeneratingCourseCard } from './components';
 
 const Dashboard = () => {
@@ -91,13 +91,6 @@ const Dashboard = () => {
                 Talk with AI
               </Button>
               <Button
-                onClick={() => navigate('/chat')}
-                variant="outline"
-                icon={<MessageCircle className="w-4 h-4" />}
-              >
-                Chat with AI Tutor
-              </Button>
-              <Button
                 onClick={() => setShowGenerateForm(true)}
                 loading={streamState.isGenerating}
                 disabled={streamState.isGenerating}
@@ -162,6 +155,9 @@ const Dashboard = () => {
         isOpen={showVoiceAI} 
         onClose={() => setShowVoiceAI(false)} 
       />
+
+      {/* Floating Chat Widget */}
+      <FloatingChatWidget />
     </div>
   );
 };

@@ -58,7 +58,8 @@ const ChatInput = ({ onSendMessage, disabled = false, placeholder = "Ask me anyt
             style={{ 
               minHeight: '48px', 
               maxHeight: '120px',
-              overflowY: message.length > 100 ? 'auto' : 'hidden'
+              overflowY: message.length > 100 ? 'auto' : 'hidden',
+              lineHeight: '1.5'
             }}
           />
           
@@ -77,7 +78,7 @@ const ChatInput = ({ onSendMessage, disabled = false, placeholder = "Ask me anyt
           variant="primary"
           size="md"
           disabled={disabled || !message.trim()}
-          className="h-12 px-6 rounded-2xl"
+          className="h-12 px-6 rounded-2xl flex items-center justify-center"
           icon={
             <svg 
               className="w-4 h-4" 

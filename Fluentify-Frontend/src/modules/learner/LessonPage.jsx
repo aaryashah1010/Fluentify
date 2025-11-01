@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { BookOpen, Target, Play, RotateCcw, Award } from 'lucide-react';
 import { useLessonDetails, useGenerateExercises, useCompleteLesson } from '../../hooks/useCourses';
-import { PageHeader, Button, SkeletonPageHeader, SkeletonCard, SkeletonText } from '../../components';
+import { PageHeader, Button, SkeletonPageHeader, SkeletonCard, SkeletonText, FloatingChatWidget } from '../../components';
 
 const LessonPage = () => {
   const { courseId, unitId, lessonId } = useParams();
@@ -292,6 +292,9 @@ const LessonPage = () => {
           </div>
         </div>
       </main>
+
+      {/* Floating Chat Widget */}
+      <FloatingChatWidget />
     </div>
   );
 };
