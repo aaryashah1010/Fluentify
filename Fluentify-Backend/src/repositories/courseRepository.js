@@ -207,6 +207,18 @@ class CourseRepository {
   }
 
   /**
+   * Update lesson exercises
+   */
+  async updateLessonExercises(lessonDbId, exercises) {
+    await db.query(
+      `UPDATE course_lessons 
+       SET exercises = $1::jsonb, updated_at = NOW()
+       WHERE id = $2`,
+      [JSON.stringify(exercises), lessonDbId]
+    );
+  }
+
+  /**
    * Find all active courses
    */
   async findAllActiveCourses(userId) {

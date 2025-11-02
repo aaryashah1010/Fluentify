@@ -66,6 +66,14 @@ const VoiceAIModal = ({ isOpen, onClose }) => {
       // Get agent ID from environment
       const agentId = import.meta.env.VITE_RETELL_AGENT_ID;
       
+      // Validate agent ID is configured
+      if (!agentId) {
+        throw {
+          status: 400,
+          message: '⚠️ Retell Agent ID is not configured. Please add VITE_RETELL_AGENT_ID to your .env file.'
+        };
+      }
+      
       // Step 1: Get access token from backend
       const response = await createRetellCall(agentId);
       
@@ -83,7 +91,21 @@ const VoiceAIModal = ({ isOpen, onClose }) => {
       
     } catch (err) {
       console.error('Failed to start conversation:', err);
-      setError(err.message || 'Failed to connect. Please try again.');
+      
+      // Handle specific error cases
+      let errorMessage = 'Failed to connect. Please try again.';
+      
+      if (err.status === 500 && err.message?.includes('not configured')) {
+        errorMessage = '⚠️ Retell AI is not configured. Please contact administrator.';
+      } else if (err.status === 401) {
+        errorMessage = '🔒 Authentication failed. Please log in again.';
+      } else if (err.status === 400) {
+        errorMessage = '❌ Invalid configuration. Please contact administrator.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
       setIsConnecting(false);
     }
   };

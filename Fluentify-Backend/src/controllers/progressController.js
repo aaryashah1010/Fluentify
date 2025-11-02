@@ -69,6 +69,24 @@ const markLessonComplete = async (req, res, next) => {
       throw ERRORS.LESSON_NOT_FOUND;
     }
 
+    // Validate exercise score - must get at least 3/5 correct
+    if (exercises && exercises.length > 0) {
+      const correctAnswers = exercises.filter(ex => ex.isCorrect === true).length;
+      const totalExercises = exercises.length;
+      
+      if (totalExercises >= 5 && correctAnswers < 3) {
+        return res.status(400).json({
+          success: false,
+          message: 'You need at least 3 out of 5 correct answers to complete this lesson',
+          data: {
+            correctAnswers,
+            totalExercises,
+            passed: false
+          }
+        });
+      }
+    }
+
     const xpEarned = lesson.xpReward || 50;
 
     // Get lesson database ID from course_lessons table

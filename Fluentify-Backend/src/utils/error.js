@@ -40,6 +40,7 @@ Error Code Convention:
 - 5xxxx: Progress tracking errors
 - 6xxxx: User preferences errors
 - 7xxxx: Unit management errors
+- 8xxxx: Retell AI integration errors
 */
 
 const ERRORS = {
@@ -108,7 +109,16 @@ const ERRORS = {
   PREFERENCES_SAVE_FAILED: new RequestError("Failed to save preferences", 60002, 500),
   PREFERENCES_FETCH_FAILED: new RequestError("Failed to fetch preferences", 60003, 500),
   DUPLICATE_PREFERENCES: new RequestError("Preferences already exist", 60004, 409),
-  INVALID_PREFERENCE_VALUE: new RequestError("Invalid preference value", 60005, 400)
+  INVALID_PREFERENCE_VALUE: new RequestError("Invalid preference value", 60005, 400),
+  
+  // Retell AI Integration Errors (8xxxx)
+  RETELL_AGENT_ID_REQUIRED: new RequestError("Retell agent ID is required", 80001, 400),
+  RETELL_API_NOT_CONFIGURED: new RequestError("Retell AI service is not configured", 80002, 500),
+  RETELL_AUTHENTICATION_FAILED: new RequestError("Retell AI authentication failed", 80003, 401),
+  RETELL_RATE_LIMIT: new RequestError("Retell AI rate limit exceeded. Please try again later", 80004, 429),
+  RETELL_INVALID_AGENT: new RequestError("Invalid Retell agent ID", 80005, 400),
+  RETELL_CALL_CREATION_FAILED: new RequestError("Failed to create Retell AI call", 80006, 500),
+  RETELL_API_ERROR: new RequestError("Retell AI service error", 80007, 500)
 };
 
 export {

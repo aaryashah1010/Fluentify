@@ -69,7 +69,7 @@ export const fetchLessonDetails = async ({ courseId, unitId, lessonId }) => {
  */
 export const generateExercises = async ({ courseId, unitId, lessonId }) => {
   const response = await fetch(
-    `${API_BASE_URL}/api/courses/${courseId}/units/${unitId}/lessons/${lessonId}/exercises`,
+    `${API_BASE_URL}/api/courses/${courseId}/units/${unitId}/lessons/${lessonId}/exercises/generate`,
     {
       method: 'POST',
       headers: getAuthHeader(),

@@ -25,6 +25,9 @@ router.delete('/:courseId', courseController.deleteCourse);
 // Get specific lesson details (with unit ID)
 router.get('/:courseId/units/:unitId/lessons/:lessonId', courseController.getLessonDetails);
 
+// Generate exercises for a lesson
+router.post('/:courseId/units/:unitId/lessons/:lessonId/exercises/generate', courseController.generateLessonExercises);
+
 // Get specific lesson details (backward compatible - without unit ID in URL)
 router.get('/:courseId/lessons/:lessonId', courseController.getLessonDetailsLegacy);
 

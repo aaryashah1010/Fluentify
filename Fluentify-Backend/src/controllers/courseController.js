@@ -459,6 +459,24 @@ class CourseController {
         throw ERRORS.LESSON_NOT_FOUND;
       }
 
+      // Validate exercise score - must get at least 3/5 correct
+      if (exercises && exercises.length > 0) {
+        const correctAnswers = exercises.filter(ex => ex.isCorrect === true).length;
+        const totalExercises = exercises.length;
+        
+        if (totalExercises >= 5 && correctAnswers < 3) {
+          return res.status(400).json({
+            success: false,
+            message: 'You need at least 3 out of 5 correct answers to complete this lesson',
+            data: {
+              correctAnswers,
+              totalExercises,
+              passed: false
+            }
+          });
+        }
+      }
+
       // Get lesson database ID from course_lessons table
       const lessonDbId = await courseRepository.findLessonDbId(courseId, foundUnitId, lessonId);
       
@@ -543,6 +561,64 @@ class CourseController {
       }, unitCompleted ? 'Unit completed! Next unit unlocked!' : 'Lesson completed!'));
     } catch (error) {
       console.error('Error completing lesson (legacy):', error);
+      next(error);
+    }
+  }
+
+  /**
+   * Generate exercises for a specific lesson
+   * POST /api/courses/:courseId/units/:unitId/lessons/:lessonId/exercises/generate
+   */
+  async generateLessonExercises(req, res, next) {
+    try {
+      const { courseId, unitId, lessonId } = req.params;
+      const userId = req.user.id;
+
+      console.log(`🎯 Generating exercises for lesson ${lessonId}...`);
+
+      // Get course data to find the lesson
+      const courseResult = await courseRepository.findCourseDataById(courseId, userId);
+
+      if (!courseResult) {
+        throw ERRORS.COURSE_NOT_FOUND;
+      }
+
+      const courseData = courseResult.course_data;
+      const unit = courseData.course.units.find(u => u.id === parseInt(unitId));
+      const lesson = unit?.lessons.find(l => l.id === parseInt(lessonId));
+
+      if (!lesson) {
+        throw ERRORS.LESSON_NOT_FOUND;
+      }
+
+      // Generate 5 new MCQ exercises using Gemini
+      const exercisesData = await geminiService.generateExercises(
+        lesson.title,
+        lesson.type,
+        courseData.course.language
+      );
+
+      // Update the lesson exercises in the database
+      const lessonDbId = await courseRepository.findLessonDbId(courseId, parseInt(unitId), parseInt(lessonId));
+      
+      if (!lessonDbId) {
+        throw ERRORS.LESSON_NOT_FOUND;
+      }
+
+      // Update lesson with new exercises
+      await courseRepository.updateLessonExercises(lessonDbId, exercisesData.exercises);
+
+      // Also update the course_data JSON
+      lesson.exercises = exercisesData.exercises;
+      await courseRepository.updateCourseData(courseId, courseData);
+
+      console.log(`✅ Generated ${exercisesData.exercises.length} exercises for lesson ${lessonId}`);
+
+      res.json(successResponse({
+        exercises: exercisesData.exercises
+      }, 'Exercises generated successfully'));
+    } catch (error) {
+      console.error('Error generating lesson exercises:', error);
       next(error);
     }
   }
