@@ -215,6 +215,7 @@ const markLessonComplete = async (req, res, next) => {
 const getUserCourses = async (req, res, next) => {
   try {
     const userId = req.user.id;
+    console.log('👤 getUserCourses called for userId:', userId);
 
     const courses = await courseRepository.findAllActiveCourses(userId);
 
@@ -222,6 +223,10 @@ const getUserCourses = async (req, res, next) => {
       id: course.id,
       language: course.language,
       title: course.title,
+      description: course.description,
+      sourceType: course.source_type, // 'ai' or 'admin' - important for frontend!
+      totalLessons: course.total_lessons,
+      totalUnits: course.total_units,
       createdAt: course.created_at,
       progress: {
         totalXp: course.total_xp || 0,
@@ -231,6 +236,7 @@ const getUserCourses = async (req, res, next) => {
       }
     }));
 
+    console.log(`📦 Returning ${coursesWithProgress.length} courses to user ${userId}`);
     res.json(listResponse(coursesWithProgress, 'User courses retrieved successfully'));
   } catch (error) {
     console.error('Error fetching user courses:', error);

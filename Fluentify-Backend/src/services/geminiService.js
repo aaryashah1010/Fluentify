@@ -11,6 +11,37 @@ class GeminiService {
   }
 
   /**
+   * Retry helper with exponential backoff for rate limiting
+   */
+  async retryWithBackoff(fn, maxRetries = 3, initialDelay = 2000) {
+    let lastError;
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error;
+        
+        // Check if it's a rate limit error (429)
+        if (error.status === 429 || error.message?.includes('429') || error.message?.includes('Too Many Requests')) {
+          const delay = initialDelay * Math.pow(2, attempt); // Exponential backoff: 2s, 4s, 8s
+          console.warn(`⏳ Rate limit hit. Retrying in ${delay/1000}s... (Attempt ${attempt + 1}/${maxRetries})`);
+          
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        
+        // If it's not a rate limit error, throw immediately
+        throw error;
+      }
+    }
+    
+    // If all retries failed, throw the last error
+    throw lastError;
+  }
+
+  /**
    * Generate a structured language learning course similar to Duolingo
    * @param {string} language - The target language to learn
    * @param {string} expectedDuration - Expected learning duration (e.g., '3 months', '6 months')
@@ -191,18 +222,21 @@ IMPORTANT:
 - Ensure all JSON arrays and objects are properly closed
 - Make content engaging and progressively challenging`;
 
-    const result = await this.model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        maxOutputTokens: 8192,
-        temperature: 0.7,
-      },
+    // Use retry with backoff to handle rate limits
+    return await this.retryWithBackoff(async () => {
+      const result = await this.model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: 8192,
+          temperature: 0.7,
+        },
+      });
+      
+      const response = await result.response;
+      const text = response.text();
+      
+      return this.parseJSON(text);
     });
-    
-    const response = await result.response;
-    const text = response.text();
-    
-    return this.parseJSON(text);
   }
 
   /**
@@ -311,11 +345,14 @@ Provide the response in this EXACT JSON format:
 
 Make sure to generate exactly 5 exercises.`;
 
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      return this.parseJSON(text);
+      // Use retry with backoff to handle rate limits
+      return await this.retryWithBackoff(async () => {
+        const result = await this.model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        
+        return this.parseJSON(text);
+      });
     } catch (error) {
       console.error('Error generating exercises:', error);
       throw new Error('Failed to generate exercises');

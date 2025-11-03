@@ -123,6 +123,12 @@ class CourseController {
         });
 
         console.log(`  ✅ Unit ${i + 1} saved to database`);
+        
+        // Add delay between units to avoid rate limiting (except after last unit)
+        if (i < outline.units.length - 1) {
+          console.log('  ⏳ Waiting 3 seconds before next unit to avoid rate limits...');
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
       }
 
       // Send course complete event
@@ -160,23 +166,32 @@ class CourseController {
     } catch (error) {
       console.error('Error in streaming course generation:', error);
       
-      // Track failed AI generation for analytics
+      // Track failed AI generation for analytics (only if userId and language are available)
       try {
-        await analyticsService.trackAIGeneration(
-          userId,
-          language,
-          false, // success = false
-          {
-            errorMessage: error.message
-          }
-        );
+        const userId = req.user?.id;
+        const language = req.query?.language;
+        
+        if (userId && language) {
+          await analyticsService.trackAIGeneration(
+            userId,
+            language,
+            false, // success = false
+            {
+              errorMessage: error.message
+            }
+          );
+        }
       } catch (analyticsError) {
         console.error('Error tracking failed AI generation analytics:', analyticsError);
       }
       
-      // Send error event
+      // Send error event with better message
+      const errorMessage = error.message.includes('429') || error.message.includes('Too Many Requests')
+        ? 'API rate limit exceeded. Please wait a few minutes and try again.'
+        : error.message;
+      
       res.write(`event: error\n`);
-      res.write(`data: ${JSON.stringify({ message: error.message })}\n\n`);
+      res.write(`data: ${JSON.stringify({ message: errorMessage })}\n\n`);
       res.end();
     }
   }
