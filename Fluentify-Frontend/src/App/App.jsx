@@ -1,34 +1,49 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Login, Signup } from '../modules/auth';
-import { Dashboard, CoursePage, LessonPage } from '../modules/learner';
-import { AdminDashboard } from '../modules/admin';
+import { Login, Signup, SignupWithOTP, ForgotPassword } from '../modules/auth';
+import { Dashboard, CoursePage, LessonPage, UserProfile as LearnerProfile } from '../modules/learner';
+import { AdminDashboard, UserProfile as AdminProfile, ModuleManagementLayout } from '../modules/admin';
+import UserListPage from '../modules/admin/user-management/pages/UserListPage';
+import UserDetailPage from '../modules/admin/user-management/pages/UserDetailPage';
 import { StreamingProvider } from '../contexts/StreamingContext';
 import './App.css';
+
+function decodeJwtPayload(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64 + '==='.slice((base64.length + 3) % 4);
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+}
 
 function ProtectedRoute({ children, role }) {
   const token = localStorage.getItem('jwt');
   if (!token) return <Navigate to="/login" />;
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    if (role && payload.role !== role) return <Navigate to="/login" />;
-    if (payload.exp * 1000 < Date.now()) {
-      localStorage.removeItem('jwt');
-      return <Navigate to="/login" />;
-    }
-    return children;
-  } catch {
+  const payload = decodeJwtPayload(token);
+  if (!payload) {
     localStorage.removeItem('jwt');
     return <Navigate to="/login" />;
   }
+  if (role && payload.role !== role) return <Navigate to="/login" />;
+  if (payload.exp * 1000 < Date.now()) {
+    localStorage.removeItem('jwt');
+    return <Navigate to="/login" />;
+  }
+  return children;
 }
 
 function App() {
   return (
     <StreamingProvider>
       <Routes>
-        <Route path="/signup" element={<Signup />} />
+        {/* Use SignupWithOTP as the main signup route */}
+        <Route path="/signup" element={<SignupWithOTP />} />
+        <Route path="/signup-old" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/dashboard" element={
           <ProtectedRoute role="learner">
             <Dashboard />
@@ -39,6 +54,21 @@ function App() {
             <AdminDashboard />
           </ProtectedRoute>
         } />
+        <Route path="/admin/modules" element={
+          <ProtectedRoute role="admin">
+            <ModuleManagementLayout />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/users" element={
+          <ProtectedRoute role="admin">
+            <UserListPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/users/:userId" element={
+          <ProtectedRoute role="admin">
+            <UserDetailPage />
+          </ProtectedRoute>
+        } />
         <Route path="/course/:courseId" element={
           <ProtectedRoute role="learner">
             <CoursePage />
@@ -47,6 +77,16 @@ function App() {
         <Route path="/lesson/:courseId/:unitId/:lessonId" element={
           <ProtectedRoute role="learner">
             <LessonPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile" element={
+          <ProtectedRoute role="learner">
+            <LearnerProfile />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/profile" element={
+          <ProtectedRoute role="admin">
+            <AdminProfile />
           </ProtectedRoute>
         } />
         <Route path="*" element={<Navigate to="/login" />} />

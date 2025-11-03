@@ -187,3 +187,41 @@ export const deleteLesson = async (lessonId) => {
   
   return handleResponse(response);
 };
+
+// ==================== User Management (Admin) ====================
+
+/**
+ * Get learners (admin)
+ */
+export const getLearners = async ({ search = '', page = 1, limit = 20 } = {}) => {
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  params.set('page', String(page));
+  params.set('limit', String(limit));
+  const response = await fetch(`${API_BASE_URL}/api/admin/users?${params.toString()}`, {
+    headers: getAuthHeader(),
+  });
+  return handleResponse(response);
+};
+
+/**
+ * Get learner details (admin)
+ */
+export const getLearnerDetails = async (userId) => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}`, {
+    headers: getAuthHeader(),
+  });
+  return handleResponse(response);
+};
+
+/**
+ * Update learner (admin)
+ */
+export const updateLearner = async (userId, { name, email }) => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}`, {
+    method: 'PUT',
+    headers: getAuthHeader(),
+    body: JSON.stringify({ name, email }),
+  });
+  return handleResponse(response);
+};

@@ -1,6 +1,7 @@
 import express from 'express';
 import authMiddleware, { adminOnly } from '../middlewares/authMiddleware.js';
 import moduleAdminController from '../controllers/moduleAdminController.js';
+import adminUserController from '../controllers/adminUserController.js';
 
 const router = express.Router();
 
@@ -46,5 +47,10 @@ router.put('/lessons/:lessonId', moduleAdminController.updateLesson);
 
 // Delete a lesson
 router.delete('/lessons/:lessonId', moduleAdminController.deleteLesson);
+
+// ==================== Admin User Management ====================
+router.get('/users', adminUserController.listLearners);
+router.get('/users/:id', adminUserController.getLearnerDetails);
+router.put('/users/:id', adminUserController.updateLearner);
 
 export default router;

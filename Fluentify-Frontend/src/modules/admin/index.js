@@ -2,3 +2,4 @@
 export { default as AdminDashboard } from './AdminDashboard';
 export { default as ModuleManagementLayout } from './module-management/ModuleManagementLayout';
 export { default as CourseEditorPage } from './module-management/pages/CourseEditorPage';
+export { default as UserProfile } from './UserProfile';

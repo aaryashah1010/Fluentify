@@ -9,7 +9,7 @@ class AuthRepository {
       `SELECT l.*, 
        EXISTS(SELECT 1 FROM learner_preferences WHERE learner_id = l.id) as has_preferences 
        FROM learners l 
-       WHERE l.email = $1`,
+       WHERE LOWER(l.email) = LOWER($1)`,
       [email]
     );
     return result.rows[0] || null;
@@ -20,7 +20,7 @@ class AuthRepository {
    */
   async findAdminByEmail(email) {
     const result = await db.query(
-      'SELECT * FROM admins WHERE email = $1',
+      'SELECT * FROM admins WHERE LOWER(email) = LOWER($1)',
       [email]
     );
     return result.rows[0] || null;
@@ -32,7 +32,7 @@ class AuthRepository {
   async createLearner(name, email, passwordHash) {
     const result = await db.query(
       `INSERT INTO learners (name, email, password_hash, created_at, updated_at) 
-       VALUES ($1, $2, $3, NOW(), NOW()) 
+       VALUES ($1, LOWER($2), $3, NOW(), NOW()) 
        RETURNING *`,
       [name, email, passwordHash]
     );
@@ -44,7 +44,7 @@ class AuthRepository {
    */
   async createAdmin(name, email, passwordHash) {
     const result = await db.query(
-      'INSERT INTO admins (name, email, password_hash, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING *',
+      'INSERT INTO admins (name, email, password_hash, created_at, updated_at) VALUES ($1, LOWER($2), $3, NOW(), NOW()) RETURNING *',
       [name, email, passwordHash]
     );
     return result.rows[0];
@@ -91,6 +91,187 @@ class AuthRepository {
    */
   async rollbackTransaction() {
     await db.query('ROLLBACK');
+  }
+
+  /**
+   * Store OTP code in database
+   */
+  async storeOTP(email, otpCode, otpType, userType) {
+    // Set expiration to 2 minutes from now
+    const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
+    
+    const result = await db.query(
+      `INSERT INTO otp_codes (email, otp_code, otp_type, user_type, expires_at, created_at) 
+       VALUES (LOWER($1), $2, $3, $4, $5, NOW()) 
+       RETURNING *`,
+      [email, otpCode, otpType, userType, expiresAt]
+    );
+    return result.rows[0];
+  }
+
+  /**
+   * Get the latest OTP record for cooldown checks
+   */
+  async getLatestOTP(email, otpType, userType) {
+    const result = await db.query(
+      `SELECT id, created_at FROM otp_codes
+       WHERE LOWER(email) = LOWER($1)
+       AND otp_type = $2
+       AND user_type = $3
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [email, otpType, userType]
+    );
+    return result.rows[0] || null;
+  }
+
+  /**
+   * Verify OTP code
+   */
+  async verifyOTP(email, otpCode, otpType, userType) {
+    const result = await db.query(
+      `SELECT * FROM otp_codes 
+       WHERE LOWER(email) = LOWER($1)
+       AND otp_code = $2 
+       AND otp_type = $3 
+       AND user_type = $4 
+       AND is_used = false 
+       AND expires_at > NOW()
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [email, otpCode, otpType, userType]
+    );
+    return result.rows[0] || null;
+  }
+
+  /**
+   * Mark OTP as used
+   */
+  async markOTPAsUsed(otpId) {
+    await db.query(
+      'UPDATE otp_codes SET is_used = true WHERE id = $1',
+      [otpId]
+    );
+  }
+
+  /**
+   * Delete all OTPs for an email (cleanup)
+   */
+  async deleteOTPsByEmail(email, otpType, userType) {
+    await db.query(
+      'DELETE FROM otp_codes WHERE LOWER(email) = LOWER($1) AND otp_type = $2 AND user_type = $3',
+      [email, otpType, userType]
+    );
+  }
+
+  /**
+   * Mark learner email as verified
+   */
+  async markLearnerEmailVerified(email) {
+    const result = await db.query(
+      `UPDATE learners 
+       SET is_email_verified = true, email_verified_at = NOW(), updated_at = NOW() 
+       WHERE LOWER(email) = LOWER($1)
+       RETURNING *`,
+      [email]
+    );
+    return result.rows[0];
+  }
+
+  /**
+   * Mark admin email as verified
+   */
+  async markAdminEmailVerified(email) {
+    const result = await db.query(
+      `UPDATE admins 
+       SET is_email_verified = true, email_verified_at = NOW(), updated_at = NOW() 
+       WHERE LOWER(email) = LOWER($1)
+       RETURNING *`,
+      [email]
+    );
+    return result.rows[0];
+  }
+
+  /**
+   * Update learner password
+   */
+  async updateLearnerPassword(email, passwordHash) {
+    const result = await db.query(
+      `UPDATE learners 
+       SET password_hash = $1, updated_at = NOW() 
+       WHERE LOWER(email) = LOWER($2)
+       RETURNING *`,
+      [passwordHash, email]
+    );
+    return result.rows[0];
+  }
+
+  /**
+   * Update admin password
+   */
+  async updateAdminPassword(email, passwordHash) {
+    const result = await db.query(
+      `UPDATE admins 
+       SET password_hash = $1, updated_at = NOW() 
+       WHERE LOWER(email) = LOWER($2)
+       RETURNING *`,
+      [passwordHash, email]
+    );
+    return result.rows[0];
+  }
+
+  /**
+   * Get full learner profile by ID
+   */
+  async getFullLearnerProfile(id) {
+    const result = await db.query(
+      `SELECT id, name, email, created_at, updated_at, is_email_verified, email_verified_at
+       FROM learners 
+       WHERE id = $1`,
+      [id]
+    );
+    return result.rows[0] || null;
+  }
+
+  /**
+   * Get full admin profile by ID
+   */
+  async getFullAdminProfile(id) {
+    const result = await db.query(
+      `SELECT id, name, email, created_at, updated_at, is_email_verified, email_verified_at
+       FROM admins 
+       WHERE id = $1`,
+      [id]
+    );
+    return result.rows[0] || null;
+  }
+
+  /**
+   * Update learner profile (name)
+   */
+  async updateLearnerProfile(id, name) {
+    const result = await db.query(
+      `UPDATE learners 
+       SET name = $1, updated_at = NOW() 
+       WHERE id = $2
+       RETURNING id, name, email, created_at, updated_at, is_email_verified, email_verified_at`,
+      [name, id]
+    );
+    return result.rows[0];
+  }
+
+  /**
+   * Update admin profile (name)
+   */
+  async updateAdminProfile(id, name) {
+    const result = await db.query(
+      `UPDATE admins 
+       SET name = $1, updated_at = NOW() 
+       WHERE id = $2
+       RETURNING id, name, email, created_at, updated_at, is_email_verified, email_verified_at`,
+      [name, id]
+    );
+    return result.rows[0];
   }
 }
 

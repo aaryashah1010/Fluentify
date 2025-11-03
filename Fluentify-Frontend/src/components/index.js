@@ -5,6 +5,8 @@ export { default as Input } from './Input';
 export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as PageHeader } from './PageHeader';
 export { default as VoiceAIModal } from './VoiceAIModal';
+export { default as PasswordStrengthIndicator } from './PasswordStrengthIndicator';
+export { default as OTPInput } from './OTPInput';
 export { 
   Skeleton, 
   SkeletonText, 
