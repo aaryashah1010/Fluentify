@@ -19,6 +19,7 @@ function authMiddleware(req, res, next) {
       return next(ERRORS.INVALID_AUTH_TOKEN);
     }
     req.user = user;
+    console.log(`🔐 Auth: User ${user.id} (${user.email}) authenticated - Role: ${user.role}`);
     next();
   });
 }

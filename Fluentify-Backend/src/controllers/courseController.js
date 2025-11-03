@@ -123,6 +123,12 @@ class CourseController {
         });
 
         console.log(`  ✅ Unit ${i + 1} saved to database`);
+        
+        // Add delay between units to avoid rate limiting (except after last unit)
+        if (i < outline.units.length - 1) {
+          console.log('  ⏳ Waiting 3 seconds before next unit to avoid rate limits...');
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
       }
 
       // Send course complete event
@@ -160,23 +166,32 @@ class CourseController {
     } catch (error) {
       console.error('Error in streaming course generation:', error);
       
-      // Track failed AI generation for analytics
+      // Track failed AI generation for analytics (only if userId and language are available)
       try {
-        await analyticsService.trackAIGeneration(
-          userId,
-          language,
-          false, // success = false
-          {
-            errorMessage: error.message
-          }
-        );
+        const userId = req.user?.id;
+        const language = req.query?.language;
+        
+        if (userId && language) {
+          await analyticsService.trackAIGeneration(
+            userId,
+            language,
+            false, // success = false
+            {
+              errorMessage: error.message
+            }
+          );
+        }
       } catch (analyticsError) {
         console.error('Error tracking failed AI generation analytics:', analyticsError);
       }
       
-      // Send error event
+      // Send error event with better message
+      const errorMessage = error.message.includes('429') || error.message.includes('Too Many Requests')
+        ? 'API rate limit exceeded. Please wait a few minutes and try again.'
+        : error.message;
+      
       res.write(`event: error\n`);
-      res.write(`data: ${JSON.stringify({ message: error.message })}\n\n`);
+      res.write(`data: ${JSON.stringify({ message: errorMessage })}\n\n`);
       res.end();
     }
   }
@@ -495,6 +510,24 @@ class CourseController {
         throw ERRORS.LESSON_NOT_FOUND;
       }
 
+      // Validate exercise score - must get at least 3/5 correct
+      if (exercises && exercises.length > 0) {
+        const correctAnswers = exercises.filter(ex => ex.isCorrect === true).length;
+        const totalExercises = exercises.length;
+        
+        if (totalExercises >= 5 && correctAnswers < 3) {
+          return res.status(400).json({
+            success: false,
+            message: 'You need at least 3 out of 5 correct answers to complete this lesson',
+            data: {
+              correctAnswers,
+              totalExercises,
+              passed: false
+            }
+          });
+        }
+      }
+
       // Get lesson database ID from course_lessons table
       const lessonDbId = await courseRepository.findLessonDbId(courseId, foundUnitId, lessonId);
       
@@ -579,6 +612,64 @@ class CourseController {
       }, unitCompleted ? 'Unit completed! Next unit unlocked!' : 'Lesson completed!'));
     } catch (error) {
       console.error('Error completing lesson (legacy):', error);
+      next(error);
+    }
+  }
+
+  /**
+   * Generate exercises for a specific lesson
+   * POST /api/courses/:courseId/units/:unitId/lessons/:lessonId/exercises/generate
+   */
+  async generateLessonExercises(req, res, next) {
+    try {
+      const { courseId, unitId, lessonId } = req.params;
+      const userId = req.user.id;
+
+      console.log(`🎯 Generating exercises for lesson ${lessonId}...`);
+
+      // Get course data to find the lesson
+      const courseResult = await courseRepository.findCourseDataById(courseId, userId);
+
+      if (!courseResult) {
+        throw ERRORS.COURSE_NOT_FOUND;
+      }
+
+      const courseData = courseResult.course_data;
+      const unit = courseData.course.units.find(u => u.id === parseInt(unitId));
+      const lesson = unit?.lessons.find(l => l.id === parseInt(lessonId));
+
+      if (!lesson) {
+        throw ERRORS.LESSON_NOT_FOUND;
+      }
+
+      // Generate 5 new MCQ exercises using Gemini
+      const exercisesData = await geminiService.generateExercises(
+        lesson.title,
+        lesson.type,
+        courseData.course.language
+      );
+
+      // Update the lesson exercises in the database
+      const lessonDbId = await courseRepository.findLessonDbId(courseId, parseInt(unitId), parseInt(lessonId));
+      
+      if (!lessonDbId) {
+        throw ERRORS.LESSON_NOT_FOUND;
+      }
+
+      // Update lesson with new exercises
+      await courseRepository.updateLessonExercises(lessonDbId, exercisesData.exercises);
+
+      // Also update the course_data JSON
+      lesson.exercises = exercisesData.exercises;
+      await courseRepository.updateCourseData(courseId, courseData);
+
+      console.log(`✅ Generated ${exercisesData.exercises.length} exercises for lesson ${lessonId}`);
+
+      res.json(successResponse({
+        exercises: exercisesData.exercises
+      }, 'Exercises generated successfully'));
+    } catch (error) {
+      console.error('Error generating lesson exercises:', error);
       next(error);
     }
   }
