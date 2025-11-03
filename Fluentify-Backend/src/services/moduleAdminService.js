@@ -303,6 +303,54 @@ class ModuleAdminService {
       data: deletedLesson
     };
   }
+
+  // ==================== Published Courses (Learner View) ====================
+
+  /**
+   * Get all published languages for learners
+   */
+  async getPublishedLanguages() {
+    const languages = await moduleAdminRepository.getPublishedLanguages();
+    return {
+      success: true,
+      data: languages
+    };
+  }
+
+  /**
+   * Get published courses for a specific language for learners
+   */
+  async getPublishedCoursesByLanguage(language) {
+    if (!language) {
+      throw new Error('Language parameter is required');
+    }
+
+    const courses = await moduleAdminRepository.getPublishedCoursesByLanguage(language);
+    return {
+      success: true,
+      data: courses
+    };
+  }
+
+  /**
+   * Get published course details with units and lessons for learners
+   */
+  async getPublishedCourseDetails(courseId) {
+    if (!courseId) {
+      throw new Error('Course ID is required');
+    }
+
+    const course = await moduleAdminRepository.getPublishedCourseDetails(courseId);
+    
+    if (!course) {
+      throw new Error('Course not found');
+    }
+
+    return {
+      success: true,
+      data: course
+    };
+  }
 }
 
 export default new ModuleAdminService();
