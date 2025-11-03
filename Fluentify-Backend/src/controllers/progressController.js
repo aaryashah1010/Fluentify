@@ -1,5 +1,6 @@
 import courseRepository from '../repositories/courseRepository.js';
 import progressRepository from '../repositories/progressRepository.js';
+import analyticsService from '../services/analyticsService.js';
 import { successResponse, listResponse } from '../utils/response.js';
 import { ERRORS } from '../utils/error.js';
 
@@ -105,6 +106,45 @@ const markLessonComplete = async (req, res, next) => {
 
     // Mark lesson as complete
     await progressRepository.upsertLessonProgress(userId, courseId, parseInt(unitId), lessonDbId, score, xpEarned);
+
+    // Determine module type based on course metadata
+    const moduleType = courseResult.course_data?.metadata?.createdBy === 'admin' ? 'ADMIN' : 'AI';
+    // Resolve language reliably (row column or embedded course_data)
+    const languageName = courseResult.language 
+      || courseData?.course?.language 
+      || courseData?.metadata?.language 
+      || null;
+    
+    // Track lesson completion for analytics
+    try {
+      console.log('🔍 Analytics Debug - Tracking lesson completion:', {
+        userId,
+        language: languageName,
+        moduleType,
+        lessonId: parseInt(lessonId),
+        courseId: parseInt(courseId)
+      });
+      
+      await analyticsService.trackLessonCompletion(
+        userId,
+        languageName,
+        moduleType,
+        null, // duration - we don't track this yet
+        {
+          lessonId: parseInt(lessonId),
+          unitId: parseInt(unitId),
+          courseId: parseInt(courseId),
+          score,
+          xpEarned,
+          exercisesCompleted: exercises.length
+        }
+      );
+      
+      console.log('✅ Analytics - Lesson completion tracked successfully');
+    } catch (analyticsError) {
+      console.error('❌ Error tracking lesson completion analytics:', analyticsError);
+      // Don't fail the lesson completion if analytics fails
+    }
 
     // Save exercise attempts
     for (let i = 0; i < exercises.length; i++) {

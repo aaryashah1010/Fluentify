@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, BookOpen, MessageCircle } from 'lucide-react';
+import { LogOut, BookOpen, MessageCircle, Globe } from 'lucide-react';
 import { useCourses } from '../../hooks/useCourses';
 import { useLogout } from '../../hooks/useAuth';
 import { useStreaming } from '../../contexts/StreamingContext';
-import { Button, SkeletonCourseCard, VoiceAIModal } from '../../components';
+import { Button, SkeletonCourseCard, VoiceAIModal, FloatingChatWidget } from '../../components';
 import { CourseCard, CourseGenerationForm, GeneratingCourseCard } from './components';
 
 const Dashboard = () => {
@@ -76,6 +76,22 @@ const Dashboard = () => {
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-4">Welcome to Your Dashboard</h2>
           <p className="text-gray-600">Start your language learning journey today!</p>
+        </div>
+
+        {/* Language Modules Button */}
+        <div className="mb-8">
+          <button
+            onClick={() => navigate('/language-modules')}
+            className="w-full p-6 bg-gradient-to-r from-purple-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition-shadow"
+          >
+            <div className="flex items-center gap-3">
+              <Globe className="w-6 h-6" />
+              <div className="text-left">
+                <h3 className="text-lg font-semibold">Language Modules</h3>
+                <p className="text-sm text-purple-100">Explore courses created by instructors</p>
+              </div>
+            </div>
+          </button>
         </div>
 
         {/* Course Generation Section */}
@@ -155,6 +171,9 @@ const Dashboard = () => {
         isOpen={showVoiceAI} 
         onClose={() => setShowVoiceAI(false)} 
       />
+
+      {/* Floating Chat Widget */}
+      <FloatingChatWidget />
     </div>
   );
 };

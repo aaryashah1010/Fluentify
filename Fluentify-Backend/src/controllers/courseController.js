@@ -1,6 +1,7 @@
 import geminiService from '../services/geminiService.js';
 import courseRepository from '../repositories/courseRepository.js';
 import progressRepository from '../repositories/progressRepository.js';
+import analyticsService from '../services/analyticsService.js';
 import { successResponse, createdResponse, listResponse } from '../utils/response.js';
 import { ERRORS } from '../utils/error.js';
 
@@ -57,7 +58,8 @@ class CourseController {
           language,
           totalUnits: outline.units.length,
           totalLessons: 0,
-          estimatedTotalTime: 0
+          estimatedTotalTime: 0,
+          createdBy: 'ai'
         }
       };
 
@@ -134,10 +136,44 @@ class CourseController {
       });
 
       console.log(`🎉 Course ${courseId} generation complete!`);
+      
+      // Track AI course generation for analytics
+      try {
+        await analyticsService.trackAIGeneration(
+          userId,
+          language,
+          true, // success
+          {
+            courseId,
+            unitsGenerated: units.length,
+            lessonsGenerated: totalLessons,
+            generationTime: null // We could track this if needed
+          }
+        );
+      } catch (analyticsError) {
+        console.error('Error tracking AI generation analytics:', analyticsError);
+        // Don't fail the course generation if analytics fails
+      }
+      
       res.end();
 
     } catch (error) {
       console.error('Error in streaming course generation:', error);
+      
+      // Track failed AI generation for analytics
+      try {
+        await analyticsService.trackAIGeneration(
+          userId,
+          language,
+          false, // success = false
+          {
+            errorMessage: error.message
+          }
+        );
+      } catch (analyticsError) {
+        console.error('Error tracking failed AI generation analytics:', analyticsError);
+      }
+      
       // Send error event
       res.write(`event: error\n`);
       res.write(`data: ${JSON.stringify({ message: error.message })}\n\n`);
