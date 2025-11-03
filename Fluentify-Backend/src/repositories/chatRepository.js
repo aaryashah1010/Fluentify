@@ -1,4 +1,4 @@
-import { pool } from '../config/db.js';
+import db from '../config/db.js';
 
 class ChatRepository {
   /**
@@ -15,7 +15,7 @@ class ChatRepository {
     const values = [userId, language, proficiencyLevel, title];
     
     try {
-      const result = await pool.query(query, values);
+      const result = await db.query(query, values);
       return result.rows[0];
     } catch (error) {
       console.error('Error creating chat session:', error);
@@ -36,7 +36,7 @@ class ChatRepository {
     `;
     
     try {
-      const result = await pool.query(query, [sessionId, limit]);
+      const result = await db.query(query, [sessionId, limit]);
       // Return in chronological order (oldest first)
       return result.rows.reverse();
     } catch (error) {
@@ -58,7 +58,7 @@ class ChatRepository {
     const values = [sessionId, userId, senderType, content];
     
     try {
-      const result = await pool.query(query, values);
+      const result = await db.query(query, values);
       return result.rows[0];
     } catch (error) {
       console.error('Error saving chat message:', error);
@@ -80,7 +80,7 @@ class ChatRepository {
     `;
     
     try {
-      const result = await pool.query(query, [userId, limit]);
+      const result = await db.query(query, [userId, limit]);
       return result.rows;
     } catch (error) {
       console.error('Error fetching user sessions:', error);
@@ -98,7 +98,7 @@ class ChatRepository {
     `;
     
     try {
-      const result = await pool.query(query, [sessionId, userId]);
+      const result = await db.query(query, [sessionId, userId]);
       return result.rows[0];
     } catch (error) {
       console.error('Error fetching session:', error);
@@ -119,7 +119,7 @@ class ChatRepository {
     `;
     
     try {
-      const result = await pool.query(query, [userId]);
+      const result = await db.query(query, [userId]);
       if (result.rows.length > 0) {
         const pref = result.rows[0];
         // Map duration to proficiency level
@@ -157,7 +157,7 @@ class ChatRepository {
     `;
     
     try {
-      const result = await pool.query(query);
+      const result = await db.query(query);
       return result.rowCount;
     } catch (error) {
       console.error('Error deleting old sessions:', error);

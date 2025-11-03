@@ -237,6 +237,49 @@ class ModuleAdminController {
       next(error);
     }
   }
+
+  // ==================== Published Courses (Learner View) ====================
+
+  /**
+   * Get all published languages for learners
+   * GET /api/learner-modules/languages
+   */
+  async getPublishedLanguages(req, res, next) {
+    try {
+      const result = await moduleAdminService.getPublishedLanguages();
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get published courses for a specific language for learners
+   * GET /api/learner-modules/languages/:lang/courses
+   */
+  async getPublishedCoursesByLanguage(req, res, next) {
+    try {
+      const { lang } = req.params;
+      const result = await moduleAdminService.getPublishedCoursesByLanguage(lang);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get published course details with units and lessons for learners
+   * GET /api/learner-modules/courses/:courseId
+   */
+  async getPublishedCourseDetails(req, res, next) {
+    try {
+      const { courseId } = req.params;
+      const result = await moduleAdminService.getPublishedCourseDetails(courseId);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new ModuleAdminController();

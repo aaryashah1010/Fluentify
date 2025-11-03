@@ -113,3 +113,41 @@ export const deleteCourse = async (courseId) => {
   
   return handleResponse(response);
 };
+
+/**
+ * Fetch all published languages (learner view)
+ * @returns {Promise<{success: boolean, data: Array}>}
+ */
+export const fetchPublishedLanguages = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/learner-modules/languages`, {
+    headers: getAuthHeader(),
+  });
+  
+  return handleResponse(response);
+};
+
+/**
+ * Fetch published courses for a specific language (learner view)
+ * @param {string} language - Language name
+ * @returns {Promise<{success: boolean, data: Array}>}
+ */
+export const fetchPublishedCoursesByLanguage = async (language) => {
+  const response = await fetch(`${API_BASE_URL}/api/learner-modules/languages/${language}/courses`, {
+    headers: getAuthHeader(),
+  });
+  
+  return handleResponse(response);
+};
+
+/**
+ * Fetch published course details with units and lessons (learner view)
+ * @param {number} courseId - Course ID
+ * @returns {Promise<{success: boolean, data: Object}>}
+ */
+export const fetchPublishedCourseDetails = async (courseId) => {
+  const response = await fetch(`${API_BASE_URL}/api/learner-modules/courses/${courseId}`, {
+    headers: getAuthHeader(),
+  });
+  
+  return handleResponse(response);
+};
