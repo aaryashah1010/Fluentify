@@ -1,3 +1,4 @@
+<<<<<<< HEAD
   services:
     postgres:
       image: postgres:16-alpine
@@ -21,6 +22,30 @@
         timeout: 5s
         retries: 5
         start_period: 30s
+=======
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fluentify-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fluentify
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/database/01-tables.sql:/docker-entrypoint-initdb.d/01-tables.sql
+      - ./src/database/02-tables.sql:/docker-entrypoint-initdb.d/02-tables.sql
+      - ./src/database/03-auth-enhancements.sql:/docker-entrypoint-initdb.d/03-auth-enhancements.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+>>>>>>> 3e7413f (auth changes)
 
     backend:
       build:

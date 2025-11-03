@@ -5,10 +5,15 @@ export { default as Input } from './Input';
 export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as PageHeader } from './PageHeader';
 export { default as VoiceAIModal } from './VoiceAIModal';
+<<<<<<< HEAD
 export { default as ChatMessage } from './ChatMessage';
 export { default as ChatInput } from './ChatInput';
 export { default as TypingIndicator } from './TypingIndicator';
 export { default as FloatingChatWidget } from './FloatingChatWidget';
+=======
+export { default as PasswordStrengthIndicator } from './PasswordStrengthIndicator';
+export { default as OTPInput } from './OTPInput';
+>>>>>>> 3e7413f (auth changes)
 export { 
   Skeleton, 
   SkeletonText, 

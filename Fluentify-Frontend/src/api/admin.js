@@ -188,6 +188,7 @@ export const deleteLesson = async (lessonId) => {
   return handleResponse(response);
 };
 
+<<<<<<< HEAD
 // ==================== Analytics Operations ====================
 
 /**
@@ -199,10 +200,26 @@ export const getAnalytics = async () => {
     headers: getAuthHeader(),
   });
   
+=======
+// ==================== User Management (Admin) ====================
+
+/**
+ * Get learners (admin)
+ */
+export const getLearners = async ({ search = '', page = 1, limit = 20 } = {}) => {
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  params.set('page', String(page));
+  params.set('limit', String(limit));
+  const response = await fetch(`${API_BASE_URL}/api/admin/users?${params.toString()}`, {
+    headers: getAuthHeader(),
+  });
+>>>>>>> 3e7413f (auth changes)
   return handleResponse(response);
 };
 
 /**
+<<<<<<< HEAD
  * Get analytics for a specific time period
  * @param {number} days - Number of days to look back (default: 30)
  * @returns {Promise<{success: boolean, data: Object}>}
@@ -212,10 +229,19 @@ export const getAnalyticsForPeriod = async (days = 30) => {
     headers: getAuthHeader(),
   });
   
+=======
+ * Get learner details (admin)
+ */
+export const getLearnerDetails = async (userId) => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}`, {
+    headers: getAuthHeader(),
+  });
+>>>>>>> 3e7413f (auth changes)
   return handleResponse(response);
 };
 
 /**
+<<<<<<< HEAD
  * Get language distribution statistics
  * @returns {Promise<{success: boolean, data: Object}>}
  */
@@ -263,3 +289,15 @@ export const getLessonCompletionTrends = async (days = 30) => {
   
   return handleResponse(response);
 };
+=======
+ * Update learner (admin)
+ */
+export const updateLearner = async (userId, { name, email }) => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}`, {
+    method: 'PUT',
+    headers: getAuthHeader(),
+    body: JSON.stringify({ name, email }),
+  });
+  return handleResponse(response);
+};
+>>>>>>> 3e7413f (auth changes)

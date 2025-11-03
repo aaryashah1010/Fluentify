@@ -1,7 +1,11 @@
 import express from 'express';
 import authMiddleware, { adminOnly } from '../middlewares/authMiddleware.js';
 import moduleAdminController from '../controllers/moduleAdminController.js';
+<<<<<<< HEAD
 import analyticsRoutes from './analytics.js';
+=======
+import adminUserController from '../controllers/adminUserController.js';
+>>>>>>> 3e7413f (auth changes)
 
 const router = express.Router();
 
@@ -48,8 +52,15 @@ router.put('/lessons/:lessonId', moduleAdminController.updateLesson);
 // Delete a lesson
 router.delete('/lessons/:lessonId', moduleAdminController.deleteLesson);
 
+<<<<<<< HEAD
 // ==================== Analytics Routes ====================
 // Analytics routes (already protected by admin middleware)
 router.use('/analytics', analyticsRoutes);
+=======
+// ==================== Admin User Management ====================
+router.get('/users', adminUserController.listLearners);
+router.get('/users/:id', adminUserController.getLearnerDetails);
+router.put('/users/:id', adminUserController.updateLearner);
+>>>>>>> 3e7413f (auth changes)
 
 export default router;
