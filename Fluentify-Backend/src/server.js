@@ -9,11 +9,8 @@ import courseRoutes from './routes/courses.js';
 import progressRoutes from './routes/progress.js';
 import retellRoutes from './routes/retellRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
-<<<<<<< HEAD
 import learnerModulesRoutes from './routes/learnerModulesRoutes.js';
 import tutorRoutes from './routes/tutor.js';
-=======
->>>>>>> 3e7413f (auth changes)
 import { errorHandler, notFoundHandler } from './middlewares/errorMiddleware.js';
 
 const app = express();
@@ -76,17 +73,14 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/progress', progressRoutes);
 // Retell AI routes
 app.use('/api/retell', retellRoutes);
-<<<<<<< HEAD
 // Admin routes
 app.use('/api/admin', adminRoutes);
 // Learner Modules routes (published courses for learners)
 app.use('/api/learner-modules', learnerModulesRoutes);
 // AI Tutor routes
 app.use('/api/tutor', tutorRoutes);
-=======
 // Admin content management routes
 app.use('/api/admin', adminRoutes);
->>>>>>> 3e7413f (auth changes)
 
 // 404 handler - must be after all routes
 app.use(notFoundHandler);

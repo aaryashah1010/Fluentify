@@ -8,7 +8,24 @@ ALTER TABLE admins
 ADD COLUMN IF NOT EXISTS is_email_verified BOOLEAN DEFAULT FALSE,
 ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMP;
 
--- Create OTP table for email verification and password reset
+-- FIX: Create OTP table for email verification and password reset
+-- This table stores OTP codes for signup verification and password reset functionality.
+-- Required fields:
+--   - id: Primary key (auto-increment)
+--   - email: User email address (VARCHAR(100))
+--   - otp_code: The 6-digit OTP code (VARCHAR(6))
+--   - expires_at: Expiration timestamp (TIMESTAMP)
+--   - created_at: Creation timestamp with default NOW() (TIMESTAMP)
+-- Additional fields for functionality:
+--   - otp_type: Type of OTP ('signup' or 'password_reset')
+--   - user_type: User role ('learner' or 'admin')
+--   - is_used: Flag to prevent OTP reuse (BOOLEAN)
+--
+-- NOTE: If you get "relation 'otp_codes' does not exist" error, this migration
+-- may not have run. Solutions:
+--   1. If using Docker: Reset database volume (docker-compose down -v && docker-compose up)
+--   2. Run manually: Execute this SQL file or use scripts/runAuthMigration.js
+--   3. Or run the standalone fix: src/database/05-fix-otp-codes.sql
 CREATE TABLE IF NOT EXISTS otp_codes (
   id SERIAL PRIMARY KEY,
   email VARCHAR(100) NOT NULL,

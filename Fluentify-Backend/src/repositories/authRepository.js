@@ -3,49 +3,76 @@ import db from '../config/db.js';
 class AuthRepository {
   /**
    * Find learner by email
+   * 
+   * FIX: Ensures case-insensitive email lookup by normalizing email to lowercase
+   * before querying. This ensures consistency with createLearner which stores
+   * emails in lowercase.
    */
   async findLearnerByEmail(email) {
+    // Normalize email to lowercase for consistent comparison
+    const normalizedEmail = email ? email.toLowerCase().trim() : email;
     const result = await db.query(
       `SELECT l.*, 
        EXISTS(SELECT 1 FROM learner_preferences WHERE learner_id = l.id) as has_preferences 
        FROM learners l 
        WHERE LOWER(l.email) = LOWER($1)`,
-      [email]
+      [normalizedEmail]
     );
     return result.rows[0] || null;
   }
 
   /**
    * Find admin by email
+   * 
+   * FIX: Ensures case-insensitive email lookup by normalizing email to lowercase
+   * before querying. This ensures consistency with createAdmin which stores
+   * emails in lowercase. Previously, this could fail if email case didn't match
+   * exactly between signup and login attempts.
    */
   async findAdminByEmail(email) {
+    // Normalize email to lowercase for consistent comparison
+    const normalizedEmail = email ? email.toLowerCase().trim() : email;
     const result = await db.query(
       'SELECT * FROM admins WHERE LOWER(email) = LOWER($1)',
-      [email]
+      [normalizedEmail]
     );
     return result.rows[0] || null;
   }
 
   /**
    * Create learner account
+   * 
+   * FIX: Ensures email is normalized to lowercase before insertion.
+   * This guarantees that findLearnerByEmail will always find learners
+   * created through this method, regardless of input email case.
    */
   async createLearner(name, email, passwordHash) {
+    // Normalize email to lowercase for consistent storage
+    const normalizedEmail = email ? email.toLowerCase().trim() : email;
     const result = await db.query(
       `INSERT INTO learners (name, email, password_hash, created_at, updated_at) 
-       VALUES ($1, LOWER($2), $3, NOW(), NOW()) 
+       VALUES ($1, $2, $3, NOW(), NOW()) 
        RETURNING *`,
-      [name, email, passwordHash]
+      [name, normalizedEmail, passwordHash]
     );
     return result.rows[0];
   }
 
   /**
    * Create admin account
+   * 
+   * FIX: Ensures email is normalized to lowercase before insertion.
+   * This guarantees that findAdminByEmail will always find admins
+   * created through this method, regardless of input email case.
+   * Previously, inconsistent email normalization could cause admins
+   * to be created but not found during login.
    */
   async createAdmin(name, email, passwordHash) {
+    // Normalize email to lowercase for consistent storage
+    const normalizedEmail = email ? email.toLowerCase().trim() : email;
     const result = await db.query(
-      'INSERT INTO admins (name, email, password_hash, created_at, updated_at) VALUES ($1, LOWER($2), $3, NOW(), NOW()) RETURNING *',
-      [name, email, passwordHash]
+      'INSERT INTO admins (name, email, password_hash, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING *',
+      [name, normalizedEmail, passwordHash]
     );
     return result.rows[0];
   }
@@ -166,56 +193,70 @@ class AuthRepository {
 
   /**
    * Mark learner email as verified
+   * 
+   * FIX: Normalizes email to ensure it matches the email stored during account creation.
    */
   async markLearnerEmailVerified(email) {
+    const normalizedEmail = email ? email.toLowerCase().trim() : email;
     const result = await db.query(
       `UPDATE learners 
        SET is_email_verified = true, email_verified_at = NOW(), updated_at = NOW() 
        WHERE LOWER(email) = LOWER($1)
        RETURNING *`,
-      [email]
+      [normalizedEmail]
     );
     return result.rows[0];
   }
 
   /**
    * Mark admin email as verified
+   * 
+   * FIX: Normalizes email to ensure it matches the email stored during account creation.
+   * This is critical for the verifySignupAdmin flow to work correctly.
    */
   async markAdminEmailVerified(email) {
+    const normalizedEmail = email ? email.toLowerCase().trim() : email;
     const result = await db.query(
       `UPDATE admins 
        SET is_email_verified = true, email_verified_at = NOW(), updated_at = NOW() 
        WHERE LOWER(email) = LOWER($1)
        RETURNING *`,
-      [email]
+      [normalizedEmail]
     );
     return result.rows[0];
   }
 
   /**
    * Update learner password
+   * 
+   * FIX: Normalizes email to ensure it matches the email stored during account creation.
    */
   async updateLearnerPassword(email, passwordHash) {
+    const normalizedEmail = email ? email.toLowerCase().trim() : email;
     const result = await db.query(
       `UPDATE learners 
        SET password_hash = $1, updated_at = NOW() 
        WHERE LOWER(email) = LOWER($2)
        RETURNING *`,
-      [passwordHash, email]
+      [passwordHash, normalizedEmail]
     );
     return result.rows[0];
   }
 
   /**
    * Update admin password
+   * 
+   * FIX: Normalizes email to ensure it matches the email stored during account creation.
+   * This ensures password reset works correctly for admins.
    */
   async updateAdminPassword(email, passwordHash) {
+    const normalizedEmail = email ? email.toLowerCase().trim() : email;
     const result = await db.query(
       `UPDATE admins 
        SET password_hash = $1, updated_at = NOW() 
        WHERE LOWER(email) = LOWER($2)
        RETURNING *`,
-      [passwordHash, email]
+      [passwordHash, normalizedEmail]
     );
     return result.rows[0];
   }

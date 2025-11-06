@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { RefreshCw } from 'lucide-react';
 import { getLearnerDetails, updateLearner } from '../../../../api/admin';
 
 const Kpi = ({ label, value }) => (
@@ -21,13 +22,18 @@ const UserDetailPage = () => {
 
   const load = async () => {
     setLoading(true);
+    setError('');
     try {
       const resp = await getLearnerDetails(userId);
       const payload = resp.data || resp;
       setData(payload);
       setForm({ name: payload.user.name, email: payload.user.email });
     } catch (e) {
-      console.error(e);
+      console.error('Error loading learner details:', e);
+      // Don't set error if it's a 401 (user will be redirected by ProtectedRoute)
+      if (e.status !== 401) {
+        setError(e?.message || 'Failed to load user details');
+      }
     } finally {
       setLoading(false);
     }
@@ -57,7 +63,17 @@ const UserDetailPage = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <button className="text-sm text-indigo-600" onClick={() => navigate(-1)}>&larr; Back</button>
+      <div className="flex items-center justify-between">
+        <button className="text-sm text-indigo-600" onClick={() => navigate(-1)}>&larr; Back</button>
+        <button 
+          onClick={load} 
+          disabled={loading}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          Refresh Data
+        </button>
+      </div>
 
       {/* Basic Info */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -131,6 +147,8 @@ const UserDetailPage = () => {
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Language</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lessons</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Units</th>
@@ -138,14 +156,32 @@ const UserDetailPage = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {courses.length === 0 ? (
-                <tr><td className="px-4 py-6 text-center text-gray-500" colSpan={5}>No courses found</td></tr>
+                <tr><td className="px-4 py-6 text-center text-gray-500" colSpan={7}>No courses found</td></tr>
               ) : courses.map((c) => (
                 <tr key={c.id}>
-                  <td className="px-4 py-3 text-sm text-gray-900">{c.course_data?.title || c.title || '-'}</td>
-                  <td className="px-4 py-3 text-sm text-gray-700">{c.course_data?.language || c.language || '-'}</td>
+                  {/* FIX: Display title correctly for both AI and admin courses */}
+                  <td className="px-4 py-3 text-sm text-gray-900">
+                    {c.title || c.course_data?.title || 'Untitled Course'}
+                  </td>
+                  {/* FIX: Display language correctly for both AI and admin courses */}
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {c.language || c.course_data?.language || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    <span className={`px-2 py-1 rounded text-xs ${c.course_type === 'ai' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                      {c.course_type === 'ai' ? 'AI' : 'Admin'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {c.expected_duration || '-'}
+                  </td>
                   <td className="px-4 py-3 text-sm text-gray-700">{c.progress_percentage ?? 0}%</td>
-                  <td className="px-4 py-3 text-sm text-gray-700">{c.lessons_completed ?? 0}</td>
-                  <td className="px-4 py-3 text-sm text-gray-700">{c.units_completed ?? 0}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {c.lessons_completed ?? 0} / {c.total_lessons ?? 0}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {c.units_completed ?? 0} / {c.total_units ?? 0}
+                  </td>
                 </tr>
               ))}
             </tbody>

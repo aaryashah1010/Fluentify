@@ -31,6 +31,7 @@ const SignupWithOTP = () => {
   const [error, setError] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
   const [passwordSuggestions, setPasswordSuggestions] = useState([]);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const navigate = useNavigate();
   
   const signupMutation = useSignup();
@@ -74,6 +75,12 @@ const SignupWithOTP = () => {
     // Validate password confirmation
     if (form.password !== form.confirmPassword) {
       setError('Passwords do not match');
+      return false;
+    }
+
+    // Validate terms acceptance
+    if (!acceptedTerms) {
+      setError('Please accept the Terms and Conditions to continue');
       return false;
     }
 
@@ -288,23 +295,40 @@ const SignupWithOTP = () => {
               {/* Error */}
               <ErrorMessage message={error} />
 
+              {/* Terms and Conditions Checkbox */}
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  checked={acceptedTerms}
+                  onChange={(e) => {
+                    setAcceptedTerms(e.target.checked);
+                    setError('');
+                  }}
+                  className="mt-1 w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2 cursor-pointer"
+                />
+                <label htmlFor="terms" className="text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
+                  I accept the{' '}
+                  <button type="button" className="text-emerald-600 hover:text-emerald-500 underline">
+                    Terms and Conditions
+                  </button>{' '}
+                  and{' '}
+                  <button type="button" className="text-emerald-600 hover:text-emerald-500 underline">
+                    Privacy Policy
+                  </button>
+                </label>
+              </div>
+
               {/* Submit */}
               <Button
                 type="submit"
                 loading={signupMutation.isPending}
                 variant="success"
                 className="w-full"
+                disabled={!acceptedTerms || signupMutation.isPending}
               >
                 Continue to Verification
               </Button>
-
-              {/* Terms */}
-              <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-                By signing up, you agree to our{' '}
-                <button className="text-emerald-600 hover:text-emerald-500 underline">Terms of Service</button>{' '}
-                and{' '}
-                <button className="text-emerald-600 hover:text-emerald-500 underline">Privacy Policy</button>
-              </p>
             </form>
 
             {/* Footer */}

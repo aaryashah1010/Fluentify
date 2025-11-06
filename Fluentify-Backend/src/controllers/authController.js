@@ -293,6 +293,7 @@ class AuthController {
 
   /**
    * Login for learners
+   * FIX: Provides specific error messages for better UX
    */
   async loginLearner(req, res, next) {
     try {
@@ -305,14 +306,17 @@ class AuthController {
       // Find user
       const user = await authRepository.findLearnerByEmail(email);
       
+      // FIX: Specific error when email not registered
       if (!user) {
-        throw ERRORS.INVALID_CREDENTIALS;
+        throw ERRORS.EMAIL_NOT_REGISTERED_LEARNER;
       }
 
       // Verify password
       const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+      
+      // FIX: Specific error for incorrect password
       if (!isPasswordValid) {
-        throw ERRORS.INVALID_CREDENTIALS;
+        throw ERRORS.INCORRECT_PASSWORD;
       }
 
       // Generate token
@@ -340,6 +344,7 @@ class AuthController {
 
   /**
    * Login for admins
+   * FIX: Provides specific error messages for better UX
    */
   async loginAdmin(req, res, next) {
     try {
@@ -352,14 +357,17 @@ class AuthController {
       // Find admin
       const admin = await authRepository.findAdminByEmail(email);
       
+      // FIX: Specific error when email not registered as admin
       if (!admin) {
-        throw ERRORS.INVALID_CREDENTIALS;
+        throw ERRORS.EMAIL_NOT_REGISTERED_ADMIN;
       }
 
       // Verify password
       const isPasswordValid = await bcrypt.compare(password, admin.password_hash);
+      
+      // FIX: Specific error for incorrect password
       if (!isPasswordValid) {
-        throw ERRORS.INVALID_CREDENTIALS;
+        throw ERRORS.INCORRECT_PASSWORD;
       }
 
       // Generate token

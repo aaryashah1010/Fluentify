@@ -37,31 +37,36 @@ class ModuleAdminController {
    * Create a new course
    * POST /api/admin/courses
    */
+  /**
+   * FIX: Create course with improved error handling
+   * Analytics tracking failures won't prevent course creation or cause logout
+   */
   async createCourse(req, res, next) {
     try {
       const adminId = req.user.id; // From auth middleware
       const result = await moduleAdminService.createCourse(adminId, req.body);
       
-      // Track admin module usage for analytics
-      try {
-        await analyticsService.trackAdminModuleUsage(
-          adminId,
-          req.body.language,
-          'CREATE_COURSE',
-          {
-            courseId: result.data?.id,
-            details: {
-              title: req.body.title,
-              expectedDuration: req.body.expectedDuration
-            }
+      // Track admin module usage for analytics (non-blocking, won't affect course creation)
+      // FIX: Analytics errors are caught and logged but don't prevent success response
+      analyticsService.trackAdminModuleUsage(
+        adminId,
+        req.body.language,
+        'CREATE_COURSE',
+        {
+          courseId: result.data?.id,
+          details: {
+            title: req.body.title,
+            expectedDuration: req.body.expectedDuration
           }
-        );
-      } catch (analyticsError) {
-        console.error('Error tracking admin course creation analytics:', analyticsError);
-      }
+        }
+      ).catch(analyticsError => {
+        // Log but don't throw - analytics failure shouldn't affect course creation
+        console.warn('Analytics tracking failed (non-critical):', analyticsError.message);
+      });
       
       res.status(201).json(result);
     } catch (error) {
+      console.error('Error creating course:', error);
       next(error);
     }
   }

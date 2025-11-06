@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-<<<<<<< HEAD
-import { LogOut, BookOpen, MessageCircle, Globe } from 'lucide-react';
-=======
-import { LogOut, BookOpen, MessageCircle, User } from 'lucide-react';
->>>>>>> 3e7413f (auth changes)
+import { LogOut, BookOpen, MessageCircle, Globe, User } from 'lucide-react';
 import { useCourses } from '../../hooks/useCourses';
 import { useLogout } from '../../hooks/useAuth';
 import { useStreaming } from '../../contexts/StreamingContext';

@@ -1,27 +1,55 @@
 import db from '../config/db.js';
 
 class AdminUserRepository {
+  /**
+   * FIX: Find learners with accurate last activity date
+   * Checks multiple sources: user_stats, lesson_progress, and learner_enrollments
+   * Uses parameterized queries to prevent SQL injection
+   */
   async findLearners({ search = '', limit = 20, offset = 0 }) {
+    // Ensure limit and offset are valid integers
+    const limitInt = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+    const offsetInt = Math.max(parseInt(offset, 10) || 0, 0);
+    
     const params = [];
     let where = '';
+    let paramIndex = 1;
+    
     if (search) {
       params.push(`%${search}%`);
       params.push(`%${search}%`);
-      where = 'WHERE LOWER(name) ILIKE LOWER($1) OR LOWER(email) ILIKE LOWER($2)';
+      where = `WHERE LOWER(name) ILIKE LOWER($${paramIndex}) OR LOWER(email) ILIKE LOWER($${paramIndex + 1})`;
+      paramIndex += 2;
     }
 
+    // FIX: Get last activity from multiple sources for accuracy
+    // FIX: Use parameterized queries for limit and offset
     const result = await db.query(
-      `SELECT id, name, email, created_at,
-              (
-                SELECT MAX(us.last_activity_date)
-                FROM user_stats us
-                WHERE us.learner_id = learners.id
-              ) AS last_activity_date
+      `SELECT 
+        id, 
+        name, 
+        email, 
+        created_at,
+        (
+          SELECT MAX(activity_date) FROM (
+            SELECT MAX(us.last_activity_date) as activity_date
+            FROM user_stats us
+            WHERE us.learner_id = learners.id
+            UNION ALL
+            SELECT MAX(lp.last_accessed) as activity_date
+            FROM lesson_progress lp
+            WHERE lp.learner_id = learners.id
+            UNION ALL
+            SELECT MAX(le.enrolled_at) as activity_date
+            FROM learner_enrollments le
+            WHERE le.learner_id = learners.id
+          ) combined_activities
+        ) AS last_activity_date
        FROM learners
        ${where}
        ORDER BY created_at DESC
-       LIMIT ${limit} OFFSET ${offset}`,
-      params
+       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
+      [...params, limitInt, offsetInt]
     );
     return result.rows;
   }
@@ -50,48 +78,75 @@ class AdminUserRepository {
     return result.rows[0] || null;
   }
 
+  /**
+   * FIX: Get learner progress summary with accurate last activity
+   * Directly aggregates from lesson_progress and unit_progress for accuracy
+   * Falls back to user_stats only for streak data
+   */
   async getLearnerProgressSummary(id) {
-    // First try aggregations from user_stats for speed; fallback to progress tables
-    const stats = await db.query(
+    const result = await db.query(
       `SELECT 
-         COALESCE(SUM(us.total_xp), 0) AS total_xp,
-         COALESCE(SUM(us.lessons_completed), 0) AS lessons_completed,
-         COALESCE(SUM(us.units_completed), 0) AS units_completed,
-         COALESCE(MAX(us.current_streak), 0) AS current_streak,
-         COALESCE(MAX(us.longest_streak), 0) AS longest_streak,
-         MAX(us.last_activity_date) AS last_activity_date
-       FROM user_stats us
-       WHERE us.learner_id = $1`,
+         -- XP: Direct sum from lesson_progress (source of truth)
+         COALESCE((
+           SELECT SUM(lp.xp_earned) 
+           FROM lesson_progress lp 
+           WHERE lp.learner_id = $1
+         ), 0) AS total_xp,
+         
+         -- Lessons completed: Direct count from lesson_progress
+         COALESCE((
+           SELECT COUNT(*) 
+           FROM lesson_progress lp 
+           WHERE lp.learner_id = $1 AND lp.is_completed = true
+         ), 0) AS lessons_completed,
+         
+         -- Units completed: Direct count from unit_progress
+         COALESCE((
+           SELECT COUNT(*) 
+           FROM unit_progress up
+           WHERE up.learner_id = $1 AND up.is_completed = true
+         ), 0) AS units_completed,
+         
+         -- Streaks: Get max from user_stats (these are maintained per course)
+         COALESCE((
+           SELECT MAX(current_streak) 
+           FROM user_stats 
+           WHERE learner_id = $1
+         ), 0) AS current_streak,
+         
+         COALESCE((
+           SELECT MAX(longest_streak) 
+           FROM user_stats 
+           WHERE learner_id = $1
+         ), 0) AS longest_streak,
+         
+         -- Last activity: Most recent from all sources
+         (
+           SELECT MAX(activity_date) FROM (
+             SELECT MAX(last_activity_date) as activity_date
+             FROM user_stats WHERE learner_id = $1
+             UNION ALL
+             SELECT MAX(last_accessed) as activity_date
+             FROM lesson_progress WHERE learner_id = $1
+             UNION ALL
+             SELECT MAX(completion_time) as activity_date
+             FROM lesson_progress WHERE learner_id = $1 AND is_completed = true
+             UNION ALL
+             SELECT MAX(enrolled_at) as activity_date
+             FROM learner_enrollments WHERE learner_id = $1
+           ) combined
+         ) AS last_activity_date`,
       [id]
     );
 
-    const row = stats.rows[0] || {};
-
-    // Fallbacks if user_stats is empty
-    const needFallback = !row || (
-      row.total_xp === null && row.lessons_completed === null && row.units_completed === null
-    );
-
-    if (needFallback) {
-      const fallback = await db.query(
-        `SELECT
-           COALESCE(SUM(lp.xp_earned), 0) AS total_xp,
-           COALESCE(SUM(CASE WHEN lp.is_completed THEN 1 ELSE 0 END), 0) AS lessons_completed,
-           COALESCE((
-             SELECT COUNT(*) FROM unit_progress up
-             WHERE up.learner_id = $1 AND up.is_completed = true
-           ), 0) AS units_completed,
-           NULL::int AS current_streak,
-           NULL::int AS longest_streak,
-           MAX(lp.last_accessed) AS last_activity_date
-         FROM lesson_progress lp
-         WHERE lp.learner_id = $1`,
-        [id]
-      );
-      return fallback.rows[0];
-    }
-
-    return row;
+    return result.rows[0] || {
+      total_xp: 0,
+      lessons_completed: 0,
+      units_completed: 0,
+      current_streak: 0,
+      longest_streak: 0,
+      last_activity_date: null
+    };
   }
 
   async updateLearnerProfile(id, { name, email }) {

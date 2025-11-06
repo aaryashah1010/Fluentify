@@ -96,17 +96,25 @@ const CourseEditorPage = () => {
     }
   }, [currentCourse, isNewCourse]);
 
-  // Handle course save
+  // FIX: Handle course save with better error handling
+  // Prevents logout on API errors
   const handleSaveCourse = async () => {
     try {
       if (isNewCourse) {
         const result = await createCourse(courseData);
-        navigate(`/admin/modules/course/edit/${result.id}`);
+        if (result && result.id) {
+          navigate(`/admin/modules/course/edit/${result.id}`);
+        } else {
+          console.error('Course created but no ID returned:', result);
+        }
       } else {
         await updateCourse(courseId, courseData);
       }
     } catch (err) {
+      // FIX: Don't throw - let the error state handle it
+      // This prevents logout from ProtectedRoute re-evaluation
       console.error('Failed to save course:', err);
+      // Error will be displayed by the error state in the component
     }
   };
 
