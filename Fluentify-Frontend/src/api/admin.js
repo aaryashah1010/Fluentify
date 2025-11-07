@@ -2,8 +2,87 @@ import { API_BASE_URL, handleResponse, getAuthHeader } from './apiHelpers';
 
 /**
  * Admin API Client
- * API functions for admin content management
+ * API functions for admin content and user management
  */
+
+// ==================== User Management ====================
+
+/**
+ * Get all users with pagination
+ * @param {number} page - Page number (default: 1)
+ * @param {number} limit - Items per page (default: 20)
+ * @returns {Promise<{success: boolean, data: {users: Array, pagination: Object}}>}
+ */
+export const getUsers = async (page = 1, limit = 20) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/users?page=${page}&limit=${limit}`,
+    { headers: getAuthHeader() }
+  );
+  return handleResponse(response);
+};
+
+/**
+ * Search users by name or email
+ * @param {string} query - Search term
+ * @returns {Promise<{success: boolean, data: Array}>}
+ */
+export const searchUsers = async (query) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/users/search?q=${encodeURIComponent(query)}`,
+    { headers: getAuthHeader() }
+  );
+  return handleResponse(response);
+};
+
+/**
+ * Get user details with progress
+ * @param {number} userId - User ID
+ * @returns {Promise<{success: boolean, data: Object}>}
+ */
+export const getUserDetails = async (userId) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/users/${userId}`,
+    { headers: getAuthHeader() }
+  );
+  return handleResponse(response);
+};
+
+/**
+ * Update user profile
+ * @param {number} userId - User ID
+ * @param {Object} userData - User data to update
+ * @returns {Promise<{success: boolean, message: string, data: Object}>}
+ */
+export const updateUser = async (userId, userData) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/users/${userId}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(),
+      },
+      body: JSON.stringify(userData),
+    }
+  );
+  return handleResponse(response);
+};
+
+/**
+ * Delete a user
+ * @param {number} userId - User ID
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export const deleteUser = async (userId) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/users/${userId}`,
+    {
+      method: 'DELETE',
+      headers: getAuthHeader(),
+    }
+  );
+  return handleResponse(response);
+};
 
 // ==================== Language Operations ====================
 

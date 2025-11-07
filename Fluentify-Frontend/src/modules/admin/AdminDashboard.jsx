@@ -20,8 +20,8 @@ const AdminDashboard = () => {
       description: 'View and manage learners and their progress',
       icon: Users,
       color: 'green',
-      path: '#',
-      disabled: true,
+      path: '/admin/users',
+      disabled: false,
     },
     {
       title: 'Analytics',

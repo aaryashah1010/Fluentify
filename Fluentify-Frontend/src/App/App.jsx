@@ -7,7 +7,7 @@ import PublishedLanguageList from '../modules/learner/components/PublishedLangua
 import PublishedCourseList from '../modules/learner/components/PublishedCourseList';
 import PublishedCourseDetails from '../modules/learner/components/PublishedCourseDetails';
 import { Dashboard, CoursePage, LessonPage, TutorChatPage, LanguageModulesPage, ModuleCoursesPage, ModuleCourseDetailsPage } from '../modules/learner';
-import { AdminDashboard, AnalyticsDashboard, ModuleManagementLayout } from '../modules/admin';
+import { AdminDashboard, AnalyticsDashboard, ModuleManagementLayout, UserManagementLayout } from '../modules/admin';
 import { StreamingProvider } from '../contexts/StreamingContext';
 import './App.css';
 
@@ -62,6 +62,11 @@ function App() {
         <Route path="/admin/modules/*" element={
           <ProtectedRoute role="admin">
             <ModuleManagementLayout />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/users/*" element={
+          <ProtectedRoute role="admin">
+            <UserManagementLayout />
           </ProtectedRoute>
         } />
         <Route path="/course/:courseId" element={
