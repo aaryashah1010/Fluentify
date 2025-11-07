@@ -49,24 +49,7 @@ const UnitForm = ({ unitData, onChange, onSubmit, onCancel, loading = false }) =
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Unit Order */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Unit Order
-          </label>
-          <input
-            type="number"
-            name="unit_order"
-            value={unitData.unit_order || 1}
-            onChange={handleChange}
-            disabled={loading}
-            min="1"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-            placeholder="1"
-          />
-        </div>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Difficulty */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

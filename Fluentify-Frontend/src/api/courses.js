@@ -114,6 +114,14 @@ export const deleteCourse = async (courseId) => {
   return handleResponse(response);
 };
 
+// ==================== PUBLIC ENDPOINTS (No Authentication Required) ====================
+
+/**
+ * Get all languages with published courses (PUBLIC - No Auth Required)
+ * @returns {Promise<{success: boolean, data: Array}>}
+ */
+export const getPublishedLanguages = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/courses/public/languages`);
 /**
  * Fetch all published languages (learner view)
  * @returns {Promise<{success: boolean, data: Array}>}
@@ -127,6 +135,12 @@ export const fetchPublishedLanguages = async () => {
 };
 
 /**
+ * Get published courses for a specific language (PUBLIC - No Auth Required)
+ * @param {string} language - Language name
+ * @returns {Promise<{success: boolean, data: Array}>}
+ */
+export const getPublishedCoursesByLanguage = async (language) => {
+  const response = await fetch(`${API_BASE_URL}/api/courses/public/languages/${language}/courses`);
  * Fetch published courses for a specific language (learner view)
  * @param {string} language - Language name
  * @returns {Promise<{success: boolean, data: Array}>}
@@ -140,6 +154,12 @@ export const fetchPublishedCoursesByLanguage = async (language) => {
 };
 
 /**
+ * Get published course details with units and lessons (PUBLIC - No Auth Required)
+ * @param {number} courseId - Course ID
+ * @returns {Promise<{success: boolean, data: Object}>}
+ */
+export const getPublishedCourseDetails = async (courseId) => {
+  const response = await fetch(`${API_BASE_URL}/api/courses/public/courses/${courseId}`);
  * Fetch published course details with units and lessons (learner view)
  * @param {number} courseId - Course ID
  * @returns {Promise<{success: boolean, data: Object}>}

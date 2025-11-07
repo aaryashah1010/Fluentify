@@ -701,6 +701,70 @@ class CourseController {
       next(error);
     }
   }
+
+  // ==================== PUBLIC ENDPOINTS (For Learners) ====================
+
+  /**
+   * Get all languages with published courses (PUBLIC - No Auth Required)
+   * GET /api/courses/public/languages
+   */
+  async getPublishedLanguages(req, res, next) {
+    try {
+      console.log('📚 Fetching published languages...');
+      const languages = await courseRepository.getPublishedLanguages();
+      res.json(listResponse(languages, 'Published languages retrieved successfully'));
+    } catch (error) {
+      console.error('Error fetching published languages:', error);
+      next(error);
+    }
+  }
+
+  /**
+   * Get published courses for a specific language (PUBLIC - No Auth Required)
+   * GET /api/courses/public/languages/:language/courses
+   */
+  async getPublishedCoursesByLanguage(req, res, next) {
+    try {
+      const { language } = req.params;
+      console.log(`📖 Fetching published courses for language: ${language}`);
+      
+      if (!language) {
+        throw ERRORS.MISSING_REQUIRED_FIELDS;
+      }
+
+      const courses = await courseRepository.getPublishedCoursesByLanguage(language);
+      res.json(listResponse(courses, `Published courses for ${language} retrieved successfully`));
+    } catch (error) {
+      console.error('Error fetching published courses:', error);
+      next(error);
+    }
+  }
+
+  /**
+   * Get published course details with units and lessons (PUBLIC - No Auth Required)
+   * GET /api/courses/public/courses/:courseId
+   */
+  async getPublishedCourseDetails(req, res, next) {
+    try {
+      const { courseId } = req.params;
+      console.log(`📕 Fetching published course details for ID: ${courseId}`);
+      
+      if (!courseId) {
+        throw ERRORS.MISSING_REQUIRED_FIELDS;
+      }
+
+      const course = await courseRepository.getPublishedCourseDetails(courseId);
+      
+      if (!course) {
+        throw ERRORS.COURSE_NOT_FOUND;
+      }
+
+      res.json(successResponse(course, 'Published course details retrieved successfully'));
+    } catch (error) {
+      console.error('Error fetching published course details:', error);
+      next(error);
+    }
+  }
 }
 
 export default new CourseController();
