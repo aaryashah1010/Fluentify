@@ -2,7 +2,10 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Login, Signup } from '../modules/auth';
 import { Dashboard, CoursePage, LessonPage } from '../modules/learner';
-import { AdminDashboard } from '../modules/admin';
+import { AdminDashboard, ModuleManagementLayout, CourseEditorPage } from '../modules/admin';
+import PublishedLanguageList from '../modules/learner/components/PublishedLanguageList';
+import PublishedCourseList from '../modules/learner/components/PublishedCourseList';
+import PublishedCourseDetails from '../modules/learner/components/PublishedCourseDetails';
 import { StreamingProvider } from '../contexts/StreamingContext';
 import './App.css';
 
@@ -47,6 +50,36 @@ function App() {
         <Route path="/lesson/:courseId/:unitId/:lessonId" element={
           <ProtectedRoute role="learner">
             <LessonPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/learner/modules" element={
+          <ProtectedRoute role="learner">
+            <PublishedLanguageList />
+          </ProtectedRoute>
+        } />
+        <Route path="/learner/modules/:language" element={
+          <ProtectedRoute role="learner">
+            <PublishedCourseList />
+          </ProtectedRoute>
+        } />
+        <Route path="/learner/course/:courseId" element={
+          <ProtectedRoute role="learner">
+            <PublishedCourseDetails />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/modules/*" element={
+          <ProtectedRoute role="admin">
+            <ModuleManagementLayout />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/course/new" element={
+          <ProtectedRoute role="admin">
+            <CourseEditorPage mode="create" />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/course/edit/:courseId" element={
+          <ProtectedRoute role="admin">
+            <CourseEditorPage mode="edit" />
           </ProtectedRoute>
         } />
         <Route path="*" element={<Navigate to="/login" />} />

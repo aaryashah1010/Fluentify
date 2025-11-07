@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useModuleManagement } from '../../../../hooks/useModuleManagement';
-import { Plus, Edit, Trash2, ArrowLeft, BookOpen, Loader2, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, ArrowLeft, BookOpen, Loader2, CheckCircle, XCircle } from 'lucide-react';
 
 const CourseListPage = () => {
   const navigate = useNavigate();
@@ -126,13 +126,6 @@ const CourseListPage = () => {
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => navigate(`/admin/course/view/${course.id}`)}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
-                  >
-                    <Eye className="w-4 h-4" />
-                    Open
-                  </button>
                   <button
                     onClick={() => navigate(`/admin/course/edit/${course.id}`)}
                     className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"

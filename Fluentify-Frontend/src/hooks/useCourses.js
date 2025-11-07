@@ -6,6 +6,9 @@ import {
   fetchLessonDetails,
   generateExercises,
   completeLesson,
+  getPublishedLanguages,
+  getPublishedCoursesByLanguage,
+  getPublishedCourseDetails,
 } from '../api/courses';
 
 /**
@@ -98,5 +101,44 @@ export const useCompleteLesson = () => {
         queryKey: ['courses'],
       });
     },
+  });
+};
+
+// ==================== PUBLIC HOOKS (For Published Courses) ====================
+
+/**
+ * Hook to fetch all languages with published courses (PUBLIC - No Auth Required)
+ */
+export const usePublishedLanguages = () => {
+  return useQuery({
+    queryKey: ['published-languages'],
+    queryFn: getPublishedLanguages,
+    select: (data) => data.data || [],
+  });
+};
+
+/**
+ * Hook to fetch published courses for a specific language (PUBLIC - No Auth Required)
+ * @param {string} language - Language name
+ */
+export const usePublishedCoursesByLanguage = (language) => {
+  return useQuery({
+    queryKey: ['published-courses', language],
+    queryFn: () => getPublishedCoursesByLanguage(language),
+    enabled: !!language,
+    select: (data) => data.data || [],
+  });
+};
+
+/**
+ * Hook to fetch published course details with units and lessons (PUBLIC - No Auth Required)
+ * @param {number} courseId - Course ID
+ */
+export const usePublishedCourseDetails = (courseId) => {
+  return useQuery({
+    queryKey: ['published-course', courseId],
+    queryFn: () => getPublishedCourseDetails(courseId),
+    enabled: !!courseId,
+    select: (data) => data.data || null,
   });
 };
