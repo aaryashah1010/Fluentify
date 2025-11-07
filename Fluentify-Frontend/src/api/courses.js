@@ -69,7 +69,7 @@ export const fetchLessonDetails = async ({ courseId, unitId, lessonId }) => {
  */
 export const generateExercises = async ({ courseId, unitId, lessonId }) => {
   const response = await fetch(
-    `${API_BASE_URL}/api/courses/${courseId}/units/${unitId}/lessons/${lessonId}/exercises`,
+    `${API_BASE_URL}/api/courses/${courseId}/units/${unitId}/lessons/${lessonId}/exercises/generate`,
     {
       method: 'POST',
       headers: getAuthHeader(),
@@ -122,6 +122,14 @@ export const deleteCourse = async (courseId) => {
  */
 export const getPublishedLanguages = async () => {
   const response = await fetch(`${API_BASE_URL}/api/courses/public/languages`);
+/**
+ * Fetch all published languages (learner view)
+ * @returns {Promise<{success: boolean, data: Array}>}
+ */
+export const fetchPublishedLanguages = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/learner-modules/languages`, {
+    headers: getAuthHeader(),
+  });
   
   return handleResponse(response);
 };
@@ -133,6 +141,14 @@ export const getPublishedLanguages = async () => {
  */
 export const getPublishedCoursesByLanguage = async (language) => {
   const response = await fetch(`${API_BASE_URL}/api/courses/public/languages/${language}/courses`);
+ * Fetch published courses for a specific language (learner view)
+ * @param {string} language - Language name
+ * @returns {Promise<{success: boolean, data: Array}>}
+ */
+export const fetchPublishedCoursesByLanguage = async (language) => {
+  const response = await fetch(`${API_BASE_URL}/api/learner-modules/languages/${language}/courses`, {
+    headers: getAuthHeader(),
+  });
   
   return handleResponse(response);
 };
@@ -144,6 +160,14 @@ export const getPublishedCoursesByLanguage = async (language) => {
  */
 export const getPublishedCourseDetails = async (courseId) => {
   const response = await fetch(`${API_BASE_URL}/api/courses/public/courses/${courseId}`);
+ * Fetch published course details with units and lessons (learner view)
+ * @param {number} courseId - Course ID
+ * @returns {Promise<{success: boolean, data: Object}>}
+ */
+export const fetchPublishedCourseDetails = async (courseId) => {
+  const response = await fetch(`${API_BASE_URL}/api/learner-modules/courses/${courseId}`, {
+    headers: getAuthHeader(),
+  });
   
   return handleResponse(response);
 };

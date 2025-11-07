@@ -6,6 +6,8 @@ import { AdminDashboard, ModuleManagementLayout, CourseEditorPage } from '../mod
 import PublishedLanguageList from '../modules/learner/components/PublishedLanguageList';
 import PublishedCourseList from '../modules/learner/components/PublishedCourseList';
 import PublishedCourseDetails from '../modules/learner/components/PublishedCourseDetails';
+import { Dashboard, CoursePage, LessonPage, TutorChatPage, LanguageModulesPage, ModuleCoursesPage, ModuleCourseDetailsPage } from '../modules/learner';
+import { AdminDashboard, AnalyticsDashboard, ModuleManagementLayout } from '../modules/admin';
 import { StreamingProvider } from '../contexts/StreamingContext';
 import './App.css';
 
@@ -37,9 +39,29 @@ function App() {
             <Dashboard />
           </ProtectedRoute>
         } />
+        <Route path="/chat" element={
+          <ProtectedRoute role="learner">
+            <TutorChatPage />
+          </ProtectedRoute>
+        } />
         <Route path="/admin-dashboard" element={
           <ProtectedRoute role="admin">
             <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin" element={
+          <ProtectedRoute role="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/analytics" element={
+          <ProtectedRoute role="admin">
+            <AnalyticsDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/modules/*" element={
+          <ProtectedRoute role="admin">
+            <ModuleManagementLayout />
           </ProtectedRoute>
         } />
         <Route path="/course/:courseId" element={
@@ -80,6 +102,19 @@ function App() {
         <Route path="/admin/course/edit/:courseId" element={
           <ProtectedRoute role="admin">
             <CourseEditorPage mode="edit" />
+        <Route path="/language-modules" element={
+          <ProtectedRoute role="learner">
+            <LanguageModulesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/language-modules/:language" element={
+          <ProtectedRoute role="learner">
+            <ModuleCoursesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/module-course/:courseId" element={
+          <ProtectedRoute role="learner">
+            <ModuleCourseDetailsPage />
           </ProtectedRoute>
         } />
         <Route path="*" element={<Navigate to="/login" />} />

@@ -60,7 +60,7 @@ docker-compose down -v
 docker-compose up --build
 ```
 
-## 📊 Database
+## 📊 Database                   
 
 **PostgreSQL 16** is used with the following tables:
 - `learners` - User accounts

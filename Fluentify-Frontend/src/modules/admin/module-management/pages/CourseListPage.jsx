@@ -51,7 +51,7 @@ const CourseListPage = () => {
           </div>
         </div>
         <button
-          onClick={() => navigate(`/admin/course/new?language=${language}`)}
+          onClick={() => navigate(`/admin/modules/course/new?language=${language}`)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-5 h-5" />
@@ -72,7 +72,7 @@ const CourseListPage = () => {
           <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
           <p className="text-gray-600 mb-4">No courses found for {language}</p>
           <button
-            onClick={() => navigate(`/admin/course/new?language=${language}`)}
+            onClick={() => navigate(`/admin/modules/course/new?language=${language}`)}
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-5 h-5" />
@@ -127,7 +127,7 @@ const CourseListPage = () => {
                 {/* Actions */}
                 <div className="flex gap-2">
                   <button
-                    onClick={() => navigate(`/admin/course/edit/${course.id}`)}
+                    onClick={() => navigate(`/admin/modules/course/edit/${course.id}`)}
                     className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                   >
                     <Edit className="w-4 h-4" />

@@ -207,33 +207,81 @@ class CourseRepository {
   }
 
   /**
-   * Find all active courses
+   * Update lesson exercises
+   */
+  async updateLessonExercises(lessonDbId, exercises) {
+    await db.query(
+      `UPDATE course_lessons 
+       SET exercises = $1::jsonb, updated_at = NOW()
+       WHERE id = $2`,
+      [JSON.stringify(exercises), lessonDbId]
+    );
+  }
+
+  /**
+   * Find all active courses: AI courses (user-specific) + Admin courses (shared)
    */
   async findAllActiveCourses(userId) {
+    console.log('📊 Fetching courses for userId:', userId);
+    
     const result = await db.query(
-      `SELECT c.*,
+      `-- Part 1: AI-generated courses (ONLY for this specific user)
+       SELECT 
+        c.id,
+        c.language,
+        c.title,
+        c.description,
+        c.total_lessons,
+        c.total_units,
+        c.learner_id,
+        c.created_at,
+        'ai' as source_type,
         COALESCE((
-          SELECT SUM(lp.xp_earned) FROM lesson_progress lp WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id
+          SELECT SUM(lp.xp_earned) FROM lesson_progress lp 
+          WHERE lp.learner_id = $1 AND lp.course_id = c.id
         ), 0) as total_xp,
         COALESCE((
-          SELECT COUNT(*) FROM lesson_progress lp WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id AND lp.is_completed = true
+          SELECT COUNT(*) FROM lesson_progress lp 
+          WHERE lp.learner_id = $1 AND lp.course_id = c.id AND lp.is_completed = true
         ), 0) as lessons_completed,
         COALESCE((
-          SELECT COUNT(*) FROM unit_progress up WHERE up.learner_id = c.learner_id AND up.course_id = c.id AND up.is_completed = true
+          SELECT COUNT(*) FROM unit_progress up 
+          WHERE up.learner_id = $1 AND up.course_id = c.id AND up.is_completed = true
         ), 0) as units_completed,
-        COALESCE(us.current_streak, 0) as current_streak,
-        ROUND(
-          COALESCE((
-            SELECT COUNT(*) FROM lesson_progress lp WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id AND lp.is_completed = true
-          ), 0) * 100.0 /
-          GREATEST((c.course_data->'metadata'->>'totalLessons')::int, 1), 1
-        ) as progress_percentage
+        COALESCE(us.current_streak, 0) as current_streak
        FROM courses c
-       LEFT JOIN user_stats us ON c.id = us.course_id AND c.learner_id = us.learner_id
+       LEFT JOIN user_stats us ON c.id = us.course_id AND us.learner_id = $1
        WHERE c.learner_id = $1 AND c.is_active = true
-       ORDER BY c.created_at DESC`,
+       
+       UNION ALL
+       
+       -- Part 2: Admin-created courses (visible to ALL users)
+       SELECT 
+        lm.id,
+        lm.language,
+        lm.title,
+        lm.description,
+        lm.total_lessons,
+        lm.total_units,
+        NULL as learner_id,
+        lm.created_at,
+        'admin' as source_type,
+        0 as total_xp,
+        0 as lessons_completed,
+        0 as units_completed,
+        0 as current_streak
+       FROM language_modules lm
+       WHERE lm.is_published = true
+       
+       ORDER BY created_at DESC`,
       [userId]
     );
+    
+    console.log(`✅ Found ${result.rows.length} courses for user ${userId}`);
+    result.rows.forEach(course => {
+      console.log(`  - ${course.title} (${course.source_type}) - learner_id: ${course.learner_id || 'N/A (admin course)'}`);
+    });
+    
     return result.rows;
   }
 

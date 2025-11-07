@@ -318,6 +318,86 @@ class ModuleAdminRepository {
     
     return result.rows[0];
   }
+
+  // ==================== Published Courses (Learner View) ====================
+
+  /**
+   * Get all published languages for learners
+   */
+  async getPublishedLanguages() {
+    const result = await db.query(
+      `SELECT DISTINCT language, COUNT(*) as course_count
+       FROM language_modules
+       WHERE is_published = true
+       GROUP BY language
+       ORDER BY language`
+    );
+    return result.rows;
+  }
+
+  /**
+   * Get published courses for a specific language for learners
+   */
+  async getPublishedCoursesByLanguage(language) {
+    const result = await db.query(
+      `SELECT lm.*, 
+              COUNT(DISTINCT mu.id) as total_units,
+              COUNT(DISTINCT ml.id) as total_lessons
+       FROM language_modules lm
+       LEFT JOIN module_units mu ON lm.id = mu.module_id
+       LEFT JOIN module_lessons ml ON mu.id = ml.unit_id
+       WHERE lm.language = $1 AND lm.is_published = true
+       GROUP BY lm.id
+       ORDER BY lm.created_at DESC`,
+      [language]
+    );
+    return result.rows;
+  }
+
+  /**
+   * Get published course details with units and lessons for learners
+   */
+  async getPublishedCourseDetails(courseId) {
+    // Get course
+    const courseResult = await db.query(
+      'SELECT * FROM language_modules WHERE id = $1 AND is_published = true',
+      [courseId]
+    );
+    
+    if (courseResult.rows.length === 0) {
+      return null;
+    }
+    
+    const course = courseResult.rows[0];
+    
+    // Get units with lessons
+    const unitsResult = await db.query(
+      `SELECT mu.*,
+              COUNT(ml.id) as lesson_count
+       FROM module_units mu
+       LEFT JOIN module_lessons ml ON mu.id = ml.unit_id
+       WHERE mu.module_id = $1
+       GROUP BY mu.id
+       ORDER BY mu.id`,
+      [courseId]
+    );
+    
+    const units = unitsResult.rows;
+    
+    // Get lessons for each unit
+    for (const unit of units) {
+      const lessonsResult = await db.query(
+        `SELECT * FROM module_lessons 
+         WHERE unit_id = $1 
+         ORDER BY id`,
+        [unit.id]
+      );
+      unit.lessons = lessonsResult.rows;
+    }
+    
+    course.units = units;
+    return course;
+  }
 }
 
 export default new ModuleAdminRepository();
