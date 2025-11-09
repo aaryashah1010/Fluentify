@@ -7,3 +7,4 @@ export { default as TutorChatPage } from './TutorChatPage';
 export { default as LanguageModulesPage } from './LanguageModulesPage';
 export { default as ModuleCoursesPage } from './ModuleCoursesPage';
 export { default as ModuleCourseDetailsPage } from './ModuleCourseDetailsPage';
+export { default as ProgressReportPage } from './ProgressReportPage';

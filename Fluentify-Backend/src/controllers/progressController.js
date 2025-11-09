@@ -1,6 +1,7 @@
 import courseRepository from '../repositories/courseRepository.js';
 import progressRepository from '../repositories/progressRepository.js';
 import analyticsService from '../services/analyticsService.js';
+import progressReportService from '../services/progressReportService.js';
 import { successResponse, listResponse } from '../utils/response.js';
 import { ERRORS } from '../utils/error.js';
 
@@ -256,9 +257,47 @@ const initializeCourseProgress = async (courseId, userId) => {
   }
 };
 
+/**
+ * Get detailed progress report for a course
+ */
+const getProgressReport = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { courseId } = req.params;
+    const { timeRange = '30days' } = req.query;
+
+    console.log(`📊 Generating progress report for user ${userId}, course ${courseId}, timeRange: ${timeRange}`);
+
+    // Validate course exists and belongs to user
+    const course = await courseRepository.findCourseById(courseId, userId);
+    
+    if (!course) {
+      throw ERRORS.COURSE_NOT_FOUND;
+    }
+
+    // Generate comprehensive progress report
+    const report = await progressReportService.generateProgressReport(
+      userId,
+      courseId,
+      timeRange
+    );
+
+    console.log(`✅ Progress report generated successfully for user ${userId}`);
+
+    res.json(successResponse(
+      report,
+      'Progress report generated successfully'
+    ));
+  } catch (error) {
+    console.error('Error generating progress report:', error);
+    next(error);
+  }
+};
+
 export {
   getCourseProgress,
   markLessonComplete,
   getUserCourses,
-  initializeCourseProgress
+  initializeCourseProgress,
+  getProgressReport
 };

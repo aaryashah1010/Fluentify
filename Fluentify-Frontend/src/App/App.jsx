@@ -1,13 +1,11 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Login, Signup } from '../modules/auth';
-import { Dashboard, CoursePage, LessonPage } from '../modules/learner';
-import { AdminDashboard, ModuleManagementLayout, CourseEditorPage } from '../modules/admin';
+import { Dashboard, CoursePage, LessonPage, TutorChatPage, LanguageModulesPage, ModuleCoursesPage, ModuleCourseDetailsPage, ProgressReportPage } from '../modules/learner';
+import { AdminDashboard, AnalyticsDashboard, ModuleManagementLayout, UserManagementLayout, CourseEditorPage } from '../modules/admin';
 import PublishedLanguageList from '../modules/learner/components/PublishedLanguageList';
 import PublishedCourseList from '../modules/learner/components/PublishedCourseList';
 import PublishedCourseDetails from '../modules/learner/components/PublishedCourseDetails';
-import { Dashboard, CoursePage, LessonPage, TutorChatPage, LanguageModulesPage, ModuleCoursesPage, ModuleCourseDetailsPage } from '../modules/learner';
-import { AdminDashboard, AnalyticsDashboard, ModuleManagementLayout, UserManagementLayout } from '../modules/admin';
 import { StreamingProvider } from '../contexts/StreamingContext';
 import './App.css';
 
@@ -107,6 +105,13 @@ function App() {
         <Route path="/admin/course/edit/:courseId" element={
           <ProtectedRoute role="admin">
             <CourseEditorPage mode="edit" />
+          </ProtectedRoute>
+        } />
+        <Route path="/course/:courseId/report" element={
+          <ProtectedRoute role="learner">
+            <ProgressReportPage />
+          </ProtectedRoute>
+        } />
         <Route path="/language-modules" element={
           <ProtectedRoute role="learner">
             <LanguageModulesPage />

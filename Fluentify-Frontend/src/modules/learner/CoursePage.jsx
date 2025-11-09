@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { BookOpen, Target, Award, Flame } from 'lucide-react';
+import { BookOpen, Target, Award, Flame, BarChart3 } from 'lucide-react';
 import { useCourseDetails } from '../../hooks/useCourses';
 import { useStreaming } from '../../contexts/StreamingContext';
 import { calculateProgress, calculateTotalXP } from '../../utils/courseHelpers';
@@ -143,6 +143,17 @@ const CoursePage = () => {
         showBack
         onBack={() => navigate('/dashboard')}
       />
+      
+      {/* Progress Report Button */}
+      <div className="max-w-7xl mx-auto px-4 pt-4 sm:px-6 lg:px-8">
+        <button
+          onClick={() => navigate(`/course/${courseId}/report`)}
+          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-sm"
+        >
+          <BarChart3 className="w-4 h-4" />
+          View Progress Report
+        </button>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
