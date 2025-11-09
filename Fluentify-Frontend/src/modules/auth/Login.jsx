@@ -259,35 +259,39 @@ const Login = () => {
                 </label>
                 <div className="relative group">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-teal-500 transition-colors pointer-events-none z-10" />
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={form.password}
-                    onChange={handleChange}
-                    onBlur={() => handleBlur('password')}
-                    onKeyPress={handleKeyPress}
-                    className={`w-full border rounded-lg px-3 py-2.5 pl-10 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900 bg-white transition-all text-sm ${
-                      passwordError ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                {passwordError && (
-                  <p className="text-xs text-red-600 flex items-center gap-1 mt-1.5">
-                    <AlertCircle className="w-3 h-3" />
-                    <span>{passwordError}</span>
-                  </p>
-                )}
+    
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}  // 👈 fixed here
+                  placeholder="Enter your password"
+                  value={form.password}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('password')}
+                  onKeyPress={handleKeyPress}
+                  className={`w-full border rounded-lg px-3 py-2.5 pl-10 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900 bg-white transition-all text-sm ${
+                    passwordError ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  autoComplete="current-password"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
+
+              {passwordError && (
+                <p className="text-xs text-red-600 flex items-center gap-1 mt-1.5">
+                  <AlertCircle className="w-3 h-3" />
+                  <span>{passwordError}</span>
+                </p>
+              )}
+            </div>
+
 
               {/* Forgot Password */}
               <div className="flex justify-end">
