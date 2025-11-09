@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Mail, User, AlertCircle, Lock, ArrowRight, Sparkles, BookOpen, Award, TrendingUp, Zap } from 'lucide-react';
+import { Mail, User, AlertCircle, Lock, ArrowRight, Sparkles, BookOpen, Award, TrendingUp, Zap, FormInputIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { useLogin } from '../../hooks/useAuth';
+import { Eye, EyeOff } from 'lucide-react';
 import fluentifyLogo from '../../assets/fluentify_logo.jpg';
 
 const Login = () => {
@@ -10,6 +11,8 @@ const Login = () => {
   const [error, setError] = useState('');
   const [touched, setTouched] = useState({ email: false, password: false });
   const [isVisible, setIsVisible] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   
   const navigate = useNavigate();
   const loginMutation = useLogin();
@@ -129,7 +132,7 @@ const Login = () => {
             </h1>
             
             <p className="text-xl text-gray-300 mb-12 max-w-lg">
-              Join thousands of learners mastering new languages with interactive courses and expert guidance.
+              Speak with confidence
             </p>
 
             {/* Features */}
@@ -140,7 +143,8 @@ const Login = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-1">Interactive Learning</h3>
-                  <p className="text-gray-400">Hands-on projects and real-world applications</p>
+                  <p className="text-gray-400">Hands-on learning powered by AI that adapts to your pace
+                  </p>
                 </div>
               </div>
 
@@ -149,8 +153,8 @@ const Login = () => {
                   <Award className="w-6 h-6 text-orange-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">Expert Instructors</h3>
-                  <p className="text-gray-400">Learn from native speakers and professionals</p>
+                  <h3 className="text-lg font-semibold mb-1">Smart AI Instructors</h3>
+                  <p className="text-gray-400">Learn with an AI mentor that listens, correct and helps you grow naturally</p>
                 </div>
               </div>
 
@@ -160,7 +164,7 @@ const Login = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-1">Track Progress</h3>
-                  <p className="text-gray-400">Monitor your growth with detailed analytics</p>
+                  <p className="text-gray-400">Visualize your journey - from beginner to fluent</p>
                 </div>
               </div>
             </div>
@@ -196,7 +200,7 @@ const Login = () => {
               </p>
             </div>
 
-            <div className="space-y-4" onSubmit={handleSubmit}>
+            <form className="space-y-4" onSubmit={handleSubmit}>
               {/* Role Selection */}
               <div>
                 <label htmlFor="role" className="block text-xs font-semibold text-gray-700 mb-1.5">
@@ -269,6 +273,13 @@ const Login = () => {
                     }`}
                     autoComplete="current-password"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
                 {passwordError && (
                   <p className="text-xs text-red-600 flex items-center gap-1 mt-1.5">
@@ -320,7 +331,7 @@ const Login = () => {
                   </>
                 )}
               </button>
-            </div>
+            </form>
 
             {/* Divider */}
             <div className="relative my-6">
