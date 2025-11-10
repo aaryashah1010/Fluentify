@@ -8,7 +8,6 @@ export const fetchCourses = async () => {
   const response = await fetch(`${API_BASE_URL}/api/courses`, {
     headers: getAuthHeader(),
   });
-  
   return handleResponse(response);
 };
 
@@ -25,7 +24,6 @@ export const generateCourse = async ({ language, expectedDuration }) => {
     headers: getAuthHeader(),
     body: JSON.stringify({ language, expectedDuration }),
   });
-  
   return handleResponse(response);
 };
 
@@ -38,7 +36,6 @@ export const fetchCourseDetails = async (courseId) => {
   const response = await fetch(`${API_BASE_URL}/api/courses/${courseId}`, {
     headers: getAuthHeader(),
   });
-  
   return handleResponse(response);
 };
 
@@ -56,7 +53,6 @@ export const fetchLessonDetails = async ({ courseId, unitId, lessonId }) => {
       headers: getAuthHeader(),
     }
   );
-  
   return handleResponse(response);
 };
 
@@ -75,7 +71,6 @@ export const generateExercises = async ({ courseId, unitId, lessonId }) => {
       headers: getAuthHeader(),
     }
   );
-  
   return handleResponse(response);
 };
 
@@ -87,7 +82,13 @@ export const generateExercises = async ({ courseId, unitId, lessonId }) => {
  * @param {Object} progressData - Progress data (score, exercises)
  * @returns {Promise<{success: boolean, data: Object}>}
  */
-export const completeLesson = async ({ courseId, unitId, lessonId, score = 100, exercises = [] }) => {
+export const completeLesson = async ({
+  courseId,
+  unitId,
+  lessonId,
+  score = 100,
+  exercises = [],
+}) => {
   const response = await fetch(
     `${API_BASE_URL}/api/progress/courses/${courseId}/units/${unitId}/lessons/${lessonId}/complete`,
     {
@@ -96,7 +97,6 @@ export const completeLesson = async ({ courseId, unitId, lessonId, score = 100, 
       body: JSON.stringify({ score, exercises }),
     }
   );
-  
   return handleResponse(response);
 };
 
@@ -110,11 +110,45 @@ export const deleteCourse = async (courseId) => {
     method: 'DELETE',
     headers: getAuthHeader(),
   });
-  
   return handleResponse(response);
 };
 
 // ==================== PUBLIC ENDPOINTS (No Authentication Required) ====================
+
+/**
+ * Get all languages with published courses (PUBLIC - No Auth Required)
+ * @returns {Promise<{success: boolean, data: Array}>}
+ */
+export const getPublishedLanguages = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/courses/public/languages`);
+  return handleResponse(response);
+};
+
+/**
+ * Get published courses for a specific language (PUBLIC - No Auth Required)
+ * @param {string} language - Language name
+ * @returns {Promise<{success: boolean, data: Array}>}
+ */
+export const getPublishedCoursesByLanguage = async (language) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/courses/public/languages/${language}/courses`
+  );
+  return handleResponse(response);
+};
+
+/**
+ * Get published course details with units and lessons (PUBLIC - No Auth Required)
+ * @param {number} courseId - Course ID
+ * @returns {Promise<{success: boolean, data: Object}>}
+ */
+export const getPublishedCourseDetails = async (courseId) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/courses/public/courses/${courseId}`
+  );
+  return handleResponse(response);
+};
+
+// ==================== AUTHENTICATED LEARNER ENDPOINTS ====================
 
 /**
  * Fetch all published languages (learner view)
@@ -124,7 +158,6 @@ export const fetchPublishedLanguages = async () => {
   const response = await fetch(`${API_BASE_URL}/api/learner-modules/languages`, {
     headers: getAuthHeader(),
   });
-  
   return handleResponse(response);
 };
 
@@ -134,10 +167,12 @@ export const fetchPublishedLanguages = async () => {
  * @returns {Promise<{success: boolean, data: Array}>}
  */
 export const fetchPublishedCoursesByLanguage = async (language) => {
-  const response = await fetch(`${API_BASE_URL}/api/learner-modules/languages/${language}/courses`, {
-    headers: getAuthHeader(),
-  });
-  
+  const response = await fetch(
+    `${API_BASE_URL}/api/learner-modules/languages/${language}/courses`,
+    {
+      headers: getAuthHeader(),
+    }
+  );
   return handleResponse(response);
 };
 
@@ -147,9 +182,11 @@ export const fetchPublishedCoursesByLanguage = async (language) => {
  * @returns {Promise<{success: boolean, data: Object}>}
  */
 export const fetchPublishedCourseDetails = async (courseId) => {
-  const response = await fetch(`${API_BASE_URL}/api/learner-modules/courses/${courseId}`, {
-    headers: getAuthHeader(),
-  });
-  
+  const response = await fetch(
+    `${API_BASE_URL}/api/learner-modules/courses/${courseId}`,
+    {
+      headers: getAuthHeader(),
+    }
+  );
   return handleResponse(response);
 };

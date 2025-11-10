@@ -36,6 +36,7 @@ import PublishedCourseDetails from '../modules/learner/components/PublishedCours
 import { StreamingProvider } from '../contexts/StreamingContext';
 import './App.css';
 
+/** Decode JWT safely */
 function decodeJwtPayload(token) {
   if (!token) return null;
   try {
@@ -49,7 +50,7 @@ function decodeJwtPayload(token) {
   }
 }
 
-
+/** Protect routes based on role and token validity */
 function ProtectedRoute({ children, role }) {
   const token = localStorage.getItem('jwt');
   if (!token) return <Navigate to="/login" />;
@@ -72,10 +73,10 @@ function ProtectedRoute({ children, role }) {
   return children;
 }
 
-// Smart redirect component that redirects based on auth status
+/** Smart redirect to dashboard depending on role */
 function SmartRedirect() {
   const token = localStorage.getItem('jwt');
-  
+
   if (!token) {
     return <Navigate to="/login" replace />;
   }
@@ -86,7 +87,7 @@ function SmartRedirect() {
     return <Navigate to="/login" replace />;
   }
 
-  // Redirect to appropriate dashboard based on role
+  // Role-based redirect
   if (payload.role === 'admin') {
     return <Navigate to="/admin/dashboard" replace />;
   } else {
@@ -181,7 +182,7 @@ function App() {
           }
         />
 
-        {/* Published Modules (Learner Public View) */}
+        {/* Published Learner Modules */}
         <Route
           path="/learner/modules"
           element={
@@ -210,11 +211,7 @@ function App() {
         {/* Admin Routes */}
         <Route
           path="/admin"
-          element={
-            <ProtectedRoute role="admin">
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/admin-dashboard" replace />}
         />
         <Route
           path="/admin-dashboard"
@@ -289,7 +286,7 @@ function App() {
           }
         />
 
-        {/* Fallback - redirect based on auth status */}
+        {/* Fallback */}
         <Route path="*" element={<SmartRedirect />} />
       </Routes>
     </StreamingProvider>

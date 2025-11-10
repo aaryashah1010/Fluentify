@@ -191,7 +191,7 @@ const ProgressPage = () => {
         </div>
 
         {/* Summary KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Total XP Card */}
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-yellow-100">
             <div className="flex items-center justify-between mb-4">
@@ -216,18 +216,6 @@ const ProgressPage = () => {
             <p className="text-3xl font-bold text-gray-900">{summary.lessons_completed || 0}</p>
           </div>
 
-          {/* Words Mastered Card */}
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-green-100">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-md">
-                <Target className="w-6 h-6 text-white" />
-              </div>
-              <Activity className="w-5 h-5 text-green-600" />
-            </div>
-            <p className="text-sm font-medium text-gray-600 mb-1">Words Mastered</p>
-            <p className="text-3xl font-bold text-gray-900">{summary.total_vocabulary || 0}</p>
-          </div>
-
           {/* Current Streak Card */}
           <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-red-100">
             <div className="flex items-center justify-between mb-4">
@@ -243,22 +231,25 @@ const ProgressPage = () => {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Vocabulary Growth Chart */}
+          {/* Lessons Completed Over Time Chart */}
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Vocabulary Growth</h3>
-                <p className="text-sm text-gray-500">Cumulative words learned over time</p>
+                <h3 className="text-lg font-bold text-gray-900">Learning Activity</h3>
+                <p className="text-sm text-gray-500">Lessons completed over time</p>
               </div>
             </div>
             {timeline.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={cumulativeTimeline}>
+                <AreaChart data={timeline.map(item => ({
+                  ...item,
+                  date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                }))}>
                   <defs>
-                    <linearGradient id="colorVocab" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="colorLessons" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
                       <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
                     </linearGradient>
@@ -276,17 +267,17 @@ const ProgressPage = () => {
                   />
                   <Area
                     type="monotone"
-                    dataKey="cumulative_vocabulary"
+                    dataKey="lessons_count"
                     stroke="#10b981"
                     strokeWidth={3}
-                    fill="url(#colorVocab)"
-                    name="Total Words Learned"
+                    fill="url(#colorLessons)"
+                    name="Lessons Completed"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
               <div className="h-64 flex items-center justify-center text-gray-400">
-                <p>No vocabulary data yet</p>
+                <p>No activity data yet</p>
               </div>
             )}
           </div>
@@ -373,9 +364,6 @@ const ProgressPage = () => {
                       XP
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Words
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Date
                     </th>
                   </tr>
@@ -403,12 +391,6 @@ const ProgressPage = () => {
                         <span className="inline-flex items-center gap-1 text-yellow-600 font-semibold">
                           <Trophy className="w-4 h-4" />
                           {activity.xp_earned}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-sm">
-                        <span className="inline-flex items-center gap-1 text-green-600 font-semibold">
-                          <Target className="w-4 h-4" />
-                          {activity.vocabulary_mastered || 0}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600">
