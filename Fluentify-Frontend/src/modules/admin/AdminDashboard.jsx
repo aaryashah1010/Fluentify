@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLogout } from '../../hooks/useAuth';
 import { LogOut, BookOpen, Users, BarChart3, Settings, User } from 'lucide-react';
@@ -6,6 +6,24 @@ import { LogOut, BookOpen, Users, BarChart3, Settings, User } from 'lucide-react
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const logout = useLogout();
+
+  // Prevent back navigation from admin dashboard
+  useEffect(() => {
+    // Add a dummy state to history
+    window.history.pushState({ page: 'admin-dashboard' }, '', window.location.href);
+    
+    const handlePopState = (event) => {
+      // Prevent going back by immediately pushing forward
+      event.preventDefault();
+      window.history.pushState({ page: 'admin-dashboard' }, '', window.location.href);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   const dashboardCards = [
     {

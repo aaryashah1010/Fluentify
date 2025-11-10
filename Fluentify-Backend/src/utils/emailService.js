@@ -285,13 +285,52 @@ class EmailService {
 
   /**
    * Notify learner that an admin updated their profile
+   * @param {string} email - Learner's email
+   * @param {string} name - Learner's name
+   * @param {Object} changes - Object with field changes { fieldName: { old: 'value', new: 'value' } }
    */
-  async sendAdminProfileChangeNotification(email, name, changes = []) {
-    const items = (changes || []).map(c => `<li><strong>${c.field}:</strong> ${c.from ?? '-'} → ${c.to ?? '-'}</li>`).join('');
+  async sendAdminProfileChangeNotification(email, name, changes = {}) {
+    // Format field name for display
+    const formatFieldName = (field) => {
+      const fieldNames = {
+        name: 'Name',
+        email: 'Email Address',
+        phone: 'Phone Number',
+      };
+      return fieldNames[field] || field.charAt(0).toUpperCase() + field.slice(1);
+    };
+
+    // Build change items HTML
+    const changeItems = Object.entries(changes)
+      .map(([field, { old, new: newValue }]) => {
+        return `
+          <div class="change-item">
+            <span class="field-name">${formatFieldName(field)}:</span><br/>
+            Changed from "<em>${old}</em>" to "<strong>${newValue}</strong>"
+          </div>
+        `;
+      })
+      .join('');
+
     const mailOptions = {
       from: `Fluentify <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: 'Your Profile Was Updated by Admin - Fluentify',
+      subject: 'Your Fluentify Profile Has Been Updated',
+      text: `
+Hello ${name},
+
+Your Fluentify profile has been updated by an administrator.
+
+Changes made:
+${Object.entries(changes)
+  .map(([field, { old, new: newValue }]) => `• ${formatFieldName(field)}: Changed from "${old}" to "${newValue}"`)
+  .join('\n')}
+
+If you did not request these changes or have any concerns, please contact our support team immediately.
+
+Best regards,
+The Fluentify Team
+      `,
       html: `
         <!DOCTYPE html>
         <html>
@@ -299,25 +338,39 @@ class EmailService {
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #fef3c7; color: #1f2937; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
-            .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px; }
-            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
-            ul { padding-left: 18px; }
+            .header { background-color: #4F46E5; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background-color: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }
+            .changes { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .change-item { padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
+            .change-item:last-child { border-bottom: none; }
+            .field-name { font-weight: bold; color: #4F46E5; }
+            .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
+            .warning { background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h2>Profile Updated by Admin</h2>
+              <h1>Profile Update Notification</h1>
             </div>
             <div class="content">
-              <p>Hi ${name},</p>
-              <p>An administrator updated your profile information on Fluentify. The changes are listed below:</p>
-              ${items ? `<ul>${items}</ul>` : '<p>(Basic information updated)</p>'}
-              <p>If you did not expect this change, please contact support immediately.</p>
+              <p>Hello <strong>${name}</strong>,</p>
+              <p>Your Fluentify profile has been updated by an administrator.</p>
+              
+              <div class="changes">
+                <h3>Changes Made:</h3>
+                ${changeItems}
+              </div>
+
+              <div class="warning">
+                <strong>⚠️ Important:</strong> If you did not request these changes or have any concerns, please contact our support team immediately.
+              </div>
+
               <p>Best regards,<br/>The Fluentify Team</p>
             </div>
-            <div class="footer">This is an automated email. Please do not reply.</div>
+            <div class="footer">
+              <p>This is an automated message from Fluentify. Please do not reply to this email.</p>
+            </div>
           </div>
         </body>
         </html>
@@ -325,11 +378,16 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
-      return { success: true };
+      console.log(`📧 Sending profile update notification to: ${email}`);
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Profile update notification sent successfully to ${email}`);
+      console.log(`   Message ID: ${info.messageId}`);
+      return { success: true, messageId: info.messageId };
     } catch (error) {
-      console.error('Error sending admin profile change notification:', error);
-      return { success: false };
+      console.error(`❌ Failed to send profile update notification to ${email}:`);
+      console.error(`   Error: ${error.message}`);
+      // Don't throw error - we don't want to fail the update if email fails
+      return { success: false, error: error.message };
     }
   }
 }

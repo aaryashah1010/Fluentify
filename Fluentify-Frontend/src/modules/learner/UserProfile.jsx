@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Calendar, LogOut, Edit2, Check, X, ArrowLeft } from 'lucide-react';
+import { User, Mail, Calendar, LogOut, Edit2, Check, X, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useUserProfile, useUpdateProfile, useLogout } from '../../hooks/useAuth';
 import { Button, Input, ErrorMessage, LoadingSpinner } from '../../components';
 
 const UserProfile = () => {
   const navigate = useNavigate();
   const logout = useLogout();
-  const { data: profileData, isLoading, error } = useUserProfile();
+  const { data: profileData, isLoading, error, refetch } = useUserProfile();
   const updateProfileMutation = useUpdateProfile();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -111,6 +111,17 @@ const UserProfile = () => {
             </button>
             <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
           </div>
+          
+          {/* Refresh Button */}
+          <button
+            onClick={() => refetch()}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors disabled:opacity-50"
+            title="Refresh profile data"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
         </div>
       </header>
 

@@ -60,13 +60,13 @@ class ProgressRepository {
   /**
    * Create or update lesson progress
    */
-  async upsertLessonProgress(userId, courseId, unitId, lessonId, score, xpEarned) {
+  async upsertLessonProgress(userId, courseId, unitId, lessonId, score, xpEarned, vocabularyMastered = 0, totalVocabulary = 0) {
     await db.query(
-      `INSERT INTO lesson_progress (learner_id, course_id, unit_id, lesson_id, is_completed, score, xp_earned,completion_time)
-       VALUES ($1, $2, $3, $4, TRUE, $5, $6, NOW())
+      `INSERT INTO lesson_progress (learner_id, course_id, unit_id, lesson_id, is_completed, score, xp_earned, vocabulary_mastered, total_vocabulary, completion_time)
+       VALUES ($1, $2, $3, $4, TRUE, $5, $6, $7, $8, NOW())
        ON CONFLICT (learner_id, lesson_id)
-       DO UPDATE SET is_completed = TRUE, score = $5, xp_earned = $6, completion_time = NOW()`,
-      [userId, courseId, unitId, lessonId, score, xpEarned]
+       DO UPDATE SET is_completed = TRUE, score = $5, xp_earned = $6, vocabulary_mastered = $7, total_vocabulary = $8, completion_time = NOW()`,
+      [userId, courseId, unitId, lessonId, score, xpEarned, vocabularyMastered, totalVocabulary]
     );
   }
 
@@ -167,6 +167,93 @@ class ProgressRepository {
        ON CONFLICT (learner_id, course_id) DO NOTHING`,
       [userId, courseId]
     );
+  }
+
+  /**
+   * Get summary KPIs for progress report
+   * Can be filtered by courseId
+   */
+  async getSummaryKPIs(userId, days = null, courseId = null) {
+    const dateFilter = days ? `AND completion_time >= NOW() - INTERVAL '${days} days'` : '';
+    const courseFilter = courseId ? `AND course_id = ${parseInt(courseId)}` : '';
+    
+    const result = await db.query(
+      `SELECT 
+        COALESCE(SUM(xp_earned), 0)::INTEGER as total_xp,
+        COUNT(DISTINCT CASE WHEN is_completed THEN lesson_id END)::INTEGER as lessons_completed,
+        COALESCE(SUM(vocabulary_mastered), 0)::INTEGER as total_vocabulary,
+        (SELECT COALESCE(MAX(current_streak), 0) FROM user_stats WHERE learner_id = $1 ${courseId ? `AND course_id = ${parseInt(courseId)}` : ''})::INTEGER as current_streak,
+        (SELECT COALESCE(MAX(longest_streak), 0) FROM user_stats WHERE learner_id = $1 ${courseId ? `AND course_id = ${parseInt(courseId)}` : ''})::INTEGER as longest_streak
+      FROM lesson_progress
+      WHERE learner_id = $1 ${dateFilter} ${courseFilter}`,
+      [userId]
+    );
+    
+    return result.rows[0] || {
+      total_xp: 0,
+      lessons_completed: 0,
+      total_vocabulary: 0,
+      current_streak: 0,
+      longest_streak: 0
+    };
+  }
+
+  /**
+   * Get progress over time (grouped by date)
+   * Can be filtered by courseId
+   */
+  async getProgressOverTime(userId, days = null, courseId = null) {
+    const dateFilter = days ? `AND lp.completion_time >= NOW() - INTERVAL '${days} days'` : '';
+    const courseFilter = courseId ? `AND lp.course_id = ${parseInt(courseId)}` : '';
+    
+    const result = await db.query(
+      `SELECT 
+        DATE(lp.completion_time) as date,
+        SUM(lp.vocabulary_mastered)::INTEGER as vocabulary_learned,
+        ROUND(AVG(lp.score), 1)::NUMERIC as avg_score,
+        COUNT(*)::INTEGER as lessons_count
+      FROM lesson_progress lp
+      WHERE lp.learner_id = $1
+        AND lp.is_completed = true
+        AND lp.completion_time IS NOT NULL
+        ${dateFilter}
+        ${courseFilter}
+      GROUP BY DATE(lp.completion_time)
+      ORDER BY date ASC`,
+      [userId]
+    );
+    
+    return result.rows;
+  }
+
+  /**
+   * Get recent activity
+   * Can be filtered by courseId
+   */
+  async getRecentActivity(userId, limit = 5, courseId = null) {
+    const courseFilter = courseId ? `AND lp.course_id = ${parseInt(courseId)}` : '';
+    
+    const result = await db.query(
+      `SELECT 
+        cl.title as lesson_title,
+        c.language,
+        c.title as course_title,
+        lp.score,
+        lp.xp_earned,
+        lp.vocabulary_mastered,
+        lp.completion_time
+      FROM lesson_progress lp
+      JOIN course_lessons cl ON lp.lesson_id = cl.id
+      JOIN courses c ON lp.course_id = c.id
+      WHERE lp.learner_id = $1
+        AND lp.is_completed = true
+        ${courseFilter}
+      ORDER BY lp.completion_time DESC
+      LIMIT $2`,
+      [userId, limit]
+    );
+    
+    return result.rows;
   }
 }
 

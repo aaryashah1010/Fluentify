@@ -61,7 +61,18 @@ const Login = () => {
           }
         },
         onError: (err) => {
-          setError(err.message || 'Login failed');
+          // Provide user-friendly error messages
+          const errorMessage = err.message || 'Login failed';
+          
+          // Check if user doesn't exist or wrong credentials
+          if (errorMessage.toLowerCase().includes('user not found') || 
+              errorMessage.toLowerCase().includes('invalid credentials') ||
+              errorMessage.toLowerCase().includes('incorrect password') ||
+              err.status === 404 || err.status === 401) {
+            setError('User not found or incorrect credentials. Please sign up first if you don\'t have an account.');
+          } else {
+            setError(errorMessage);
+          }
         }
       }
     );

@@ -1,6 +1,12 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Login, Signup, SignupWithOTP, ForgotPassword } from '../modules/auth';
+import {
+  Login,
+  Signup,
+  SignupWithOTP,
+  ForgotPassword
+} from '../modules/auth';
+
 import {
   Dashboard,
   CoursePage,
@@ -9,23 +15,27 @@ import {
   LanguageModulesPage,
   ModuleCoursesPage,
   ModuleCourseDetailsPage,
-  UserProfile as LearnerProfile
+  UserProfile as LearnerProfile,
+  ProgressPage
 } from '../modules/learner';
+
 import {
   AdminDashboard,
   AnalyticsDashboard,
   ModuleManagementLayout,
-  UserProfile as AdminProfile
+  UserProfile as AdminProfile,
+  UserManagementLayout,
+  CourseEditorPage
 } from '../modules/admin';
+
 import UserListPage from '../modules/admin/user-management/pages/UserListPage';
 import UserDetailPage from '../modules/admin/user-management/pages/UserDetailPage';
+import PublishedLanguageList from '../modules/learner/components/PublishedLanguageList';
+import PublishedCourseList from '../modules/learner/components/PublishedCourseList';
+import PublishedCourseDetails from '../modules/learner/components/PublishedCourseDetails';
 import { StreamingProvider } from '../contexts/StreamingContext';
 import './App.css';
 
-/**
- * FIX: Decode JWT payload with better error handling
- * Prevents unnecessary logout on malformed tokens during API errors
- */
 function decodeJwtPayload(token) {
   if (!token) return null;
   try {
@@ -39,45 +49,58 @@ function decodeJwtPayload(token) {
   }
 }
 
-/**
- * FIX: ProtectedRoute validates token on every mount/refresh
- * Persists authentication across page refreshes
- * Only redirects to login on actual authentication failures
- */
+
 function ProtectedRoute({ children, role }) {
   const token = localStorage.getItem('jwt');
-  
-  // No token - redirect to login
-  if (!token) {
-    return <Navigate to="/login" />;
-  }
-  
-  // Decode and validate token
+  if (!token) return <Navigate to="/login" />;
+
   const payload = decodeJwtPayload(token);
   if (!payload) {
     localStorage.removeItem('jwt');
     return <Navigate to="/login" />;
   }
-  
-  // Check token expiration
+
   if (payload.exp && payload.exp * 1000 < Date.now()) {
     localStorage.removeItem('jwt');
     return <Navigate to="/login" />;
   }
-  
-  // Check role if required
+
   if (role && payload.role !== role) {
     return <Navigate to="/login" />;
   }
-  
-  // Valid token - render protected content
+
   return children;
+}
+
+// Smart redirect component that redirects based on auth status
+function SmartRedirect() {
+  const token = localStorage.getItem('jwt');
+  
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const payload = decodeJwtPayload(token);
+  if (!payload || (payload.exp && payload.exp * 1000 < Date.now())) {
+    localStorage.removeItem('jwt');
+    return <Navigate to="/login" replace />;
+  }
+
+  // Redirect to appropriate dashboard based on role
+  if (payload.role === 'admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  } else {
+    return <Navigate to="/dashboard" replace />;
+  }
 }
 
 function App() {
   return (
     <StreamingProvider>
       <Routes>
+        {/* Root redirect */}
+        <Route path="/" element={<SmartRedirect />} />
+
         {/* Authentication */}
         <Route path="/signup" element={<SignupWithOTP />} />
         <Route path="/signup-old" element={<Signup />} />
@@ -149,6 +172,40 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/progress"
+          element={
+            <ProtectedRoute role="learner">
+              <ProgressPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Published Modules (Learner Public View) */}
+        <Route
+          path="/learner/modules"
+          element={
+            <ProtectedRoute role="learner">
+              <PublishedLanguageList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learner/modules/:language"
+          element={
+            <ProtectedRoute role="learner">
+              <PublishedCourseList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learner/course/:courseId"
+          element={
+            <ProtectedRoute role="learner">
+              <PublishedCourseDetails />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Admin Routes */}
         <Route
@@ -176,7 +233,7 @@ function App() {
           }
         />
         <Route
-          path="/admin/modules"
+          path="/admin/modules/*"
           element={
             <ProtectedRoute role="admin">
               <ModuleManagementLayout />
@@ -200,6 +257,30 @@ function App() {
           }
         />
         <Route
+          path="/admin/users/*"
+          element={
+            <ProtectedRoute role="admin">
+              <UserManagementLayout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/course/new"
+          element={
+            <ProtectedRoute role="admin">
+              <CourseEditorPage mode="create" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/course/edit/:courseId"
+          element={
+            <ProtectedRoute role="admin">
+              <CourseEditorPage mode="edit" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/profile"
           element={
             <ProtectedRoute role="admin">
@@ -208,8 +289,8 @@ function App() {
           }
         />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/login" />} />
+        {/* Fallback - redirect based on auth status */}
+        <Route path="*" element={<SmartRedirect />} />
       </Routes>
     </StreamingProvider>
   );

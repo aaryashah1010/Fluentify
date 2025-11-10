@@ -343,6 +343,90 @@ class CourseRepository {
     
     return result.rows;
   }
+
+  // ==================== PUBLIC METHODS (For Published Courses) ====================
+
+  /**
+   * Get all unique languages with published courses
+   */
+  async getPublishedLanguages() {
+    const result = await db.query(
+      `SELECT DISTINCT language, COUNT(*) as course_count
+       FROM language_modules
+       WHERE is_published = true
+       GROUP BY language
+       ORDER BY language ASC`
+    );
+    return result.rows;
+  }
+
+  /**
+   * Get all published courses for a specific language
+   */
+  async getPublishedCoursesByLanguage(language) {
+    const result = await db.query(
+      `SELECT id, language, level, title, description, thumbnail_url, estimated_duration,
+              is_published, total_units, total_lessons, created_at, updated_at
+       FROM language_modules
+       WHERE language = $1 AND is_published = true
+       ORDER BY created_at DESC`,
+      [language]
+    );
+    return result.rows;
+  }
+
+  /**
+   * Get published course details with units and lessons
+   */
+  async getPublishedCourseDetails(courseId) {
+    const result = await db.query(
+      `SELECT id, language, level, title, description, thumbnail_url, estimated_duration,
+              is_published, total_units, total_lessons, created_at, updated_at
+       FROM language_modules
+       WHERE id = $1 AND is_published = true`,
+      [courseId]
+    );
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    const course = result.rows[0];
+
+    // Fetch units for this course (using module_id, not course_id)
+    const unitsResult = await db.query(
+      `SELECT id, module_id, title, description, difficulty, estimated_time, created_at
+       FROM module_units
+       WHERE module_id = $1
+       ORDER BY created_at ASC`,
+      [courseId]
+    );
+
+    const units = unitsResult.rows;
+
+    // Fetch lessons for each unit
+    const unitsWithLessons = await Promise.all(
+      units.map(async (unit) => {
+        const lessonsResult = await db.query(
+          `SELECT id, unit_id, title, content_type, description, media_url, 
+                  key_phrases, vocabulary, grammar_points, exercises, xp_reward, created_at
+           FROM module_lessons
+           WHERE unit_id = $1
+           ORDER BY created_at ASC`,
+          [unit.id]
+        );
+        return {
+          ...unit,
+          lessons: lessonsResult.rows
+        };
+      })
+    );
+
+    return {
+      ...course,
+      units: unitsWithLessons
+    };
+  }
 }
 
 export default new CourseRepository();

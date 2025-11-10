@@ -79,7 +79,9 @@ export const useUserProfile = () => {
     queryFn: () => getUserProfile(token),
     enabled: !!token, // Only run if token exists
     retry: false,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 30 * 1000, // 30 seconds - shorter to reflect admin changes faster
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    refetchOnMount: true, // Refetch when component mounts
   });
 };
 

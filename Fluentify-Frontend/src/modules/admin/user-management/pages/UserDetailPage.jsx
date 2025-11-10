@@ -27,7 +27,10 @@ const UserDetailPage = () => {
       const resp = await getLearnerDetails(userId);
       const payload = resp.data || resp;
       setData(payload);
-      setForm({ name: payload.user.name, email: payload.user.email });
+      // Safe access to user data with fallbacks
+      if (payload?.user) {
+        setForm({ name: payload.user.name || '', email: payload.user.email || '' });
+      }
     } catch (e) {
       console.error('Error loading learner details:', e);
       // Don't set error if it's a 401 (user will be redirected by ProtectedRoute)
@@ -55,8 +58,24 @@ const UserDetailPage = () => {
     }
   };
 
-  if (loading || !data) {
+  if (loading) {
     return <div className="max-w-6xl mx-auto p-6">Loading...</div>;
+  }
+
+  if (!data || !data.user) {
+    return (
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">{error || 'User not found or failed to load user details'}</p>
+          <button 
+            onClick={() => navigate(-1)} 
+            className="mt-2 text-sm text-indigo-600 hover:text-indigo-500"
+          >
+            ← Go Back
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const { user, summary, courses = [] } = data;
@@ -149,6 +168,7 @@ const UserDetailPage = () => {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Language</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrolled</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lessons</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Units</th>
@@ -156,7 +176,7 @@ const UserDetailPage = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {courses.length === 0 ? (
-                <tr><td className="px-4 py-6 text-center text-gray-500" colSpan={7}>No courses found</td></tr>
+                <tr><td className="px-4 py-6 text-center text-gray-500" colSpan={8}>No courses found</td></tr>
               ) : courses.map((c) => (
                 <tr key={c.id}>
                   {/* FIX: Display title correctly for both AI and admin courses */}
@@ -174,6 +194,9 @@ const UserDetailPage = () => {
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-700">
                     {c.expected_duration || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {c.created_at ? new Date(c.created_at).toLocaleDateString() : '-'}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-700">{c.progress_percentage ?? 0}%</td>
                   <td className="px-4 py-3 text-sm text-gray-700">

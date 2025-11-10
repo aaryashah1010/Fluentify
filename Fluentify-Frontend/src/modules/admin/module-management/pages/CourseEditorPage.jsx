@@ -54,7 +54,6 @@ const CourseEditorPage = () => {
     description: '',
     difficulty: 'Beginner',
     estimated_time: 0,
-    unit_order: 1,
   });
 
   const [lessonFormData, setLessonFormData] = useState({
@@ -67,7 +66,6 @@ const CourseEditorPage = () => {
     grammar_points: {},
     exercises: {},
     xp_reward: 0,
-    lesson_order: 1,
     transcript: '',
     file_name: null,
     file_size: null,
@@ -126,7 +124,6 @@ const CourseEditorPage = () => {
       description: '',
       difficulty: 'Beginner',
       estimated_time: 0,
-      unit_order: (currentCourse?.units?.length || 0) + 1,
     });
     setShowUnitModal(true);
   };
@@ -138,7 +135,6 @@ const CourseEditorPage = () => {
       description: unit.description || '',
       difficulty: unit.difficulty || 'Beginner',
       estimated_time: unit.estimated_time || 0,
-      unit_order: unit.unit_order || 1,
     });
     setShowUnitModal(true);
   };
@@ -183,7 +179,6 @@ const CourseEditorPage = () => {
       grammar_points: {},
       exercises: {},
       xp_reward: 0,
-      lesson_order: (unit?.lessons?.length || 0) + 1,
       transcript: '',
       file_name: null,
       file_size: null,
@@ -205,7 +200,6 @@ const CourseEditorPage = () => {
       grammar_points: lesson.grammar_points || {},
       exercises: lesson.exercises || {},
       xp_reward: lesson.xp_reward || 0,
-      lesson_order: lesson.lesson_order || 1,
       transcript: lesson.transcript || '',
       file_name: lesson.file_name || null,
       file_size: lesson.file_size || null,

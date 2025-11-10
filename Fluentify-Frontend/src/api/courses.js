@@ -114,6 +114,8 @@ export const deleteCourse = async (courseId) => {
   return handleResponse(response);
 };
 
+// ==================== PUBLIC ENDPOINTS (No Authentication Required) ====================
+
 /**
  * Fetch all published languages (learner view)
  * @returns {Promise<{success: boolean, data: Array}>}

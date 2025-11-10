@@ -1,6 +1,8 @@
 import express from 'express';
+import { body } from 'express-validator';
 import authMiddleware, { adminOnly } from '../middlewares/authMiddleware.js';
 import moduleAdminController from '../controllers/moduleAdminController.js';
+import userManagementController from '../controllers/userManagementController.js';
 import analyticsRoutes from './analytics.js';
 import adminUserController from '../controllers/adminUserController.js';
 
@@ -8,6 +10,29 @@ const router = express.Router();
 
 // Protect all routes below with authentication and admin check
 router.use(authMiddleware, adminOnly);
+
+// ==================== User Management Routes ====================
+// Get all users with pagination
+router.get('/users', userManagementController.getAllUsers);
+
+// Search users by name or email
+router.get('/users/search', userManagementController.searchUsers);
+
+// Get user details and progress
+router.get('/users/:userId', userManagementController.getUserDetails);
+
+// Update user profile
+router.put(
+    '/users/:userId',
+    [
+        body('name').optional().trim().isLength({ min: 2 }),
+        body('email').optional().isEmail().normalizeEmail()
+    ],
+    userManagementController.updateUser
+);
+
+// Delete user
+router.delete('/users/:userId', userManagementController.deleteUser);
 
 // ==================== Language Routes (Read-only) ====================
 // Get list of unique languages

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { LogOut, BookOpen, MessageCircle, Globe, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { LogOut, BookOpen, MessageCircle, Globe, User, TrendingUp } from 'lucide-react';
 import { useCourses } from '../../hooks/useCourses';
 import { useLogout } from '../../hooks/useAuth';
 import { useStreaming } from '../../contexts/StreamingContext';
@@ -9,14 +9,41 @@ import { CourseCard, CourseGenerationForm, GeneratingCourseCard } from './compon
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const logout = useLogout();
-  
+
+  // Prevent back navigation from dashboard
+  useEffect(() => {
+    // Add a dummy state to history
+    window.history.pushState({ page: 'dashboard' }, '', window.location.href);
+    
+    const handlePopState = (event) => {
+      // Prevent going back by immediately pushing forward
+      event.preventDefault();
+      window.history.pushState({ page: 'dashboard' }, '', window.location.href);
+    };
+
+    // Also handle beforeunload to prevent accidental navigation
+    const handleBeforeUnload = (event) => {
+      // This won't prevent back button but helps with other navigation
+      return undefined;
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [location]);
+
   // React Query hooks
   const { data: courses = [], isLoading: loading } = useCourses();
-  
+
   // Streaming course generation hook
   const { generateCourse: startStreamGeneration, state: streamState, reset: resetStream } = useStreaming();
-  
+
   // Local state
   const [error, setError] = useState('');
   const [showGenerateForm, setShowGenerateForm] = useState(false);
@@ -36,12 +63,12 @@ const Dashboard = () => {
 
     setError('');
     setShowGenerateForm(false);
-    
+
     // Start streaming course generation
     startStreamGeneration({
       language: generateForm.language,
       expectedDuration: generateForm.expectedDuration,
-      expertise: generateForm.expertise
+      expertise: generateForm.expertise,
     });
   };
 
@@ -57,11 +84,12 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-green-50">
-      {/* Header with Logout Button */}
+      {/* Header with Navigation Buttons */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Fluentify</h1>
           <div className="flex items-center gap-3">
+            {/* ✅ Both Profile and Language Modules buttons retained */}
             <button
               onClick={() => navigate('/profile')}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
@@ -69,6 +97,23 @@ const Dashboard = () => {
               <User className="w-4 h-4" />
               Profile
             </button>
+
+            <button
+              onClick={() => navigate('/learner/modules')}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+            >
+              <Globe className="w-4 h-4" />
+              Language Modules
+            </button>
+
+            <button
+              onClick={() => navigate('/progress')}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+            >
+              <TrendingUp className="w-4 h-4" />
+              Progress Report
+            </button>
+
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
@@ -87,7 +132,7 @@ const Dashboard = () => {
           <p className="text-gray-600">Start your language learning journey today!</p>
         </div>
 
-        {/* Language Modules Button */}
+        {/* Language Modules Section */}
         <div className="mb-8">
           <button
             onClick={() => navigate('/language-modules')}
@@ -161,13 +206,15 @@ const Dashboard = () => {
                   onClick={() => navigate(`/course/${streamState.courseId}`)}
                 />
               )}
-              
+
               {/* Show existing courses */}
               {courses.map((course) => (
                 <CourseCard
                   key={course.id}
                   course={course}
-                  onClick={(course) => navigate(`/course/${course.id}`, { state: { progress: course.progress } })}
+                  onClick={(course) =>
+                    navigate(`/course/${course.id}`, { state: { progress: course.progress } })
+                  }
                 />
               ))}
             </div>
@@ -176,10 +223,7 @@ const Dashboard = () => {
       </main>
 
       {/* Voice AI Modal */}
-      <VoiceAIModal 
-        isOpen={showVoiceAI} 
-        onClose={() => setShowVoiceAI(false)} 
-      />
+      <VoiceAIModal isOpen={showVoiceAI} onClose={() => setShowVoiceAI(false)} />
 
       {/* Floating Chat Widget */}
       <FloatingChatWidget />
