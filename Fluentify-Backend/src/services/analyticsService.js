@@ -96,10 +96,12 @@ class AnalyticsService {
 
   /**
    * Get comprehensive analytics data
+   * FIX: Now includes real-time stats from database tables
    */
   async getAnalytics() {
     try {
       const [
+        realTimeStats,
         languageDistribution,
         moduleUsage,
         aiPerformance,
@@ -108,16 +110,42 @@ class AnalyticsService {
         lessonCompletionTrends,
         averageDuration
       ] = await Promise.all([
-        analyticsRepository.getLanguageDistribution(),
-        analyticsRepository.getModuleUsage(),
-        analyticsRepository.getAIPerformance(),
-        analyticsRepository.getDailyActivity(30),
-        analyticsRepository.getUserEngagement(),
-        analyticsRepository.getLessonCompletionTrends(30),
-        analyticsRepository.getAverageLessonDuration()
+        analyticsRepository.getRealTimeStats().catch(err => {
+          console.warn('Error getting real-time stats:', err.message);
+          return { total_lessons: 0, active_users: 0, popular_language: 'N/A', ai_courses_generated: 0, avg_generation_time: 0, total_xp_earned: 0 };
+        }),
+        analyticsRepository.getLanguageDistribution().catch(err => {
+          console.warn('Error getting language distribution:', err.message);
+          return [];
+        }),
+        analyticsRepository.getModuleUsage().catch(err => {
+          console.warn('Error getting module usage:', err.message);
+          return [];
+        }),
+        analyticsRepository.getAIPerformance().catch(err => {
+          console.warn('Error getting AI performance:', err.message);
+          return { total_generations: 0, success_count: 0, failure_count: 0 };
+        }),
+        analyticsRepository.getDailyActivity(30).catch(err => {
+          console.warn('Error getting daily activity:', err.message);
+          return [];
+        }),
+        analyticsRepository.getUserEngagement().catch(err => {
+          console.warn('Error getting user engagement:', err.message);
+          return { total_active_users: 0, avg_lessons_per_user: 0, max_lessons_per_user: 0 };
+        }),
+        analyticsRepository.getLessonCompletionTrends(30).catch(err => {
+          console.warn('Error getting lesson completion trends:', err.message);
+          return [];
+        }),
+        analyticsRepository.getAverageLessonDuration().catch(err => {
+          console.warn('Error getting average lesson duration:', err.message);
+          return [];
+        })
       ]);
 
       return {
+        realTimeStats,
         languageDistribution,
         moduleUsage,
         aiPerformance,
@@ -126,6 +154,7 @@ class AnalyticsService {
         lessonCompletionTrends,
         averageDuration,
         summary: this._generateSummary({
+          realTimeStats,
           languageDistribution,
           moduleUsage,
           aiPerformance,
@@ -134,6 +163,10 @@ class AnalyticsService {
       };
     } catch (error) {
       console.error('Error getting analytics:', error);
+      // If it's a "relation does not exist" error, provide helpful message
+      if (error.message && error.message.includes('does not exist')) {
+        throw new Error('Analytics table not found. Please run the analytics migration script.');
+      }
       throw error;
     }
   }
@@ -164,35 +197,38 @@ class AnalyticsService {
 
   /**
    * Generate summary statistics
+   * FIX: Now uses real-time stats as primary source
    */
   _generateSummary(data) {
-    const { languageDistribution, moduleUsage, aiPerformance, userEngagement } = data;
-    
-    // Most popular language
-    const mostPopularLanguage = languageDistribution.length > 0 
-      ? languageDistribution[0].language_name 
-      : 'N/A';
+    const { realTimeStats, languageDistribution, moduleUsage, aiPerformance, userEngagement } = data;
 
-    // Total lessons completed
-    const totalLessons = languageDistribution.reduce((sum, lang) => sum + parseInt(lang.count), 0);
+    // Use real-time stats as primary source
+    const mostPopularLanguage = realTimeStats.popular_language || 
+      (languageDistribution.length > 0 ? languageDistribution[0].language_name : 'N/A');
+
+    const totalLessons = realTimeStats.total_lessons || 
+      languageDistribution.reduce((sum, lang) => sum + parseInt(lang.count || 0), 0);
 
     // Module preference
     const adminLessons = moduleUsage.find(m => m.module_type === 'ADMIN')?.count || 0;
     const aiLessons = moduleUsage.find(m => m.module_type === 'AI')?.count || 0;
-    const preferredModule = adminLessons > aiLessons ? 'ADMIN' : 'AI';
+    const preferredModule = adminLessons > aiLessons ? 'ADMIN' : (aiLessons > 0 ? 'AI' : 'N/A');
 
-    // AI success rate
+    // AI success rate - use real-time data if available
+    const totalGenerations = realTimeStats.ai_courses_generated || aiPerformance.total_generations || 0;
     const aiSuccessRate = aiPerformance.total_generations > 0 
       ? ((aiPerformance.success_count / aiPerformance.total_generations) * 100).toFixed(1)
-      : 0;
+      : (totalGenerations > 0 ? '100' : '0');
 
     return {
       mostPopularLanguage,
       totalLessons,
+      totalActiveUsers: realTimeStats.active_users || userEngagement.total_active_users || 0,
       preferredModule,
       aiSuccessRate: `${aiSuccessRate}%`,
-      totalActiveUsers: userEngagement.total_active_users,
-      avgLessonsPerUser: parseFloat(userEngagement.avg_lessons_per_user || 0).toFixed(1)
+      avgLessonsPerUser: realTimeStats.active_users > 0 
+        ? (totalLessons / realTimeStats.active_users).toFixed(1)
+        : parseFloat(userEngagement.avg_lessons_per_user || 0).toFixed(1)
     };
   }
 }

@@ -6,9 +6,9 @@ import {
   fetchLessonDetails,
   generateExercises,
   completeLesson,
-  getPublishedLanguages,
-  getPublishedCoursesByLanguage,
-  getPublishedCourseDetails,
+  fetchPublishedLanguages,
+  fetchPublishedCoursesByLanguage,
+  fetchPublishedCourseDetails,
 } from '../api/courses';
 
 /**
@@ -112,7 +112,7 @@ export const useCompleteLesson = () => {
 export const usePublishedLanguages = () => {
   return useQuery({
     queryKey: ['published-languages'],
-    queryFn: getPublishedLanguages,
+    queryFn: fetchPublishedLanguages,
     select: (data) => data.data || [],
   });
 };
@@ -124,7 +124,7 @@ export const usePublishedLanguages = () => {
 export const usePublishedCoursesByLanguage = (language) => {
   return useQuery({
     queryKey: ['published-courses', language],
-    queryFn: () => getPublishedCoursesByLanguage(language),
+    queryFn: () => fetchPublishedCoursesByLanguage(language),
     enabled: !!language,
     select: (data) => data.data || [],
   });
@@ -137,7 +137,7 @@ export const usePublishedCoursesByLanguage = (language) => {
 export const usePublishedCourseDetails = (courseId) => {
   return useQuery({
     queryKey: ['published-course', courseId],
-    queryFn: () => getPublishedCourseDetails(courseId),
+    queryFn: () => fetchPublishedCourseDetails(courseId),
     enabled: !!courseId,
     select: (data) => data.data || null,
   });

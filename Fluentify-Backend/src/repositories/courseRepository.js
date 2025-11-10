@@ -128,29 +128,88 @@ class CourseRepository {
   /**
    * Find learner courses with stats
    */
+  /**
+   * FIX: Find all learner courses with stats - includes both AI courses and enrolled admin courses
+   * This ensures user management shows all enrolled courses, not just AI-generated ones
+   */
   async findLearnerCoursesWithStats(userId) {
     const result = await db.query(
-      `SELECT c.*,
+      `-- Part 1: AI-generated courses for this learner
+       SELECT 
+        c.id,
+        c.learner_id,
+        c.language,
+        c.title,
+        c.description,
+        c.course_data,
+        c.total_lessons,
+        c.total_units,
+        c.created_at,
+        c.expected_duration,
+        'ai' as course_type,
         COALESCE((
-          SELECT SUM(lp.xp_earned) FROM lesson_progress lp WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id
+          SELECT SUM(lp.xp_earned) FROM lesson_progress lp 
+          WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id
         ), 0) as total_xp,
         COALESCE((
-          SELECT COUNT(*) FROM lesson_progress lp WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id AND lp.is_completed = true
+          SELECT COUNT(*) FROM lesson_progress lp 
+          WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id AND lp.is_completed = true
         ), 0) as lessons_completed,
         COALESCE((
-          SELECT COUNT(*) FROM unit_progress up WHERE up.learner_id = c.learner_id AND up.course_id = c.id AND up.is_completed = true
+          SELECT COUNT(*) FROM unit_progress up 
+          WHERE up.learner_id = c.learner_id AND up.course_id = c.id AND up.is_completed = true
         ), 0) as units_completed,
         COALESCE(us.current_streak, 0) as current_streak,
         ROUND(
           COALESCE((
-            SELECT COUNT(*) FROM lesson_progress lp WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id AND lp.is_completed = true
-          ), 0) * 100.0 /
-          GREATEST((c.course_data->'metadata'->>'totalLessons')::int, 1), 1
+            SELECT COUNT(*) FROM lesson_progress lp 
+            WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id AND lp.is_completed = true
+          ), 0) * 100.0 / GREATEST(c.total_lessons, 1), 0
         ) as progress_percentage
        FROM courses c
        LEFT JOIN user_stats us ON c.id = us.course_id AND c.learner_id = us.learner_id
        WHERE c.learner_id = $1 AND c.is_active = true
-       ORDER BY c.created_at DESC`,
+       
+       UNION ALL
+       
+       -- Part 2: Admin-created courses that this learner is enrolled in
+       SELECT 
+        lm.id,
+        $1::int as learner_id,
+        lm.language,
+        lm.title,
+        lm.description,
+        NULL::jsonb as course_data,
+        lm.total_lessons,
+        lm.total_units,
+        le.enrolled_at as created_at,
+        lm.estimated_duration as expected_duration,
+        'admin' as course_type,
+        COALESCE((
+          SELECT SUM(lp.xp_earned) FROM lesson_progress lp 
+          WHERE lp.learner_id = $1 AND lp.course_id = lm.id
+        ), 0) as total_xp,
+        COALESCE((
+          SELECT COUNT(*) FROM lesson_progress lp 
+          WHERE lp.learner_id = $1 AND lp.course_id = lm.id AND lp.is_completed = true
+        ), 0) as lessons_completed,
+        COALESCE((
+          SELECT COUNT(*) FROM unit_progress up 
+          WHERE up.learner_id = $1 AND up.course_id = lm.id AND up.is_completed = true
+        ), 0) as units_completed,
+        COALESCE(us2.current_streak, 0) as current_streak,
+        ROUND(
+          COALESCE((
+            SELECT COUNT(*) FROM lesson_progress lp 
+            WHERE lp.learner_id = $1 AND lp.course_id = lm.id AND lp.is_completed = true
+          ), 0) * 100.0 / GREATEST(lm.total_lessons, 1), 0
+        ) as progress_percentage
+       FROM learner_enrollments le
+       INNER JOIN language_modules lm ON le.module_id = lm.id
+       LEFT JOIN user_stats us2 ON lm.id = us2.course_id AND us2.learner_id = $1
+       WHERE le.learner_id = $1
+       
+       ORDER BY created_at DESC`,
       [userId]
     );
     return result.rows;

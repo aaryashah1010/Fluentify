@@ -9,6 +9,8 @@ export { default as ChatMessage } from './ChatMessage';
 export { default as ChatInput } from './ChatInput';
 export { default as TypingIndicator } from './TypingIndicator';
 export { default as FloatingChatWidget } from './FloatingChatWidget';
+export { default as PasswordStrengthIndicator } from './PasswordStrengthIndicator';
+export { default as OTPInput } from './OTPInput';
 export { 
   Skeleton, 
   SkeletonText, 

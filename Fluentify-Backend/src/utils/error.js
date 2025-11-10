@@ -71,6 +71,9 @@ const ERRORS = {
   LEARNER_ONLY_ROUTE: new RequestError("Learner access required", 20010, 403),
   SIGNUP_FAILED: new RequestError("Signup failed", 20011, 400),
   LOGIN_FAILED: new RequestError("Login failed", 20012, 400),
+  EMAIL_NOT_REGISTERED_LEARNER: new RequestError("Credentials are wrong. Please try again", 20013, 401),
+  EMAIL_NOT_REGISTERED_ADMIN: new RequestError("Credentials are wrong. Please try again", 20014, 401),
+  INCORRECT_PASSWORD: new RequestError("Credentials are wrong. Please try again", 20015, 401),
   
   // Course Management Errors (3xxxx) 
   COURSE_NOT_FOUND: new RequestError("Course not found", 30001, 404),

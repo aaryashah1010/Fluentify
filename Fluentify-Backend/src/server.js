@@ -79,6 +79,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/learner-modules', learnerModulesRoutes);
 // AI Tutor routes
 app.use('/api/tutor', tutorRoutes);
+// Admin content management routes
+app.use('/api/admin', adminRoutes);
 
 // 404 handler - must be after all routes
 app.use(notFoundHandler);

@@ -39,7 +39,7 @@ class UserManagementService {
     async getUserWithProgress(userId) {
         // Get user details
         const { rows: [user] } = await db.query(
-            `SELECT id, name, email, created_at, updated_at 
+            `SELECT id, name, email, created_at, updated_at, is_email_verified 
              FROM learners 
              WHERE id = $1`,
             [userId]
@@ -48,20 +48,19 @@ class UserManagementService {
         if (!user) return null;
 
         // Get user's course progress with statistics (calculated dynamically)
-        const { rows: progress } = await db.query(
+        const { rows: courses } = await db.query(
             `SELECT 
                 c.id, 
                 c.title, 
                 c.language,
+                c.expected_duration,
+                c.course_data,
                 c.is_completed,
                 c.total_lessons,
                 c.total_units,
+                c.created_at,
                 c.updated_at as last_accessed,
-                COALESCE((
-                    SELECT SUM(lp.xp_earned) 
-                    FROM lesson_progress lp 
-                    WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id
-                ), 0) as total_xp,
+                'ai' as course_type,
                 COALESCE((
                     SELECT COUNT(*) 
                     FROM lesson_progress lp 
@@ -72,26 +71,36 @@ class UserManagementService {
                     FROM unit_progress up 
                     WHERE up.learner_id = c.learner_id AND up.course_id = c.id AND up.is_completed = true
                 ), 0) as units_completed,
-                COALESCE(us.current_streak, 0) as current_streak,
-                us.last_activity_date,
                 ROUND(
                     COALESCE((
                         SELECT COUNT(*) 
                         FROM lesson_progress lp 
                         WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id AND lp.is_completed = true
                     ), 0) * 100.0 /
-                    GREATEST((c.course_data->'metadata'->>'totalLessons')::int, 1), 1
+                    GREATEST(c.total_lessons, 1), 1
                 ) as progress_percentage
              FROM courses c
-             LEFT JOIN user_stats us ON c.id = us.course_id AND c.learner_id = us.learner_id
              WHERE c.learner_id = $1
              ORDER BY c.updated_at DESC`,
             [userId]
         );
 
+        // Get overall summary statistics (fixed to avoid row multiplication)
+        const { rows: [summary] } = await db.query(
+            `SELECT 
+                COALESCE((SELECT SUM(xp_earned) FROM lesson_progress WHERE learner_id = $1), 0) as total_xp,
+                COALESCE((SELECT COUNT(DISTINCT lesson_id) FROM lesson_progress WHERE learner_id = $1 AND is_completed = true), 0) as lessons_completed,
+                COALESCE((SELECT COUNT(DISTINCT unit_id) FROM unit_progress WHERE learner_id = $1 AND is_completed = true), 0) as units_completed,
+                COALESCE((SELECT MAX(current_streak) FROM user_stats WHERE learner_id = $1), 0) as current_streak,
+                COALESCE((SELECT MAX(longest_streak) FROM user_stats WHERE learner_id = $1), 0) as longest_streak,
+                (SELECT MAX(last_activity_date) FROM user_stats WHERE learner_id = $1) as last_activity_date`,
+            [userId]
+        );
+
         return {
-            ...user,
-            courses: progress
+            user,
+            summary,
+            courses
         };
     }
 

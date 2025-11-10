@@ -152,8 +152,7 @@ class CourseController {
           {
             courseId,
             unitsGenerated: units.length,
-            lessonsGenerated: totalLessons,
-            generationTime: null // We could track this if needed
+            lessonsGenerated: totalLessons
           }
         );
       } catch (analyticsError) {

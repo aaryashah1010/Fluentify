@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Mail, User } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import validator from 'validator';
 import { useLogin } from '../../hooks/useAuth';
 import { Button, ErrorMessage, Input } from '../../components';
@@ -10,6 +10,18 @@ const Login = () => {
   const [form, setForm] = useState({ email: '', password: '', role: 'learner' });
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Pre-select role from query param or lastRole
+    const params = new URLSearchParams(location.search);
+    const qpRole = params.get('role');
+    const storedRole = (() => { try { return localStorage.getItem('lastRole'); } catch { return null; } })();
+    const role = qpRole || storedRole;
+    if (role === 'admin' || role === 'learner') {
+      setForm((prev) => ({ ...prev, role }));
+    }
+  }, [location.search]);
   
   // Use React Query mutation
   const loginMutation = useLogin();
@@ -49,7 +61,18 @@ const Login = () => {
           }
         },
         onError: (err) => {
-          setError(err.message || 'Login failed');
+          // Provide user-friendly error messages
+          const errorMessage = err.message || 'Login failed';
+          
+          // Check if user doesn't exist or wrong credentials
+          if (errorMessage.toLowerCase().includes('user not found') || 
+              errorMessage.toLowerCase().includes('invalid credentials') ||
+              errorMessage.toLowerCase().includes('incorrect password') ||
+              err.status === 404 || err.status === 401) {
+            setError('User not found or incorrect credentials. Please sign up first if you don\'t have an account.');
+          } else {
+            setError(errorMessage);
+          }
         }
       }
     );
@@ -96,13 +119,29 @@ const Login = () => {
           />
 
           {/* Password */}
-          <PasswordInput
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            placeholder="Enter your password"
-            required
-          />
+          <div>
+            <PasswordInput
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="Enter your password"
+              required
+            />
+            <div className="text-right mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const params = new URLSearchParams();
+                  params.set('role', form.role);
+                  if (form.email) params.set('email', form.email);
+                  navigate(`/forgot-password?${params.toString()}`);
+                }}
+                className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
+              >
+                Forgot password?
+              </button>
+            </div>
+          </div>
 
           {/* Error */}
           <ErrorMessage message={error} />

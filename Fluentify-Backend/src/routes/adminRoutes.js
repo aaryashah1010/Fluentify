@@ -4,6 +4,7 @@ import authMiddleware, { adminOnly } from '../middlewares/authMiddleware.js';
 import moduleAdminController from '../controllers/moduleAdminController.js';
 import userManagementController from '../controllers/userManagementController.js';
 import analyticsRoutes from './analytics.js';
+import adminUserController from '../controllers/adminUserController.js';
 
 const router = express.Router();
 
@@ -76,5 +77,9 @@ router.delete('/lessons/:lessonId', moduleAdminController.deleteLesson);
 // ==================== Analytics Routes ====================
 // Analytics routes (already protected by admin middleware)
 router.use('/analytics', analyticsRoutes);
+// ==================== Admin User Management ====================
+router.get('/users', adminUserController.listLearners);
+router.get('/users/:id', adminUserController.getLearnerDetails);
+router.put('/users/:id', adminUserController.updateLearner);
 
 export default router;
