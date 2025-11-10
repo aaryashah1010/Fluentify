@@ -412,7 +412,7 @@ const Signup = () => {
                             </div>
                             <div>
                               <h3 className="text-lg font-semibold mb-1">Smart AI Instructors</h3>
-                              <p className="text-gray-400">Learn with an AI mentor that listens, correctt and helps you grow naturally</p>
+                              <p className="text-gray-400">Learn with an AI mentor that listens, correct and helps you grow naturally</p>
                             </div>
                           </div>
             
@@ -422,7 +422,7 @@ const Signup = () => {
                             </div>
                             <div>
                               <h3 className="text-lg font-semibold mb-1">Track Progress</h3>
-                              <p className="text-gray-400">Visulize your journey - from begineer to fluent</p>
+                              <p className="text-gray-400">Visualize your journey - from beginner to fluent</p>
                 </div>
               </div>
             </div>
@@ -669,7 +669,7 @@ const Signup = () => {
                 onClick={() => navigate('/login')}
                 className="inline-flex items-center gap-2 text-teal-600 hover:text-teal-700 font-semibold transition-colors group text-sm"
               >
-                <span>Sign in</span>
+                <span>Login</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-300" />
               </button>
             </div>
