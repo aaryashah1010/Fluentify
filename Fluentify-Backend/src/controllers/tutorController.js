@@ -151,6 +151,30 @@ class TutorController {
   }
 
   /**
+   * Get messages for a specific session
+   */
+  async getSessionMessages(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const { sessionId } = req.params;
+      const limit = parseInt(req.query.limit) || 100;
+
+      const messages = await tutorService.getSessionMessages(sessionId, userId, limit);
+
+      res.json({
+        success: true,
+        data: {
+          messages
+        }
+      });
+
+    } catch (error) {
+      console.error('Error fetching session messages:', error);
+      return next(ERRORS.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
    * Health check for tutor service
    */
   async healthCheck(req, res) {

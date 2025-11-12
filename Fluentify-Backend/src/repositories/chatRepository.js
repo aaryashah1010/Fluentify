@@ -148,6 +148,28 @@ class ChatRepository {
   }
 
   /**
+   * Get all messages for a specific session with user validation
+   */
+  async getSessionMessages(sessionId, userId, limit = 100) {
+    const query = `
+      SELECT cm.id, cm.sender_type, cm.content, cm.created_at
+      FROM chat_messages cm
+      INNER JOIN chat_sessions cs ON cm.session_id = cs.id
+      WHERE cm.session_id = $1 AND cs.user_id = $2
+      ORDER BY cm.created_at ASC
+      LIMIT $3
+    `;
+    
+    try {
+      const result = await db.query(query, [sessionId, userId, limit]);
+      return result.rows;
+    } catch (error) {
+      console.error('Error fetching session messages:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Delete old chat sessions (cleanup)
    */
   async deleteOldSessions(daysOld = 30) {

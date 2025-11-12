@@ -15,5 +15,6 @@ router.get('/health', tutorController.healthCheck);
 router.post('/message', chatRateLimit, tutorController.sendMessage);
 router.get('/history', tutorController.getChatHistory);
 router.post('/session', tutorController.createSession);
+router.get('/session/:sessionId/messages', tutorController.getSessionMessages);
 
 export default router;

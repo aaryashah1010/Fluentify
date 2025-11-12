@@ -134,6 +134,24 @@ export const createChatSession = async (token) => {
 };
 
 /**
+ * Get messages for a specific chat session
+ * @param {string} sessionId - Chat session ID
+ * @param {string} token - JWT token
+ * @returns {Promise<{success: boolean, data: {messages: array}}>}
+ */
+export const getSessionMessages = async (sessionId, token) => {
+  const response = await fetch(`${API_BASE_URL}/api/tutor/session/${sessionId}/messages`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  return handleResponse(response);
+};
+
+/**
  * Check tutor service health
  * @returns {Promise<{success: boolean, message: string}>}
  */
