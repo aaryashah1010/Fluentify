@@ -61,7 +61,18 @@ export const getUserProfile = async (token) => {
 
 /**
  * Logout user (client-side)
+ * Clears all user data including chat sessions
  */
 export const logoutUser = () => {
   localStorage.removeItem('jwt');
+  
+  // Clear all chat-related sessionStorage to prevent cross-user contamination
+  const keysToRemove = [];
+  for (let i = 0; i < sessionStorage.length; i++) {
+    const key = sessionStorage.key(i);
+    if (key && key.startsWith('fluentify_chat_')) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach(key => sessionStorage.removeItem(key));
 };
