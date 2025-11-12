@@ -1,5 +1,6 @@
 import { useReducer, useEffect, useCallback } from 'react';
-import { sendMessageStream } from '../api/tutor';
+import { sendMessageStream, getSessionMessages } from '../api/tutor';
+import { jwtDecode } from 'jwt-decode';
 
 // Chat state management
 const initialState = {
@@ -87,38 +88,61 @@ const chatReducer = (state, action) => {
 export const useChat = (token) => {
   const [state, dispatch] = useReducer(chatReducer, initialState);
 
-  // Load messages from sessionStorage on mount
+  // Get user ID from token for user-specific storage
+  const getUserId = () => {
+    if (!token) return null;
+    try {
+      const decoded = jwtDecode(token);
+      return decoded.id || decoded.userId || decoded.sub;
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  };
+
+  const userId = getUserId();
+
+  // Load messages from server on mount
   useEffect(() => {
-    const savedMessages = sessionStorage.getItem('fluentify_chat_messages');
-    const savedSessionId = sessionStorage.getItem('fluentify_chat_session_id');
-    
-    if (savedMessages) {
-      try {
-        const messages = JSON.parse(savedMessages);
-        dispatch({ type: 'LOAD_MESSAGES', payload: messages });
-      } catch (error) {
-        console.error('Error loading saved messages:', error);
+    const loadMessages = async () => {
+      if (!token || !userId) return;
+
+      // Get session ID from user-specific storage
+      const savedSessionId = sessionStorage.getItem(`fluentify_chat_session_${userId}`);
+      
+      if (savedSessionId) {
+        try {
+          // Load messages from server
+          const response = await getSessionMessages(savedSessionId, token);
+          if (response.success && response.data.messages) {
+            // Transform server messages to chat format
+            const transformedMessages = response.data.messages.map(msg => ({
+              id: msg.id,
+              sender: msg.sender_type === 'user' ? 'user' : 'ai',
+              text: msg.content,
+              timestamp: new Date(msg.created_at),
+              isStreaming: false
+            }));
+            dispatch({ type: 'LOAD_MESSAGES', payload: transformedMessages });
+          }
+          dispatch({ type: 'SET_SESSION_ID', payload: savedSessionId });
+        } catch (error) {
+          console.error('Error loading messages from server:', error);
+          // Clear invalid session
+          sessionStorage.removeItem(`fluentify_chat_session_${userId}`);
+        }
       }
-    }
-    
-    if (savedSessionId) {
-      dispatch({ type: 'SET_SESSION_ID', payload: savedSessionId });
-    }
-  }, []);
+    };
 
-  // Save messages to sessionStorage whenever messages change
-  useEffect(() => {
-    if (state.messages.length > 0) {
-      sessionStorage.setItem('fluentify_chat_messages', JSON.stringify(state.messages));
-    }
-  }, [state.messages]);
+    loadMessages();
+  }, [token, userId]);
 
-  // Save session ID to sessionStorage
+  // Save session ID to user-specific sessionStorage
   useEffect(() => {
-    if (state.sessionId) {
-      sessionStorage.setItem('fluentify_chat_session_id', state.sessionId);
+    if (state.sessionId && userId) {
+      sessionStorage.setItem(`fluentify_chat_session_${userId}`, state.sessionId);
     }
-  }, [state.sessionId]);
+  }, [state.sessionId, userId]);
 
   const sendMessage = useCallback(async (message) => {
     if (!token) {
@@ -176,9 +200,10 @@ export const useChat = (token) => {
 
   const clearChat = useCallback(() => {
     dispatch({ type: 'CLEAR_CHAT' });
-    sessionStorage.removeItem('fluentify_chat_messages');
-    sessionStorage.removeItem('fluentify_chat_session_id');
-  }, []);
+    if (userId) {
+      sessionStorage.removeItem(`fluentify_chat_session_${userId}`);
+    }
+  }, [userId]);
 
   const clearError = useCallback(() => {
     dispatch({ type: 'CLEAR_ERROR' });
