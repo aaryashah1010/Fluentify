@@ -54,6 +54,7 @@ const LessonPage = () => {
     setUserAnswers({});
     setShowResults(false);
     setExerciseResults(null);
+    setLessonJustCompleted(false); // Allow practicing again
     generateExercisesMutation.mutate({
       courseId: Number(courseId),
       unitId: Number(unitId),
@@ -243,6 +244,14 @@ const LessonPage = () => {
                     Back to Course
                   </Button>
                   <Button
+                    onClick={generateAdditionalExercises}
+                    loading={generateExercisesMutation.isPending}
+                    variant="secondary"
+                    icon={<Play className="w-4 h-4" />}
+                  >
+                    Practice More
+                  </Button>
+                  <Button
                     onClick={() => window.location.reload()}
                     variant="secondary"
                     icon={<RotateCcw className="w-4 h-4" />}
@@ -396,7 +405,7 @@ const LessonPage = () => {
               <div className="space-y-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">Exercises (Need 3/5 Correct to Pass)</h3>
-                  {showResults && !exerciseResults?.passed && (
+                  {showResults && (
                     <Button
                       onClick={generateAdditionalExercises}
                       loading={generateExercisesMutation.isPending}
@@ -428,7 +437,7 @@ const LessonPage = () => {
                   </div>
                 )}
                 
-                {exercises.length > 0 ? (
+                {!generateExercisesMutation.isPending && exercises.length > 0 ? (
                   <>
                     <div className="space-y-4">
                       {exercises.map((exercise, index) => {
@@ -529,6 +538,21 @@ const LessonPage = () => {
                       </div>
                     )}
                   </>
+                ) : generateExercisesMutation.isPending ? (
+                  <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                    <div className="relative">
+                      <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Play className="w-6 h-6 text-blue-600 animate-pulse" />
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-2">Generating Exercises...</h4>
+                      <p className="text-sm text-gray-600 max-w-sm">
+                        Our AI is creating personalized exercises for you. This should only take a moment!
+                      </p>
+                    </div>
+                  </div>
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-gray-600 mb-4">No exercises available for this lesson.</p>

@@ -107,7 +107,7 @@ const ProgressPage = () => {
               Complete your first lesson to unlock your personalized progress dashboard and track your learning journey!
             </p>
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/learner/modules')}
               className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold"
             >
               Start Learning Now

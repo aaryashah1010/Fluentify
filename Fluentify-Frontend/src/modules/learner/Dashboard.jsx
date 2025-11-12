@@ -14,13 +14,17 @@ const Dashboard = () => {
 
   // Prevent back navigation from dashboard
   useEffect(() => {
-    // Add a dummy state to history
-    window.history.pushState({ page: 'dashboard' }, '', window.location.href);
+    // Add a dummy state to history only if we're on the dashboard
+    if (location.pathname === '/dashboard') {
+      window.history.pushState({ page: 'dashboard' }, '', window.location.href);
+    }
     
     const handlePopState = (event) => {
-      // Prevent going back by immediately pushing forward
-      event.preventDefault();
-      window.history.pushState({ page: 'dashboard' }, '', window.location.href);
+      // Only prevent back navigation if we're still on dashboard
+      if (window.location.pathname === '/dashboard') {
+        event.preventDefault();
+        window.history.pushState({ page: 'dashboard' }, '', window.location.href);
+      }
     };
 
     // Also handle beforeunload to prevent accidental navigation
