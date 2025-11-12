@@ -52,7 +52,7 @@ const Login = () => {
     loginMutation.mutate(
       { role: form.role, email: form.email, password: form.password },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
           // Navigate based on role
           if (form.role === 'learner') {
             navigate('/dashboard');
