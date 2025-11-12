@@ -1,11 +1,4 @@
--- FIX: Analytics Tables for Learning Activity Tracking
--- This table stores all learning events for analytics purposes.
--- 
--- NOTE: If you get "Failed to load analytics data" error, this migration
--- may not have run. Solutions:
---   1. If using Docker: Reset database volume (docker-compose down -v && docker-compose up)
---   2. Run manually: Execute src/database/06-fix-analytics-tables.sql
---   3. Or use the script: node scripts/fix-analytics-tables.js
+
 
 CREATE TABLE IF NOT EXISTS learning_logs (
     log_id SERIAL PRIMARY KEY,
