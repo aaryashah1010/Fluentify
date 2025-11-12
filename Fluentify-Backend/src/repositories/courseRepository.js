@@ -128,29 +128,88 @@ class CourseRepository {
   /**
    * Find learner courses with stats
    */
+  /**
+   * FIX: Find all learner courses with stats - includes both AI courses and enrolled admin courses
+   * This ensures user management shows all enrolled courses, not just AI-generated ones
+   */
   async findLearnerCoursesWithStats(userId) {
     const result = await db.query(
-      `SELECT c.*,
+      `-- Part 1: AI-generated courses for this learner
+       SELECT 
+        c.id,
+        c.learner_id,
+        c.language,
+        c.title,
+        c.description,
+        c.course_data,
+        c.total_lessons,
+        c.total_units,
+        c.created_at,
+        c.expected_duration,
+        'ai' as course_type,
         COALESCE((
-          SELECT SUM(lp.xp_earned) FROM lesson_progress lp WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id
+          SELECT SUM(lp.xp_earned) FROM lesson_progress lp 
+          WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id
         ), 0) as total_xp,
         COALESCE((
-          SELECT COUNT(*) FROM lesson_progress lp WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id AND lp.is_completed = true
+          SELECT COUNT(*) FROM lesson_progress lp 
+          WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id AND lp.is_completed = true
         ), 0) as lessons_completed,
         COALESCE((
-          SELECT COUNT(*) FROM unit_progress up WHERE up.learner_id = c.learner_id AND up.course_id = c.id AND up.is_completed = true
+          SELECT COUNT(*) FROM unit_progress up 
+          WHERE up.learner_id = c.learner_id AND up.course_id = c.id AND up.is_completed = true
         ), 0) as units_completed,
         COALESCE(us.current_streak, 0) as current_streak,
         ROUND(
           COALESCE((
-            SELECT COUNT(*) FROM lesson_progress lp WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id AND lp.is_completed = true
-          ), 0) * 100.0 /
-          GREATEST((c.course_data->'metadata'->>'totalLessons')::int, 1), 1
+            SELECT COUNT(*) FROM lesson_progress lp 
+            WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id AND lp.is_completed = true
+          ), 0) * 100.0 / GREATEST(c.total_lessons, 1), 0
         ) as progress_percentage
        FROM courses c
        LEFT JOIN user_stats us ON c.id = us.course_id AND c.learner_id = us.learner_id
        WHERE c.learner_id = $1 AND c.is_active = true
-       ORDER BY c.created_at DESC`,
+       
+       UNION ALL
+       
+       -- Part 2: Admin-created courses that this learner is enrolled in
+       SELECT 
+        lm.id,
+        $1::int as learner_id,
+        lm.language,
+        lm.title,
+        lm.description,
+        NULL::jsonb as course_data,
+        lm.total_lessons,
+        lm.total_units,
+        le.enrolled_at as created_at,
+        lm.estimated_duration as expected_duration,
+        'admin' as course_type,
+        COALESCE((
+          SELECT SUM(lp.xp_earned) FROM lesson_progress lp 
+          WHERE lp.learner_id = $1 AND lp.course_id = lm.id
+        ), 0) as total_xp,
+        COALESCE((
+          SELECT COUNT(*) FROM lesson_progress lp 
+          WHERE lp.learner_id = $1 AND lp.course_id = lm.id AND lp.is_completed = true
+        ), 0) as lessons_completed,
+        COALESCE((
+          SELECT COUNT(*) FROM unit_progress up 
+          WHERE up.learner_id = $1 AND up.course_id = lm.id AND up.is_completed = true
+        ), 0) as units_completed,
+        COALESCE(us2.current_streak, 0) as current_streak,
+        ROUND(
+          COALESCE((
+            SELECT COUNT(*) FROM lesson_progress lp 
+            WHERE lp.learner_id = $1 AND lp.course_id = lm.id AND lp.is_completed = true
+          ), 0) * 100.0 / GREATEST(lm.total_lessons, 1), 0
+        ) as progress_percentage
+       FROM learner_enrollments le
+       INNER JOIN language_modules lm ON le.module_id = lm.id
+       LEFT JOIN user_stats us2 ON lm.id = us2.course_id AND us2.learner_id = $1
+       WHERE le.learner_id = $1
+       
+       ORDER BY created_at DESC`,
       [userId]
     );
     return result.rows;
@@ -207,34 +266,166 @@ class CourseRepository {
   }
 
   /**
-   * Find all active courses
+   * Update lesson exercises
+   */
+  async updateLessonExercises(lessonDbId, exercises) {
+    await db.query(
+      `UPDATE course_lessons 
+       SET exercises = $1::jsonb, updated_at = NOW()
+       WHERE id = $2`,
+      [JSON.stringify(exercises), lessonDbId]
+    );
+  }
+
+  /**
+   * Find all active courses: AI courses (user-specific) + Admin courses (shared)
    */
   async findAllActiveCourses(userId) {
+    console.log('📊 Fetching courses for userId:', userId);
+    
     const result = await db.query(
-      `SELECT c.*,
+      `-- Part 1: AI-generated courses (ONLY for this specific user)
+       SELECT 
+        c.id,
+        c.language,
+        c.title,
+        c.description,
+        c.total_lessons,
+        c.total_units,
+        c.learner_id,
+        c.created_at,
+        'ai' as source_type,
         COALESCE((
-          SELECT SUM(lp.xp_earned) FROM lesson_progress lp WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id
+          SELECT SUM(lp.xp_earned) FROM lesson_progress lp 
+          WHERE lp.learner_id = $1 AND lp.course_id = c.id
         ), 0) as total_xp,
         COALESCE((
-          SELECT COUNT(*) FROM lesson_progress lp WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id AND lp.is_completed = true
+          SELECT COUNT(*) FROM lesson_progress lp 
+          WHERE lp.learner_id = $1 AND lp.course_id = c.id AND lp.is_completed = true
         ), 0) as lessons_completed,
         COALESCE((
-          SELECT COUNT(*) FROM unit_progress up WHERE up.learner_id = c.learner_id AND up.course_id = c.id AND up.is_completed = true
+          SELECT COUNT(*) FROM unit_progress up 
+          WHERE up.learner_id = $1 AND up.course_id = c.id AND up.is_completed = true
         ), 0) as units_completed,
-        COALESCE(us.current_streak, 0) as current_streak,
-        ROUND(
-          COALESCE((
-            SELECT COUNT(*) FROM lesson_progress lp WHERE lp.learner_id = c.learner_id AND lp.course_id = c.id AND lp.is_completed = true
-          ), 0) * 100.0 /
-          GREATEST((c.course_data->'metadata'->>'totalLessons')::int, 1), 1
-        ) as progress_percentage
+        COALESCE(us.current_streak, 0) as current_streak
        FROM courses c
-       LEFT JOIN user_stats us ON c.id = us.course_id AND c.learner_id = us.learner_id
+       LEFT JOIN user_stats us ON c.id = us.course_id AND us.learner_id = $1
        WHERE c.learner_id = $1 AND c.is_active = true
-       ORDER BY c.created_at DESC`,
+       
+       UNION ALL
+       
+       -- Part 2: Admin-created courses (visible to ALL users)
+       SELECT 
+        lm.id,
+        lm.language,
+        lm.title,
+        lm.description,
+        lm.total_lessons,
+        lm.total_units,
+        NULL as learner_id,
+        lm.created_at,
+        'admin' as source_type,
+        0 as total_xp,
+        0 as lessons_completed,
+        0 as units_completed,
+        0 as current_streak
+       FROM language_modules lm
+       WHERE lm.is_published = true
+       
+       ORDER BY created_at DESC`,
       [userId]
     );
+    
+    console.log(`✅ Found ${result.rows.length} courses for user ${userId}`);
+    result.rows.forEach(course => {
+      console.log(`  - ${course.title} (${course.source_type}) - learner_id: ${course.learner_id || 'N/A (admin course)'}`);
+    });
+    
     return result.rows;
+  }
+
+  // ==================== PUBLIC METHODS (For Published Courses) ====================
+
+  /**
+   * Get all unique languages with published courses
+   */
+  async getPublishedLanguages() {
+    const result = await db.query(
+      `SELECT DISTINCT language, COUNT(*) as course_count
+       FROM language_modules
+       WHERE is_published = true
+       GROUP BY language
+       ORDER BY language ASC`
+    );
+    return result.rows;
+  }
+
+  /**
+   * Get all published courses for a specific language
+   */
+  async getPublishedCoursesByLanguage(language) {
+    const result = await db.query(
+      `SELECT id, language, level, title, description, thumbnail_url, estimated_duration,
+              is_published, total_units, total_lessons, created_at, updated_at
+       FROM language_modules
+       WHERE language = $1 AND is_published = true
+       ORDER BY created_at DESC`,
+      [language]
+    );
+    return result.rows;
+  }
+
+  /**
+   * Get published course details with units and lessons
+   */
+  async getPublishedCourseDetails(courseId) {
+    const result = await db.query(
+      `SELECT id, language, level, title, description, thumbnail_url, estimated_duration,
+              is_published, total_units, total_lessons, created_at, updated_at
+       FROM language_modules
+       WHERE id = $1 AND is_published = true`,
+      [courseId]
+    );
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    const course = result.rows[0];
+
+    // Fetch units for this course (using module_id, not course_id)
+    const unitsResult = await db.query(
+      `SELECT id, module_id, title, description, difficulty, estimated_time, created_at
+       FROM module_units
+       WHERE module_id = $1
+       ORDER BY created_at ASC`,
+      [courseId]
+    );
+
+    const units = unitsResult.rows;
+
+    // Fetch lessons for each unit
+    const unitsWithLessons = await Promise.all(
+      units.map(async (unit) => {
+        const lessonsResult = await db.query(
+          `SELECT id, unit_id, title, content_type, description, media_url, 
+                  key_phrases, vocabulary, grammar_points, exercises, xp_reward, created_at
+           FROM module_lessons
+           WHERE unit_id = $1
+           ORDER BY created_at ASC`,
+          [unit.id]
+        );
+        return {
+          ...unit,
+          lessons: lessonsResult.rows
+        };
+      })
+    );
+
+    return {
+      ...course,
+      units: unitsWithLessons
+    };
   }
 }
 

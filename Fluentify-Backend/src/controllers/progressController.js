@@ -70,7 +70,29 @@ const markLessonComplete = async (req, res, next) => {
       throw ERRORS.LESSON_NOT_FOUND;
     }
 
+    // Validate exercise score - must get at least 3/5 correct
+    if (exercises && exercises.length > 0) {
+      const correctAnswers = exercises.filter(ex => ex.isCorrect === true).length;
+      const totalExercises = exercises.length;
+      
+      if (totalExercises >= 5 && correctAnswers < 3) {
+        return res.status(400).json({
+          success: false,
+          message: 'You need at least 3 out of 5 correct answers to complete this lesson',
+          data: {
+            correctAnswers,
+            totalExercises,
+            passed: false
+          }
+        });
+      }
+    }
+
     const xpEarned = lesson.xpReward || 50;
+
+    // Calculate vocabulary from lesson data
+    const vocabularyCount = lesson.vocabulary?.length || 0;
+    const vocabularyMastered = Math.round(vocabularyCount * (score / 100)); // Mastered based on score
 
     // Get lesson database ID from course_lessons table
     const lessonDbId = await courseRepository.findLessonDbId(courseId, parseInt(unitId), parseInt(lessonId));
@@ -86,8 +108,17 @@ const markLessonComplete = async (req, res, next) => {
       throw ERRORS.LESSON_ALREADY_COMPLETED;
     }
 
-    // Mark lesson as complete
-    await progressRepository.upsertLessonProgress(userId, courseId, parseInt(unitId), lessonDbId, score, xpEarned);
+    // Mark lesson as complete with vocabulary data
+    await progressRepository.upsertLessonProgress(
+      userId, 
+      courseId, 
+      parseInt(unitId), 
+      lessonDbId, 
+      score, 
+      xpEarned, 
+      vocabularyMastered, 
+      vocabularyCount
+    );
 
     // Determine module type based on course metadata
     const moduleType = courseResult.course_data?.metadata?.createdBy === 'admin' ? 'ADMIN' : 'AI';
@@ -197,6 +228,7 @@ const markLessonComplete = async (req, res, next) => {
 const getUserCourses = async (req, res, next) => {
   try {
     const userId = req.user.id;
+    console.log('👤 getUserCourses called for userId:', userId);
 
     const courses = await courseRepository.findAllActiveCourses(userId);
 
@@ -204,6 +236,10 @@ const getUserCourses = async (req, res, next) => {
       id: course.id,
       language: course.language,
       title: course.title,
+      description: course.description,
+      sourceType: course.source_type, // 'ai' or 'admin' - important for frontend!
+      totalLessons: course.total_lessons,
+      totalUnits: course.total_units,
       createdAt: course.created_at,
       progress: {
         totalXp: course.total_xp || 0,
@@ -213,6 +249,7 @@ const getUserCourses = async (req, res, next) => {
       }
     }));
 
+    console.log(`📦 Returning ${coursesWithProgress.length} courses to user ${userId}`);
     res.json(listResponse(coursesWithProgress, 'User courses retrieved successfully'));
   } catch (error) {
     console.error('Error fetching user courses:', error);
@@ -232,9 +269,37 @@ const initializeCourseProgress = async (courseId, userId) => {
   }
 };
 
+/**
+ * Get progress report with summary, timeline, and recent activity
+ * Can be filtered by course
+ */
+const getProgressReport = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { range = 'all', courseId } = req.query;
+    
+    // Convert range to days (7d -> 7, 30d -> 30, all -> null)
+    const days = range === 'all' ? null : parseInt(range.replace('d', ''));
+    
+    const summary = await progressRepository.getSummaryKPIs(userId, days, courseId);
+    const timeline = await progressRepository.getProgressOverTime(userId, days, courseId);
+    const recentActivity = await progressRepository.getRecentActivity(userId, 5, courseId);
+    
+    res.json(successResponse({
+      summary,
+      timeline,
+      recentActivity
+    }, 'Progress report retrieved successfully'));
+  } catch (error) {
+    console.error('Error fetching progress report:', error);
+    next(error);
+  }
+};
+
 export {
   getCourseProgress,
   markLessonComplete,
   getUserCourses,
-  initializeCourseProgress
+  initializeCourseProgress,
+  getProgressReport
 };

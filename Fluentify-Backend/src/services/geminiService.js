@@ -11,6 +11,37 @@ class GeminiService {
   }
 
   /**
+   * Retry helper with exponential backoff for rate limiting
+   */
+  async retryWithBackoff(fn, maxRetries = 3, initialDelay = 2000) {
+    let lastError;
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error;
+        
+        // Check if it's a rate limit error (429)
+        if (error.status === 429 || error.message?.includes('429') || error.message?.includes('Too Many Requests')) {
+          const delay = initialDelay * Math.pow(2, attempt); // Exponential backoff: 2s, 4s, 8s
+          console.warn(`⏳ Rate limit hit. Retrying in ${delay/1000}s... (Attempt ${attempt + 1}/${maxRetries})`);
+          
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        
+        // If it's not a rate limit error, throw immediately
+        throw error;
+      }
+    }
+    
+    // If all retries failed, throw the last error
+    throw lastError;
+  }
+
+  /**
    * Generate a structured language learning course similar to Duolingo
    * @param {string} language - The target language to learn
    * @param {string} expectedDuration - Expected learning duration (e.g., '3 months', '6 months')
@@ -167,7 +198,7 @@ Respond with ONLY valid JSON in this exact format:
       ],
       "exercises": [
         {
-          "type": "multiple_choice|translation|matching|listening",
+          "type": "multiple_choice",
           "question": "exercise question",
           "options": ["option 1", "option 2", "option 3", "option 4"],
           "correctAnswer": 0
@@ -183,25 +214,29 @@ IMPORTANT:
 - Create exactly ${unitOutline.lessonCount} lessons
 - Each vocabulary lesson MUST have 5-8 vocabulary items with detailed examples
 - Each grammar lesson MUST have 2-4 comprehensive grammar points with multiple examples
-- Include 3-5 varied exercises per lesson (mix of multiple_choice, translation, matching, listening)
+- Include EXACTLY 5 multiple choice questions (MCQ) per lesson
+- ALL exercises MUST be type "multiple_choice" with exactly 4 options
 - Exercises should test understanding, not just memorization
 - Include practical, real-world examples in all content
 - Last lesson MUST be type "review" covering all unit topics
 - Ensure all JSON arrays and objects are properly closed
 - Make content engaging and progressively challenging`;
 
-    const result = await this.model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        maxOutputTokens: 8192,
-        temperature: 0.7,
-      },
+    // Use retry with backoff to handle rate limits
+    return await this.retryWithBackoff(async () => {
+      const result = await this.model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: 8192,
+          temperature: 0.7,
+        },
+      });
+      
+      const response = await result.response;
+      const text = response.text();
+      
+      return this.parseJSON(text);
     });
-    
-    const response = await result.response;
-    const text = response.text();
-    
-    return this.parseJSON(text);
   }
 
   /**
@@ -286,32 +321,38 @@ IMPORTANT:
    */
   async generateExercises(lessonTitle, lessonType, language) {
     try {
-      const prompt = `Generate 5 additional exercises for a ${lessonType} lesson titled "${lessonTitle}" in ${language}. 
+      const prompt = `Generate 5 multiple choice questions (MCQ) for a ${lessonType} lesson titled "${lessonTitle}" in ${language}. 
 
-The exercises should be a mix of:
-- Multiple choice questions
-- Translation exercises
-- Matching exercises
-- Fill-in-the-blank exercises
+IMPORTANT REQUIREMENTS:
+- ALL exercises MUST be "multiple_choice" type only
+- Each question MUST have exactly 4 options
+- Questions should test understanding of the lesson content
+- Options should be plausible to make questions challenging
+- correctAnswer must be the index (0-3) of the correct option
 
-Provide the response in this JSON format:
+Provide the response in this EXACT JSON format:
 {
   "exercises": [
     {
-      "type": "multiple_choice|translation|matching|fill_blank",
+      "type": "multiple_choice",
       "question": "Exercise question",
       "options": ["option 1", "option 2", "option 3", "option 4"],
       "correctAnswer": 0,
       "explanation": "Brief explanation of the answer"
     }
   ]
-}`;
+}
 
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      return this.parseJSON(text);
+Make sure to generate exactly 5 exercises.`;
+
+      // Use retry with backoff to handle rate limits
+      return await this.retryWithBackoff(async () => {
+        const result = await this.model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        
+        return this.parseJSON(text);
+      });
     } catch (error) {
       console.error('Error generating exercises:', error);
       throw new Error('Failed to generate exercises');
