@@ -55,8 +55,8 @@ const TutorChat = ({ compact = false }) => {
               🤖
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-800">Fluent - AI Tutor</h2>
-              <p className="text-sm text-gray-600">Your personal language learning assistant</p>
+              <h2 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Fluent - AI Tutor</h2>
+              <p className="text-sm text-gray-600">🌍 Multilingual Expert • Any Language, Any Context</p>
             </div>
           </div>
           
@@ -98,37 +98,67 @@ const TutorChat = ({ compact = false }) => {
             <div className={`${compact ? 'w-12 h-12' : 'w-16 h-16'} mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white flex items-center justify-center ${compact ? 'text-xl' : 'text-2xl'}`}>
               🤖
             </div>
-            <h3 className={`${compact ? 'text-base' : 'text-lg'} font-semibold text-gray-800 mb-2`}>
-              Welcome to your AI Tutor!
+            <h3 className={`${compact ? 'text-base' : 'text-xl'} font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2`}>
+              Welcome to Fluent - Your Multilingual AI Tutor! 🌎
             </h3>
             {!compact && (
               <>
-                <p className="text-gray-600 max-w-md mx-auto mb-4">
-                  I'm Fluent, your personal language learning assistant. I can help you with:
+                <p className="text-gray-700 max-w-2xl mx-auto mb-4 font-medium">
+                  I'm an expert polyglot ready to help you learn ANY language - from Spanish to Japanese, Arabic to French, and everything in between!
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-lg mx-auto text-sm text-gray-700">
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <strong>Grammar & Vocabulary</strong><br />
-                    Explanations and examples
+                <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-4 rounded-xl mb-4 max-w-2xl mx-auto border border-purple-200">
+                  <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span className="text-lg">✨</span> What I Can Do:
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700">
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-500 font-bold">✓</span>
+                      <span>Teach <strong>any language</strong> at any level</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-500 font-bold">✓</span>
+                      <span>Translate between <strong>any languages</strong></span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-500 font-bold">✓</span>
+                      <span>Explain grammar, vocabulary & culture</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-500 font-bold">✓</span>
+                      <span>Create custom practice exercises</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-500 font-bold">✓</span>
+                      <span>Help with pronunciation & phonetics</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-500 font-bold">✓</span>
+                      <span>Assist with <strong>any context</strong>: travel, business, academics</span>
+                    </div>
                   </div>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <strong>Pronunciation</strong><br />
-                    Phonetic guidance
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <strong>Cultural Context</strong><br />
-                    Usage in real situations
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <strong>Practice Exercises</strong><br />
-                    Custom learning activities
+                </div>
+                <div className="max-w-2xl mx-auto">
+                  <p className="text-sm text-gray-600 mb-3 font-medium">💡 Try asking me:</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                    <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-purple-300 transition-colors">
+                      <span className="text-purple-600">"Teach me French greetings"</span>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-purple-300 transition-colors">
+                      <span className="text-purple-600">"How do I say 'thank you' in Japanese?"</span>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-purple-300 transition-colors">
+                      <span className="text-purple-600">"Explain Spanish verb conjugations"</span>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-purple-300 transition-colors">
+                      <span className="text-purple-600">"Business vocabulary in German"</span>
+                    </div>
                   </div>
                 </div>
               </>
             )}
             {compact && (
               <p className="text-sm text-gray-600 px-2">
-                Ask me anything about your target language!
+                Ask me anything about any language - I'm here to help!
               </p>
             )}
           </div>
@@ -156,7 +186,7 @@ const TutorChat = ({ compact = false }) => {
         disabled={isLoading}
         placeholder={
           messages.length === 0 
-            ? "Ask me anything about your target language!" 
+            ? "Ask me anything about any language... 🌍" 
             : "Continue the conversation..."
         }
       />

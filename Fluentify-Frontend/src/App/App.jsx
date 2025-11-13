@@ -27,9 +27,6 @@ import {
   UserManagementLayout,
   CourseEditorPage
 } from '../modules/admin';
-
-import UserListPage from '../modules/admin/user-management/pages/UserListPage';
-import UserDetailPage from '../modules/admin/user-management/pages/UserDetailPage';
 import PublishedLanguageList from '../modules/learner/components/PublishedLanguageList';
 import PublishedCourseList from '../modules/learner/components/PublishedCourseList';
 import PublishedCourseDetails from '../modules/learner/components/PublishedCourseDetails';
@@ -89,7 +86,7 @@ function SmartRedirect() {
 
   // Role-based redirect
   if (payload.role === 'admin') {
-    return <Navigate to="/admin/dashboard" replace />;
+    return <Navigate to="/admin-dashboard" replace />;
   } else {
     return <Navigate to="/dashboard" replace />;
   }
@@ -234,22 +231,6 @@ function App() {
           element={
             <ProtectedRoute role="admin">
               <ModuleManagementLayout />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/users"
-          element={
-            <ProtectedRoute role="admin">
-              <UserListPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/users/:userId"
-          element={
-            <ProtectedRoute role="admin">
-              <UserDetailPage />
             </ProtectedRoute>
           }
         />
