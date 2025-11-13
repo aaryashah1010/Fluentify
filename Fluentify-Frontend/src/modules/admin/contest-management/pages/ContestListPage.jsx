@@ -194,10 +194,10 @@ const ContestListPage = () => {
               </button>
               <button
                 onClick={() => handleDelete(deleteConfirm)}
-                disabled={deleteContest.isLoading}
+                disabled={deleteContest.isPending}
                 className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
               >
-                {deleteContest.isLoading ? 'Deleting...' : 'Delete'}
+                {deleteContest.isPending ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>

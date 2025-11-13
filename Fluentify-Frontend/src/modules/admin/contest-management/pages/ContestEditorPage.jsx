@@ -513,7 +513,7 @@ const ContestEditorPage = () => {
                   {/* Add Question Button */}
                   <Button
                     onClick={handleAddQuestion}
-                    loading={addQuestion.isLoading}
+                    loading={addQuestion.isPending}
                     icon={<Plus className="w-4 h-4" />}
                     className="w-full"
                   >
@@ -534,7 +534,7 @@ const ContestEditorPage = () => {
                   </div>
                   <Button
                     onClick={handlePublish}
-                    loading={publishContest.isLoading}
+                    loading={publishContest.isPending}
                     disabled={questions.length === 0}
                     icon={<Send className="w-4 h-4" />}
                   >
