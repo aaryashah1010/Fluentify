@@ -425,29 +425,59 @@ class AuthController {
   async updateProfile(req, res, next) {
     try {
       const { id, role } = req.user;
-      const { name } = req.body;
+      const { name, contest_name } = req.body;
 
-      if (!name || !name.trim()) {
+      // At least one field must be provided
+      if (!name && contest_name === undefined) {
         return res.status(400).json({
           success: false,
-          message: 'Name is required'
+          message: 'At least one field (name or contest_name) is required'
         });
       }
 
-      // Validate name
-      const nameValidation = validateName(name);
-      if (!nameValidation.isValid) {
-        return res.status(400).json({
-          success: false,
-          message: nameValidation.errors.join(', ')
-        });
+      // Validate name if provided
+      if (name !== undefined) {
+        if (!name || !name.trim()) {
+          return res.status(400).json({
+            success: false,
+            message: 'Name cannot be empty'
+          });
+        }
+
+        const nameValidation = validateName(name);
+        if (!nameValidation.isValid) {
+          return res.status(400).json({
+            success: false,
+            message: nameValidation.errors.join(', ')
+          });
+        }
+      }
+
+      // Validate contest_name if provided
+      if (contest_name !== undefined && contest_name !== null && contest_name.trim()) {
+        if (contest_name.trim().length > 50) {
+          return res.status(400).json({
+            success: false,
+            message: 'Contest name must be 50 characters or less'
+          });
+        }
       }
 
       // Update profile based on role
       let updatedProfile;
       if (role === 'learner') {
-        updatedProfile = await authRepository.updateLearnerProfile(id, name.trim());
+        const updates = {};
+        if (name !== undefined) updates.name = name.trim();
+        if (contest_name !== undefined) updates.contest_name = contest_name ? contest_name.trim() : null;
+        
+        updatedProfile = await authRepository.updateLearnerProfile(id, updates);
       } else if (role === 'admin') {
+        if (contest_name !== undefined) {
+          return res.status(400).json({
+            success: false,
+            message: 'Contest name is only available for learners'
+          });
+        }
         updatedProfile = await authRepository.updateAdminProfile(id, name.trim());
       } else {
         throw ERRORS.INVALID_AUTH_TOKEN;

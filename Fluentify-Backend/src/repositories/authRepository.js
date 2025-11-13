@@ -266,7 +266,7 @@ class AuthRepository {
    */
   async getFullLearnerProfile(id) {
     const result = await db.query(
-      `SELECT id, name, email, created_at, updated_at, is_email_verified, email_verified_at
+      `SELECT id, name, email, contest_name, created_at, updated_at, is_email_verified, email_verified_at
        FROM learners 
        WHERE id = $1`,
       [id]
@@ -288,16 +288,44 @@ class AuthRepository {
   }
 
   /**
-   * Update learner profile (name)
+   * Update learner profile (name and contest_name)
    */
-  async updateLearnerProfile(id, name) {
-    const result = await db.query(
-      `UPDATE learners 
-       SET name = $1, updated_at = NOW() 
-       WHERE id = $2
-       RETURNING id, name, email, created_at, updated_at, is_email_verified, email_verified_at`,
-      [name, id]
-    );
+  async updateLearnerProfile(id, updates) {
+    const { name, contest_name } = updates;
+    
+    // Build dynamic query based on provided fields
+    const fields = [];
+    const values = [];
+    let paramCount = 1;
+    
+    if (name !== undefined) {
+      fields.push(`name = $${paramCount}`);
+      values.push(name);
+      paramCount++;
+    }
+    
+    if (contest_name !== undefined) {
+      fields.push(`contest_name = $${paramCount}`);
+      values.push(contest_name);
+      paramCount++;
+    }
+    
+    if (fields.length === 0) {
+      // No updates provided, just return current profile
+      return await this.getFullLearnerProfile(id);
+    }
+    
+    fields.push(`updated_at = NOW()`);
+    values.push(id);
+    
+    const query = `
+      UPDATE learners 
+      SET ${fields.join(', ')}
+      WHERE id = $${paramCount}
+      RETURNING id, name, email, contest_name, created_at, updated_at, is_email_verified, email_verified_at
+    `;
+    
+    const result = await db.query(query, values);
     return result.rows[0];
   }
 

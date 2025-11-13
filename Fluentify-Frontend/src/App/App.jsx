@@ -28,11 +28,20 @@ import {
   CourseEditorPage
 } from '../modules/admin';
 
+import {
+  ContestListPage,
+  ContestEditorPage
+} from '../modules/admin/contest-management';
+
 import UserListPage from '../modules/admin/user-management/pages/UserListPage';
 import UserDetailPage from '../modules/admin/user-management/pages/UserDetailPage';
 import PublishedLanguageList from '../modules/learner/components/PublishedLanguageList';
 import PublishedCourseList from '../modules/learner/components/PublishedCourseList';
 import PublishedCourseDetails from '../modules/learner/components/PublishedCourseDetails';
+import ContestBrowsePage from '../modules/learner/contests/ContestBrowsePage';
+import ContestParticipatePage from '../modules/learner/contests/ContestParticipatePage';
+import ContestResultPage from '../modules/learner/contests/ContestResultPage';
+import ContestLeaderboardPage from '../modules/learner/contests/ContestLeaderboardPage';
 import { StreamingProvider } from '../contexts/StreamingContext';
 import './App.css';
 
@@ -73,26 +82,9 @@ function ProtectedRoute({ children, role }) {
   return children;
 }
 
-/** Smart redirect to dashboard depending on role */
+/** Smart redirect - always go to login first */
 function SmartRedirect() {
-  const token = localStorage.getItem('jwt');
-
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-
-  const payload = decodeJwtPayload(token);
-  if (!payload || (payload.exp && payload.exp * 1000 < Date.now())) {
-    localStorage.removeItem('jwt');
-    return <Navigate to="/login" replace />;
-  }
-
-  // Role-based redirect
-  if (payload.role === 'admin') {
-    return <Navigate to="/admin/dashboard" replace />;
-  } else {
-    return <Navigate to="/dashboard" replace />;
-  }
+  return <Navigate to="/login" replace />;
 }
 
 function App() {
@@ -105,7 +97,18 @@ function App() {
         {/* Authentication */}
         <Route path="/signup" element={<SignupWithOTP />} />
         <Route path="/signup-old" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
+        <Route 
+          path="/login" 
+          element={
+            (() => {
+              // Clear token if logout query param is present
+              if (new URLSearchParams(window.location.search).get('logout') === 'true') {
+                localStorage.removeItem('jwt');
+              }
+              return <Login />;
+            })()
+          } 
+        />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Learner Routes */}
@@ -146,6 +149,39 @@ function App() {
           element={
             <ProtectedRoute role="learner">
               <LanguageModulesPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Learner Contest Routes */}
+        <Route
+          path="/contests"
+          element={
+            <ProtectedRoute role="learner">
+              <ContestBrowsePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/contests/:contestId"
+          element={
+            <ProtectedRoute role="learner">
+              <ContestParticipatePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/contests/:contestId/result"
+          element={
+            <ProtectedRoute role="learner">
+              <ContestResultPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/contests/:contestId/leaderboard"
+          element={
+            <ProtectedRoute role="learner">
+              <ContestLeaderboardPage />
             </ProtectedRoute>
           }
         />
@@ -211,6 +247,10 @@ function App() {
         {/* Admin Routes */}
         <Route
           path="/admin"
+          element={<Navigate to="/admin-dashboard" replace />}
+        />
+        <Route
+          path="/admin/dashboard"
           element={<Navigate to="/admin-dashboard" replace />}
         />
         <Route
@@ -285,6 +325,42 @@ function App() {
             </ProtectedRoute>
           }
         />
+        {/* Admin Contest Management */}
+        <Route
+          path="/admin/contests"
+          element={
+            <ProtectedRoute role="admin">
+              <ContestListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/contests/new"
+          element={
+            <ProtectedRoute role="admin">
+              <ContestEditorPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/contests/:contestId/edit"
+          element={
+            <ProtectedRoute role="admin">
+              <ContestEditorPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/contests/:contestId"
+          element={
+            <ProtectedRoute role="admin">
+              <ContestEditorPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Backward-compatible redirects from old paths */}
+        <Route path="/admin/dashboard/contest" element={<Navigate to="/admin/contests" replace />} />
+        <Route path="/admin/dashboard/contests" element={<Navigate to="/admin/contests" replace />} />
 
         {/* Fallback */}
         <Route path="*" element={<SmartRedirect />} />

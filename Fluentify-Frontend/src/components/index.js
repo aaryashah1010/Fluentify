@@ -11,6 +11,10 @@ export { default as TypingIndicator } from './TypingIndicator';
 export { default as FloatingChatWidget } from './FloatingChatWidget';
 export { default as PasswordStrengthIndicator } from './PasswordStrengthIndicator';
 export { default as OTPInput } from './OTPInput';
+export { default as ContestCard } from './ContestCard';
+export { default as LeaderboardTable } from './LeaderboardTable';
+export { default as McqQuestion } from './McqQuestion';
+export { default as ContestTimer } from './ContestTimer';
 export { 
   Skeleton, 
   SkeletonText, 

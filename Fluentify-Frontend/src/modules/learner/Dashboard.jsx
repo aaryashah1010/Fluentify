@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, BookOpen, MessageCircle, Globe, User, TrendingUp } from 'lucide-react';
+import { LogOut, BookOpen, MessageCircle, Globe, User, TrendingUp, Trophy } from 'lucide-react';
 import { useCourses } from '../../hooks/useCourses';
 import { useLogout } from '../../hooks/useAuth';
 import { useStreaming } from '../../contexts/StreamingContext';
@@ -17,24 +17,15 @@ const Dashboard = () => {
     // Add a dummy state to history
     window.history.pushState({ page: 'dashboard' }, '', window.location.href);
     
-    const handlePopState = (event) => {
+    const handlePopState = () => {
       // Prevent going back by immediately pushing forward
-      event.preventDefault();
       window.history.pushState({ page: 'dashboard' }, '', window.location.href);
     };
 
-    // Also handle beforeunload to prevent accidental navigation
-    const handleBeforeUnload = (event) => {
-      // This won't prevent back button but helps with other navigation
-      return undefined;
-    };
-
     window.addEventListener('popstate', handlePopState);
-    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [location]);
 
@@ -42,7 +33,7 @@ const Dashboard = () => {
   const { data: courses = [], isLoading: loading } = useCourses();
 
   // Streaming course generation hook
-  const { generateCourse: startStreamGeneration, state: streamState, reset: resetStream } = useStreaming();
+  const { generateCourse: startStreamGeneration, state: streamState } = useStreaming();
 
   // Local state
   const [error, setError] = useState('');
@@ -72,15 +63,6 @@ const Dashboard = () => {
     });
   };
 
-  const handleCloseStream = () => {
-    resetStream();
-    setGenerateForm({ language: '', expectedDuration: '', expertise: '' });
-  };
-
-  const handleNavigateToCourse = (courseId) => {
-    resetStream();
-    navigate(`/course/${courseId}`);
-  };
 
   return (
     <div className="min-h-screen bg-green-50">
@@ -112,6 +94,14 @@ const Dashboard = () => {
             >
               <TrendingUp className="w-4 h-4" />
               Progress Report
+            </button>
+
+            <button
+              onClick={() => navigate('/contests')}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-lg border-0 transition-all shadow-md hover:shadow-lg"
+            >
+              <Trophy className="w-4 h-4" />
+              Contests
             </button>
 
             <button

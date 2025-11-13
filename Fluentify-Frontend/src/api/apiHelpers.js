@@ -14,8 +14,18 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:50
  * @returns {Promise<any>} - Parsed JSON data
  */
 export const handleResponse = async (response) => {
-  const data = await response.json();
-  
+  let data;
+  const contentType = response.headers.get('content-type');
+  if (response.status === 204 || !contentType || !contentType.includes('application/json')) {
+    data = {};
+  } else {
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
+  }
+
   if (!response.ok) {
     // FIX: Only logout on actual authentication/authorization failures
     // Don't logout on other errors like 400, 404, 500, etc.
@@ -38,7 +48,6 @@ export const handleResponse = async (response) => {
       data
     };
   }
-  
   return data;
 };
 
