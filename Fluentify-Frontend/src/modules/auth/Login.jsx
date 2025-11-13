@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { useLogin } from '../../hooks/useAuth';
 import { Eye, EyeOff } from 'lucide-react';
-import fluentifyLogo from '../../assets/fluentify_logo.jpg';
+import fluentifyLogo from '../../assets/fluentify_logo.jpeg';
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '', role: 'learner' });

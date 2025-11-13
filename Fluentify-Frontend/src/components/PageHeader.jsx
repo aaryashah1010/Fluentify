@@ -23,27 +23,34 @@ const PageHeader = ({ title, subtitle, showBack = false, onBack, actions }) => {
   };
   
   return (
-    <header className="bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {showBack && (
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        
+        {/* Left Section */}
+        <div className="flex items-center gap-4">
+          {showBack && (
+            <button
+              onClick={handleBack}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-700" />
+            </button>
+          )}
+
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{title}</h1>
+            {subtitle && (
+              <p className="text-sm text-gray-600 mt-0.5">{subtitle}</p>
             )}
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-              {subtitle && (
-                <p className="text-sm text-gray-600 mt-1">{subtitle}</p>
-              )}
-            </div>
           </div>
-          {actions && <div className="flex items-center gap-2">{actions}</div>}
         </div>
+
+        {/* Right Section (Actions) */}
+        {actions && (
+          <div className="flex items-center gap-3">
+            {actions}
+          </div>
+        )}
       </div>
     </header>
   );

@@ -7,21 +7,47 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 /**
- * Handle API response and throw errors if needed
+ * FIX: Handle API response with improved error handling
+ * Only triggers logout on actual authentication failures (401/403)
+ * Prevents unnecessary logout on other API errors
  * @param {Response} response - Fetch API response
  * @returns {Promise<any>} - Parsed JSON data
  */
 export const handleResponse = async (response) => {
-  const data = await response.json();
-  
+  let data;
+  const contentType = response.headers.get('content-type');
+  if (response.status === 204 || !contentType || !contentType.includes('application/json')) {
+    data = {};
+  } else {
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
+  }
+
   if (!response.ok) {
+    // FIX: Only logout on actual authentication/authorization failures
+    // Don't logout on other errors like 400, 404, 500, etc.
+    if (response.status === 401) {
+      // Token expired or invalid - clear token and logout
+      console.warn('Authentication failed: Token expired or invalid');
+      localStorage.removeItem('jwt');
+      // Don't throw here - let the error propagate so components can handle it
+      // The ProtectedRoute will handle the redirect
+    } else if (response.status === 403) {
+      // Forbidden - user doesn't have permission
+      // This might be a role issue, but don't logout immediately
+      // Let the component handle the error message
+      console.warn('Access forbidden: Insufficient permissions');
+    }
+    
     throw {
       status: response.status,
       message: data.error?.message || data.message || 'Request failed',
       data
     };
   }
-  
   return data;
 };
 

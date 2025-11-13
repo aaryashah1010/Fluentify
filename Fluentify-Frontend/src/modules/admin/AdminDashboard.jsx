@@ -1,11 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLogout } from '../../hooks/useAuth';
-import { LogOut, BookOpen, Users, BarChart3, Settings } from 'lucide-react';
+import { LogOut, BookOpen, Users, BarChart3, Settings, User, Trophy } from 'lucide-react';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const logout = useLogout();
+
+  // Prevent back navigation from admin dashboard
+  useEffect(() => {
+    // Add a dummy state to history
+    window.history.pushState({ page: 'admin-dashboard' }, '', window.location.href);
+    
+    const handlePopState = (event) => {
+      // Prevent going back by immediately pushing forward
+      event.preventDefault();
+      window.history.pushState({ page: 'admin-dashboard' }, '', window.location.href);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   const dashboardCards = [
     {
@@ -16,12 +34,20 @@ const AdminDashboard = () => {
       path: '/admin/modules',
     },
     {
+      title: 'Contest Management',
+      description: 'Create and schedule weekly contests for learners',
+      icon: Trophy,
+      color: 'orange',
+      path: '/admin/contests',
+      disabled: false,
+    },
+    {
       title: 'User Management',
       description: 'View and manage learners and their progress',
       icon: Users,
       color: 'green',
-      path: '#',
-      disabled: true,
+      path: '/admin/users',
+      disabled: false,
     },
     {
       title: 'Analytics',
@@ -46,14 +72,23 @@ const AdminDashboard = () => {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-          <button
-            onClick={logout}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
+          <h1 className="text-2xl font-bold text-gray-900 cursor-pointer" onClick={() => navigate('/admin-dashboard')}>Admin Dashboard</h1>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/admin/profile')}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+            >
+              <User className="w-4 h-4" />
+              Profile
+            </button>
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
@@ -70,6 +105,7 @@ const AdminDashboard = () => {
             const Icon = card.icon;
             const colorClasses = {
               blue: 'bg-blue-100 text-blue-600',
+              orange: 'bg-orange-100 text-orange-600',
               green: 'bg-green-100 text-green-600',
               purple: 'bg-purple-100 text-purple-600',
               gray: 'bg-gray-100 text-gray-600',

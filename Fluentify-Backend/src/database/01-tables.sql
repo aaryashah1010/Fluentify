@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS learners (
   name VARCHAR(100) NOT NULL,
   email VARCHAR(100) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
+  contest_name VARCHAR(50), -- Display name for contests (defaults to username if not set)
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );

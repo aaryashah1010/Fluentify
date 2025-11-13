@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useModuleManagement } from '../../../../hooks/useModuleManagement';
 import { Globe, ChevronRight, Loader2 } from 'lucide-react';
@@ -6,9 +6,15 @@ import { Globe, ChevronRight, Loader2 } from 'lucide-react';
 const LanguageListPage = () => {
   const navigate = useNavigate();
   const { languages, loading, error, fetchLanguages } = useModuleManagement();
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
-    fetchLanguages();
+    if (!hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      fetchLanguages().catch(err => {
+        console.error('Failed to load languages:', err);
+      });
+    }
   }, []);
 
   if (loading) {
@@ -21,8 +27,14 @@ const LanguageListPage = () => {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-600">Error: {error}</p>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <p className="text-red-600 mb-4">Error: {error}</p>
+        <button
+          onClick={() => fetchLanguages()}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+        >
+          Try Again
+        </button>
       </div>
     );
   }

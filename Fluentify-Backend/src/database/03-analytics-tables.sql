@@ -1,5 +1,4 @@
--- Analytics Tables for Learning Activity Tracking
--- This table will store all learning events for analytics purposes
+
 
 CREATE TABLE IF NOT EXISTS learning_logs (
     log_id SERIAL PRIMARY KEY,

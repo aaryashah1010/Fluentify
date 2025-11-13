@@ -102,40 +102,21 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto px-1">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
         {/* Title */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Lesson Title <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="title"
-            value={lessonData.title || ''}
-            onChange={handleChange}
-            required
-            disabled={loading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-            placeholder="e.g., Pronouncing Vowels"
-          />
-        </div>
-
-        {/* Lesson Order */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Lesson Order
-          </label>
-          <input
-            type="number"
-            name="lesson_order"
-            value={lessonData.lesson_order || 1}
-            onChange={handleNumberChange}
-            disabled={loading}
-            min="1"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-            placeholder="1"
-          />
-        </div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Lesson Title <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          name="title"
+          value={lessonData.title || ''}
+          onChange={handleChange}
+          required
+          disabled={loading}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+          placeholder="e.g., Pronouncing Vowels"
+        />
       </div>
 
       {/* Content Type */}

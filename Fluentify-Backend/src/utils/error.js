@@ -71,6 +71,9 @@ const ERRORS = {
   LEARNER_ONLY_ROUTE: new RequestError("Learner access required", 20010, 403),
   SIGNUP_FAILED: new RequestError("Signup failed", 20011, 400),
   LOGIN_FAILED: new RequestError("Login failed", 20012, 400),
+  EMAIL_NOT_REGISTERED_LEARNER: new RequestError("Credentials are wrong. Please try again", 20013, 401),
+  EMAIL_NOT_REGISTERED_ADMIN: new RequestError("Credentials are wrong. Please try again", 20014, 401),
+  INCORRECT_PASSWORD: new RequestError("Credentials are wrong. Please try again", 20015, 401),
   
   // Course Management Errors (3xxxx) 
   COURSE_NOT_FOUND: new RequestError("Course not found", 30001, 404),
@@ -118,7 +121,16 @@ const ERRORS = {
   RETELL_RATE_LIMIT: new RequestError("Retell AI rate limit exceeded. Please try again later", 80004, 429),
   RETELL_INVALID_AGENT: new RequestError("Invalid Retell agent ID", 80005, 400),
   RETELL_CALL_CREATION_FAILED: new RequestError("Failed to create Retell AI call", 80006, 500),
-  RETELL_API_ERROR: new RequestError("Retell AI service error", 80007, 500)
+  RETELL_API_ERROR: new RequestError("Retell AI service error", 80007, 500),
+  
+  // Contest Errors (9xxxx)
+  CONTEST_NOT_FOUND: new RequestError("Contest not found", 90001, 404),
+  CONTEST_ALREADY_SUBMITTED: new RequestError("You have already submitted this contest", 90002, 400),
+  CONTEST_NOT_ACTIVE: new RequestError("Contest is not currently active", 90003, 403),
+  CONTEST_ENDED: new RequestError("Contest has ended", 90004, 403),
+  INVALID_INPUT: new RequestError("Invalid input provided", 90005, 400),
+  NOT_FOUND: new RequestError("Resource not found", 90006, 404),
+  FORBIDDEN: new RequestError("Access forbidden", 90007, 403)
 };
 
 export {

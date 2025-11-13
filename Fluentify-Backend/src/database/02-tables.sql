@@ -99,15 +99,52 @@ CREATE TABLE IF NOT EXISTS leaderboards (
   created_at TIMESTAMP DEFAULT NOW(),
   UNIQUE (learner_id, week_start)
 );
+-- Contest Management System
 CREATE TABLE IF NOT EXISTS contests (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   description TEXT,
-  start_date TIMESTAMP NOT NULL,
-  end_date TIMESTAMP NOT NULL,
+  start_time TIMESTAMPTZ NOT NULL,
+  end_time TIMESTAMPTZ NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'DRAFT', -- DRAFT, PUBLISHED, ACTIVE, ENDED
   reward_points INTEGER DEFAULT 0,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Contest Questions (MCQ type)
+CREATE TABLE IF NOT EXISTS contest_questions (
+  id SERIAL PRIMARY KEY,
+  contest_id INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+  question_text TEXT NOT NULL,
+  options JSONB NOT NULL, -- e.g., [{"id": 0, "text": "Option A"}, {"id": 1, "text": "Option B"}]
+  correct_option_id INTEGER NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Contest Scores (one entry per user per contest)
+CREATE TABLE IF NOT EXISTS contest_scores (
+  id SERIAL PRIMARY KEY,
+  learner_id INTEGER NOT NULL REFERENCES learners(id) ON DELETE CASCADE,
+  contest_id INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+  score INTEGER NOT NULL DEFAULT 0,
+  time_taken_ms BIGINT NOT NULL, -- Time in milliseconds for tie-breaking
+  submitted_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(learner_id, contest_id)
+);
+
+-- Contest Submissions (individual answers for review)
+CREATE TABLE IF NOT EXISTS contest_submissions (
+  id SERIAL PRIMARY KEY,
+  learner_id INTEGER NOT NULL REFERENCES learners(id) ON DELETE CASCADE,
+  contest_id INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+  question_id INTEGER NOT NULL REFERENCES contest_questions(id) ON DELETE CASCADE,
+  selected_option_id INTEGER NOT NULL,
+  is_correct BOOLEAN NOT NULL,
+  submitted_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Legacy contest participants table (kept for backward compatibility)
 CREATE TABLE IF NOT EXISTS contest_participants (
   id SERIAL PRIMARY KEY,
   contest_id INTEGER REFERENCES contests(id) ON DELETE CASCADE,
@@ -117,6 +154,8 @@ CREATE TABLE IF NOT EXISTS contest_participants (
   joined_at TIMESTAMP DEFAULT NOW(),
   UNIQUE (contest_id, learner_id)
 );
+
+-- Notifications
 CREATE TABLE IF NOT EXISTS notifications (
   id SERIAL PRIMARY KEY,
   learner_id INTEGER REFERENCES learners(id) ON DELETE CASCADE,
@@ -126,3 +165,12 @@ CREATE TABLE IF NOT EXISTS notifications (
   is_read BOOLEAN DEFAULT false,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Indexes for Contest Performance
+CREATE INDEX IF NOT EXISTS idx_contests_status ON contests(status);
+CREATE INDEX IF NOT EXISTS idx_contests_time ON contests(start_time, end_time);
+CREATE INDEX IF NOT EXISTS idx_contest_questions_contest ON contest_questions(contest_id);
+CREATE INDEX IF NOT EXISTS idx_contest_scores_contest ON contest_scores(contest_id);
+CREATE INDEX IF NOT EXISTS idx_contest_scores_learner ON contest_scores(learner_id);
+CREATE INDEX IF NOT EXISTS idx_contest_scores_leaderboard ON contest_scores(contest_id, score DESC, time_taken_ms ASC);
+CREATE INDEX IF NOT EXISTS idx_contest_submissions_learner ON contest_submissions(learner_id, contest_id);
