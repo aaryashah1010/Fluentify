@@ -85,6 +85,24 @@ function ProtectedRoute({ children, role }) {
 /** Smart redirect - always go to login first */
 function SmartRedirect() {
   return <Navigate to="/login" replace />;
+  const token = localStorage.getItem('jwt');
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const payload = decodeJwtPayload(token);
+  if (!payload || (payload.exp && payload.exp * 1000 < Date.now())) {
+    localStorage.removeItem('jwt');
+    return <Navigate to="/login" replace />;
+  }
+
+  // Role-based redirect
+  if (payload.role === 'admin') {
+    return <Navigate to="/admin-dashboard" replace />;
+  } else {
+    return <Navigate to="/dashboard" replace />;
+  }
 }
 
 function App() {
@@ -274,22 +292,6 @@ function App() {
           element={
             <ProtectedRoute role="admin">
               <ModuleManagementLayout />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/users"
-          element={
-            <ProtectedRoute role="admin">
-              <UserListPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/users/:userId"
-          element={
-            <ProtectedRoute role="admin">
-              <UserDetailPage />
             </ProtectedRoute>
           }
         />
