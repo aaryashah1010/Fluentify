@@ -294,14 +294,16 @@ const Login = () => {
 
 
               {/* Forgot Password */}
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  className="text-xs text-teal-600 hover:text-teal-700 font-medium transition-colors hover:underline"
-                >
-                  Forgot password?
-                </button>
-              </div>
+              {/* Forgot Password */}
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => navigate('/forgot-password')}
+          className="text-xs text-teal-600 hover:text-teal-700 font-medium transition-colors hover:underline"
+        >
+          Forgot password?
+        </button>
+      </div>
 
               {/* Global Error */}
               {error && (
