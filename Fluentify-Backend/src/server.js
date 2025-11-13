@@ -11,6 +11,7 @@ import retellRoutes from './routes/retellRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import learnerModulesRoutes from './routes/learnerModulesRoutes.js';
 import tutorRoutes from './routes/tutor.js';
+import contestRoutes from './routes/contest.js';
 import { errorHandler, notFoundHandler } from './middlewares/errorMiddleware.js';
 
 const app = express();
@@ -20,7 +21,7 @@ const port = process.env.PORT || 5000;
 app.use(cors({
   origin: ['http://localhost:3000', 'http://127.0.0.1:3000','http://localhost:5174','http://localhost:5173'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
@@ -79,8 +80,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/learner-modules', learnerModulesRoutes);
 // AI Tutor routes
 app.use('/api/tutor', tutorRoutes);
-// Admin content management routes
-app.use('/api/admin', adminRoutes);
+// Contest routes (Peer-to-Peer Leaderboard & Weekly Contest)
+app.use('/api/contests', contestRoutes);
 
 // 404 handler - must be after all routes
 app.use(notFoundHandler);

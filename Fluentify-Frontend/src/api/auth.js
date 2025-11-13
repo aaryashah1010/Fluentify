@@ -171,11 +171,12 @@ export const getUserProfile = async (token) => {
  * @param {string} token - JWT token
  * @param {Object} updates - Profile updates
  * @param {string} updates.name - Updated name
+ * @param {string} updates.contest_name - Contest display name (learners only)
  * @returns {Promise<{success: boolean, data: {user: object}}>}
  */
 export const updateUserProfile = async (token, updates) => {
   const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
-    method: 'PUT',
+    method: 'PATCH',
     headers: { 
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'

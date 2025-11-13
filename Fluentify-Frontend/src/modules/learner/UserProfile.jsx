@@ -11,14 +11,17 @@ const UserProfile = () => {
   const updateProfileMutation = useUpdateProfile();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ name: '' });
+  const [formData, setFormData] = useState({ name: '', contest_name: '' });
   const [editError, setEditError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
   // Initialize form data when profile is loaded
   React.useEffect(() => {
     if (profileData?.data?.user) {
-      setFormData({ name: profileData.data.user.name });
+      setFormData({ 
+        name: profileData.data.user.name,
+        contest_name: profileData.data.user.contest_name || ''
+      });
     }
   }, [profileData]);
 
@@ -43,17 +46,25 @@ const UserProfile = () => {
       return;
     }
 
+    // Validate contest_name if provided
+    if (formData.contest_name && formData.contest_name.trim().length > 50) {
+      setEditError('Contest name must be 50 characters or less');
+      return;
+    }
+
     try {
-      await updateProfileMutation.mutateAsync(
-        { name: formData.name.trim() },
-        {
-          onSuccess: () => {
-            setIsEditing(false);
-            setSuccessMessage('Profile updated successfully!');
-            setTimeout(() => setSuccessMessage(''), 3000);
-          },
-        }
-      );
+      const updates = { 
+        name: formData.name.trim(),
+        contest_name: formData.contest_name.trim() || null
+      };
+      
+      await updateProfileMutation.mutateAsync(updates, {
+        onSuccess: () => {
+          setIsEditing(false);
+          setSuccessMessage('Profile updated successfully!');
+          setTimeout(() => setSuccessMessage(''), 3000);
+        },
+      });
     } catch (err) {
       setEditError(err.message || 'Failed to update profile');
     }
@@ -61,7 +72,10 @@ const UserProfile = () => {
 
   const handleCancel = () => {
     if (profileData?.data?.user) {
-      setFormData({ name: profileData.data.user.name });
+      setFormData({ 
+        name: profileData.data.user.name,
+        contest_name: profileData.data.user.contest_name || ''
+      });
     }
     setIsEditing(false);
     setEditError('');
@@ -156,34 +170,15 @@ const UserProfile = () => {
                 Full Name
               </label>
               {isEditing ? (
-                <div className="flex gap-2">
-                  <Input
-                    name="name"
-                    type="text"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="flex-1"
-                    error={editError}
-                    required
-                  />
-                  <Button
-                    variant="success"
-                    onClick={handleSave}
-                    loading={updateProfileMutation.isPending}
-                    disabled={updateProfileMutation.isPending}
-                    icon={<Check className="w-4 h-4" />}
-                  >
-                    Save
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={handleCancel}
-                    disabled={updateProfileMutation.isPending}
-                    icon={<X className="w-4 h-4" />}
-                  >
-                    Cancel
-                  </Button>
-                </div>
+                <Input
+                  name="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="w-full"
+                  error={editError}
+                  required
+                />
               ) : (
                 <div className="flex items-center gap-4">
                   <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
@@ -199,6 +194,59 @@ const UserProfile = () => {
                 </div>
               )}
             </div>
+
+            {/* Contest Name Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Contest Display Name
+                <span className="text-gray-500 text-xs ml-2">(Optional - used in leaderboards)</span>
+              </label>
+              {isEditing ? (
+                <Input
+                  name="contest_name"
+                  type="text"
+                  value={formData.contest_name}
+                  onChange={handleInputChange}
+                  placeholder="Leave empty to use your full name"
+                  className="w-full"
+                  maxLength={50}
+                />
+              ) : (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                  <p className="text-gray-900">
+                    {user?.contest_name || <span className="text-gray-500">Using full name ({user?.name})</span>}
+                  </p>
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                This name will be displayed on contest leaderboards. Leave empty to use your full name.
+              </p>
+            </div>
+
+            {/* Save/Cancel Buttons (only show when editing) */}
+            {isEditing && (
+              <div className="flex gap-2 pt-2">
+                <Button
+                  variant="success"
+                  onClick={handleSave}
+                  loading={updateProfileMutation.isPending}
+                  disabled={updateProfileMutation.isPending}
+                  icon={<Check className="w-4 h-4" />}
+                  className="flex-1"
+                >
+                  Save Changes
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={handleCancel}
+                  disabled={updateProfileMutation.isPending}
+                  icon={<X className="w-4 h-4" />}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
 
             {/* Email Field */}
             <div>

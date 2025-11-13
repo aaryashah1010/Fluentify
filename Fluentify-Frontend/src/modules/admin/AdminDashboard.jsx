@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLogout } from '../../hooks/useAuth';
-import { LogOut, BookOpen, Users, BarChart3, Settings, User } from 'lucide-react';
+import { LogOut, BookOpen, Users, BarChart3, Settings, User, Trophy } from 'lucide-react';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -34,6 +34,14 @@ const AdminDashboard = () => {
       path: '/admin/modules',
     },
     {
+      title: 'Contest Management',
+      description: 'Create and schedule weekly contests for learners',
+      icon: Trophy,
+      color: 'orange',
+      path: '/admin/contests',
+      disabled: false,
+    },
+    {
       title: 'User Management',
       description: 'View and manage learners and their progress',
       icon: Users,
@@ -64,7 +72,7 @@ const AdminDashboard = () => {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900 cursor-pointer" onClick={() => navigate('/admin-dashboard')}>Admin Dashboard</h1>
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/admin/profile')}
@@ -97,6 +105,7 @@ const AdminDashboard = () => {
             const Icon = card.icon;
             const colorClasses = {
               blue: 'bg-blue-100 text-blue-600',
+              orange: 'bg-orange-100 text-orange-600',
               green: 'bg-green-100 text-green-600',
               purple: 'bg-purple-100 text-purple-600',
               gray: 'bg-gray-100 text-gray-600',
