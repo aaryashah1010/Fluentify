@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import fluentifyLogo from "../../assets/fluentify_logo.jpg";
+import { useSignup, useVerifySignupOTP, useResendOTP } from "../../hooks/useAuth";
 
 // Password Strength Checker
 const checkPasswordStrength = (password, email, name) => {
@@ -98,6 +99,10 @@ export default function SignupWithOTP({ onNavigate }) {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+
+  const signupMutation = useSignup();
+  const verifySignupOTPMutation = useVerifySignupOTP();
+  const resendOTPMutation = useResendOTP();
 
   useEffect(() => setIsVisible(true), []);
 
@@ -197,11 +202,25 @@ export default function SignupWithOTP({ onNavigate }) {
 
       setIsLoading(true);
 
-      setTimeout(() => {
-        setIsLoading(false);
-        setStep(2);
-        setResendTimer(60);
-      }, 1500);
+      signupMutation.mutate(
+        {
+          role: form.role,
+          name: form.name,
+          email: form.email,
+          password: form.password,
+        },
+        {
+          onSuccess: () => {
+            setIsLoading(false);
+            setStep(2);
+            setResendTimer(60);
+          },
+          onError: (err) => {
+            setIsLoading(false);
+            setError(err?.message || "Failed to send OTP. Please try again.");
+          },
+        }
+      );
     },
     [validateForm]
   );
@@ -240,14 +259,29 @@ export default function SignupWithOTP({ onNavigate }) {
 
       setIsLoading(true);
 
-      setTimeout(() => {
-        setIsLoading(false);
-        if (form.role === "learner") {
-          onNavigate?.("learner");
-        } else {
-          onNavigate?.("dashboard");
+      verifySignupOTPMutation.mutate(
+        {
+          role: form.role,
+          name: form.name,
+          email: form.email,
+          password: form.password,
+          otp: form.otp,
+        },
+        {
+          onSuccess: () => {
+            setIsLoading(false);
+            if (form.role === "learner") {
+              onNavigate?.("learner");
+            } else {
+              onNavigate?.("dashboard");
+            }
+          },
+          onError: (err) => {
+            setIsLoading(false);
+            setError(err?.message || "Invalid or expired OTP");
+          },
         }
-      }, 1500);
+      );
     },
     [form, onNavigate]
   );
@@ -255,7 +289,23 @@ export default function SignupWithOTP({ onNavigate }) {
   const handleResendOTP = () => {
     setError("");
     setOtp(["", "", "", "", "", ""]);
-    setResendTimer(60);
+
+    resendOTPMutation.mutate(
+      {
+        email: form.email,
+        otpType: "signup",
+        role: form.role,
+        name: form.name,
+      },
+      {
+        onSuccess: () => {
+          setResendTimer(60);
+        },
+        onError: (err) => {
+          setError(err?.message || "Failed to resend OTP");
+        },
+      }
+    );
   };
 
   const handleBackToSignup = () => {
@@ -779,10 +829,10 @@ export default function SignupWithOTP({ onNavigate }) {
                     <button
                       type="button"
                       onClick={handleResendOTP}
-                      disabled={resendTimer > 0}
+                      disabled={resendTimer > 0 || resendOTPMutation.isPending}
                       className="text-sm text-teal-600 hover:text-teal-700 disabled:opacity-50 flex gap-2 items-center justify-center"
                     >
-                      <RefreshCw className="w-4 h-4" />
+                      <RefreshCw className={`w-4 h-4 ${resendOTPMutation.isPending ? "animate-spin" : ""}`} />
                       {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend OTP"}
                     </button>
                   </div>
