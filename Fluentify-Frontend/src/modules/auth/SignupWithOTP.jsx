@@ -360,7 +360,7 @@ export default function SignupWithOTP({ onNavigate }) {
             <h1 className="text-5xl xl:text-6xl mb-6 leading-tight">
               {step === 1 ? (
                 <>
-                  Start Your Journey, <br />
+                  Master New Skills, <br />
                   <span className="bg-gradient-to-r from-orange-400 via-teal-400 to-amber-400 bg-clip-text text-transparent">
                     Unlock Your Voice
                   </span>
@@ -377,7 +377,7 @@ export default function SignupWithOTP({ onNavigate }) {
 
             <p className="text-xl text-gray-300 mb-12 max-w-lg">
               {step === 1
-                ? "Join thousands of learners worldwide"
+                ? "Speak with confidence"
                 : "Check your inbox for the verification code"}
             </p>
 
