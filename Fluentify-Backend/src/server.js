@@ -24,11 +24,13 @@ app.use(cors({
     'http://127.0.0.1:3000',
     'http://localhost:5174',
     'http://localhost:5173',
-    'https://fluentify-rho.vercel.app'  // Production frontend
+    'https://fluentify-rho.vercel.app',  // Production frontend
+    /\.vercel\.app$/  // Allow all Vercel preview deployments
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  exposedHeaders: ['Content-Length', 'Content-Type']
 }));
 app.use(express.json());
 
