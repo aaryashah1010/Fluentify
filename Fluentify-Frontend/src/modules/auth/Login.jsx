@@ -115,12 +115,14 @@ const Login = () => {
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20 text-white">
           <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <div className="flex justify-center mb-8">
-              <img 
-                src={fluentifyLogo} 
-                alt="Fluentify Logo" 
-                className="w-100 h-35 object-contain"
-              />
+            <div className="flex items-center justify-start mb-8">
+              <div className="w-48 h-48 bg-white rounded-3xl shadow-2xl flex items-center justify-center ring-white/20 overflow-hidden">
+                <img
+                  src={fluentifyLogo}
+                  alt="Fluentify Logo"
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
             </div>
 
             <h1 className="text-5xl xl:text-6xl font-bold mb-6 leading-tight">

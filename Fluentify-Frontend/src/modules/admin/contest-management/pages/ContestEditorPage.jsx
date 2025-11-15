@@ -291,20 +291,20 @@ const ContestEditorPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white/80 backdrop-blur-sm shadow-md border-b border-orange-100">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate('/admin/contests')}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 rounded-xl hover:bg-orange-100 transition-all"
               >
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+               <h1 className="text-3xl font-extrabold bg-gradient-to-r from-orange-600 to-teal-600 bg-clip-text text-transparent">
                   {isEditMode ? 'Edit Contest' : 'Create New Contest'}
                 </h1>
                 <p className="text-sm text-gray-600 mt-1">
@@ -322,7 +322,7 @@ const ContestEditorPage = () => {
       <main className="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-6">
           {/* Contest Details Section */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white/70 backdrop-blur-sm border border-orange-100 rounded-2xl shadow-md p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Contest Details</h2>
             <div className="space-y-4">
               {/* Title */}
@@ -400,7 +400,8 @@ const ContestEditorPage = () => {
                     onClick={handleCreateContest}
                     loading={createContest.isPending}
                     icon={<Save className="w-4 h-4" />}
-                    className="w-full"
+                    className="w-full bg-gradient-to-r from-orange-500 to-teal-500 text-white 
+rounded-xl shadow-md hover:shadow-lg"
                   >
                     Create Contest
                   </Button>
@@ -409,7 +410,8 @@ const ContestEditorPage = () => {
                     onClick={handleUpdateContest}
                     loading={updateContest.isPending}
                     icon={<Save className="w-4 h-4" />}
-                    className="w-full"
+                    className="w-full bg-gradient-to-r from-orange-500 to-teal-500 text-white 
+rounded-xl shadow-md hover:shadow-lg"
                   >
                     Save Changes
                   </Button>
@@ -422,48 +424,57 @@ const ContestEditorPage = () => {
           {createdContestId && (
             <>
               {/* Existing Questions */}
-              {questions.length > 0 && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                    Questions ({questions.length})
-                  </h2>
-                  <div className="space-y-4">
-                    {questions.map((q, index) => (
-                      <div key={q.id || index} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex items-start justify-between mb-2">
-                          <h3 className="font-medium text-gray-900">
-                            {index + 1}. {q.question_text}
-                          </h3>
-                          <button
-                            onClick={() => removeQuestion(index)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <div className="space-y-1 text-sm">
-                          {(Array.isArray(q.options) ? q.options : []).map((opt, optIndex) => (
-                            <div
-                              key={optIndex}
-                              className={`px-3 py-2 rounded ${
-                                optIndex === q.correct_option_id
-                                  ? 'bg-green-50 text-green-700 font-medium'
-                                  : 'bg-gray-50 text-gray-700'
-                              }`}
-                            >
-                              {String.fromCharCode(65 + optIndex)}. {typeof opt === 'string' ? opt : (opt?.text ?? '')}
-                              {optIndex === q.correct_option_id && ' ✓'}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+{questions.length > 0 && (
+  <div className="bg-white/70 backdrop-blur-sm border border-orange-100 rounded-2xl shadow-md p-6">
+    <h2 className="text-lg font-semibold text-gray-900 mb-4">
+      Questions ({questions.length})
+    </h2>
+
+    <div className="space-y-4">
+      {questions.map((q, index) => (
+        <div
+          key={q.id || index}
+          className="border border-gray-200 rounded-lg p-4"
+        >
+          <div className="flex items-start justify-between mb-2">
+            <h3 className="font-medium text-gray-900">
+              {index + 1}. {q.question_text}
+            </h3>
+
+            <button
+              onClick={() => removeQuestion(index)}
+              className="text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="space-y-1 text-sm">
+            {(Array.isArray(q.options) ? q.options : []).map(
+              (opt, optIndex) => (
+                <div
+                  key={optIndex}
+                  className={`px-3 py-2 rounded ${
+                    optIndex === q.correct_option_id
+                      ? "bg-green-50 text-green-700 font-medium"
+                      : "bg-gray-50 text-gray-700"
+                  }`}
+                >
+                  {String.fromCharCode(65 + optIndex)}.{" "}
+                  {typeof opt === "string" ? opt : opt?.text}
+                  {optIndex === q.correct_option_id && " ✓"}
                 </div>
-              )}
+              )
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
 
               {/* Add New Question */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white/70 backdrop-blur-sm border border-orange-100 rounded-2xl shadow-md p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Add New Question</h2>
                 <div className="space-y-4">
                   {/* Question Text */}
@@ -493,7 +504,7 @@ const ContestEditorPage = () => {
                             name="correct_option"
                             checked={currentQuestion.correct_option_id === index}
                             onChange={() => handleQuestionChange('correct_option_id', index)}
-                            className="w-4 h-4 text-green-600"
+                            className="w-4 h-4 text-teal-500 focus:ring-teal-400"
                           />
                           <input
                             type="text"
@@ -515,7 +526,8 @@ const ContestEditorPage = () => {
                     onClick={handleAddQuestion}
                     loading={addQuestion.isPending}
                     icon={<Plus className="w-4 h-4" />}
-                    className="w-full"
+                    className="w-full bg-gradient-to-r from-orange-500 to-teal-500 text-white 
+rounded-xl shadow-md hover:shadow-lg"
                   >
                     Add Question
                   </Button>
@@ -523,7 +535,7 @@ const ContestEditorPage = () => {
               </div>
 
               {/* Publish Button */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white/70 backdrop-blur-sm border border-orange-100 rounded-2xl shadow-md p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-semibold text-gray-900">Ready to Publish?</h3>
@@ -537,6 +549,8 @@ const ContestEditorPage = () => {
                     loading={publishContest.isPending}
                     disabled={questions.length === 0}
                     icon={<Send className="w-4 h-4" />}
+                    className="bg-gradient-to-r from-teal-500 to-teal-600 text-white hover:from-teal-600 hover:to-teal-700 shadow-md rounded-xl"
+
                   >
                     Publish Contest
                   </Button>
