@@ -524,7 +524,7 @@ rounded-xl shadow-md hover:shadow-lg"
                   {/* Add Question Button */}
                   <Button
                     onClick={handleAddQuestion}
-                    loading={addQuestion.isPending}
+                    loading={addQuestion.isLoading}
                     icon={<Plus className="w-4 h-4" />}
                     className="w-full bg-gradient-to-r from-orange-500 to-teal-500 text-white 
 rounded-xl shadow-md hover:shadow-lg"
@@ -546,7 +546,7 @@ rounded-xl shadow-md hover:shadow-lg"
                   </div>
                   <Button
                     onClick={handlePublish}
-                    loading={publishContest.isPending}
+                    loading={publishContest.isLoading}
                     disabled={questions.length === 0}
                     icon={<Send className="w-4 h-4" />}
                     className="bg-gradient-to-r from-teal-500 to-teal-600 text-white hover:from-teal-600 hover:to-teal-700 shadow-md rounded-xl"
