@@ -400,8 +400,7 @@ const ContestEditorPage = () => {
                     onClick={handleCreateContest}
                     loading={createContest.isPending}
                     icon={<Save className="w-4 h-4" />}
-                    className="w-full bg-gradient-to-r from-orange-500 to-teal-500 text-white 
-rounded-xl shadow-md hover:shadow-lg"
+                    className="w-full bg-gradient-to-r from-orange-500 to-teal-500 text-white rounded-xl shadow-md hover:shadow-lg"
                   >
                     Create Contest
                   </Button>
@@ -410,8 +409,7 @@ rounded-xl shadow-md hover:shadow-lg"
                     onClick={handleUpdateContest}
                     loading={updateContest.isPending}
                     icon={<Save className="w-4 h-4" />}
-                    className="w-full bg-gradient-to-r from-orange-500 to-teal-500 text-white 
-rounded-xl shadow-md hover:shadow-lg"
+                    className="w-full bg-gradient-to-r from-orange-500 to-teal-500 text-white rounded-xl shadow-md hover:shadow-lg"
                   >
                     Save Changes
                   </Button>
@@ -424,54 +422,54 @@ rounded-xl shadow-md hover:shadow-lg"
           {createdContestId && (
             <>
               {/* Existing Questions */}
-{questions.length > 0 && (
-  <div className="bg-white/70 backdrop-blur-sm border border-orange-100 rounded-2xl shadow-md p-6">
-    <h2 className="text-lg font-semibold text-gray-900 mb-4">
-      Questions ({questions.length})
-    </h2>
+              {questions.length > 0 && (
+                <div className="bg-white/70 backdrop-blur-sm border border-orange-100 rounded-2xl shadow-md p-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                    Questions ({questions.length})
+                  </h2>
 
-    <div className="space-y-4">
-      {questions.map((q, index) => (
-        <div
-          key={q.id || index}
-          className="border border-gray-200 rounded-lg p-4"
-        >
-          <div className="flex items-start justify-between mb-2">
-            <h3 className="font-medium text-gray-900">
-              {index + 1}. {q.question_text}
-            </h3>
+                  <div className="space-y-4">
+                    {questions.map((q, index) => (
+                      <div
+                        key={q.id || index}
+                        className="border border-gray-200 rounded-lg p-4"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="font-medium text-gray-900">
+                            {index + 1}. {q.question_text}
+                          </h3>
 
-            <button
-              onClick={() => removeQuestion(index)}
-              className="text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
+                          <button
+                            onClick={() => removeQuestion(index)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
 
-          <div className="space-y-1 text-sm">
-            {(Array.isArray(q.options) ? q.options : []).map(
-              (opt, optIndex) => (
-                <div
-                  key={optIndex}
-                  className={`px-3 py-2 rounded ${
-                    optIndex === q.correct_option_id
-                      ? "bg-green-50 text-green-700 font-medium"
-                      : "bg-gray-50 text-gray-700"
-                  }`}
-                >
-                  {String.fromCharCode(65 + optIndex)}.{" "}
-                  {typeof opt === "string" ? opt : opt?.text}
-                  {optIndex === q.correct_option_id && " ✓"}
+                        <div className="space-y-1 text-sm">
+                          {(Array.isArray(q.options) ? q.options : []).map(
+                            (opt, optIndex) => (
+                              <div
+                                key={optIndex}
+                                className={`px-3 py-2 rounded ${
+                                  optIndex === q.correct_option_id
+                                    ? "bg-green-50 text-green-700 font-medium"
+                                    : "bg-gray-50 text-gray-700"
+                                }`}
+                              >
+                                {String.fromCharCode(65 + optIndex)}.{" "}
+                                {typeof opt === "string" ? opt : opt?.text}
+                                {optIndex === q.correct_option_id && " ✓"}
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              )
             )}
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
 
               {/* Add New Question */}
               <div className="bg-white/70 backdrop-blur-sm border border-orange-100 rounded-2xl shadow-md p-6">
@@ -526,8 +524,7 @@ rounded-xl shadow-md hover:shadow-lg"
                     onClick={handleAddQuestion}
                     loading={addQuestion.isLoading}
                     icon={<Plus className="w-4 h-4" />}
-                    className="w-full bg-gradient-to-r from-orange-500 to-teal-500 text-white 
-rounded-xl shadow-md hover:shadow-lg"
+                    className="w-full bg-gradient-to-r from-orange-500 to-teal-500 text-white rounded-xl shadow-md hover:shadow-lg"
                   >
                     Add Question
                   </Button>
