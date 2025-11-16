@@ -133,11 +133,11 @@ const LessonPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-teal-50/30">
+      <div className="min-h-screen bg-green-50">
         <SkeletonPageHeader />
         <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
           {/* Lesson overview skeleton */}
-          <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
             <div className="space-y-4">
               <SkeletonText lines={2} />
               <div className="flex gap-6 pt-4">
@@ -152,7 +152,7 @@ const LessonPage = () => {
           </div>
           
           {/* Content skeleton */}
-          <div className="bg-white rounded-2xl shadow-md border border-gray-100 mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
             {/* Tabs skeleton */}
             <div className="border-b border-gray-200 px-6 py-4">
               <div className="flex gap-8">
@@ -188,47 +188,39 @@ const LessonPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-teal-50/30">
+    <div className="min-h-screen bg-green-50">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold text-gray-900">{lesson.title}</h2>
+      <PageHeader
+        title={
+          <div className="flex items-center gap-2">
+            <span>{lesson.title}</span>
             {(isLessonCompleted() || lessonJustCompleted) && (
-              <span className="flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+              <span className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-sm font-normal">
                 ✓ Completed
               </span>
             )}
           </div>
-
-          <div className="flex items-center gap-3">
-            {!isLessonCompleted() && !lessonJustCompleted && showResults && exerciseResults?.passed && (
-              <Button
-                onClick={markLessonComplete}
-                loading={completeLessonMutation.isPending}
-                className="bg-gradient-to-r from-orange-400 to-teal-400 text-white"
-                variant="primary"
-                icon={<Award className="w-4 h-4" />}
-              >
-                Complete Lesson
-              </Button>
-            )}
-
-            <button
-              onClick={() => navigate(`/course/${courseId}`)}
-              className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:shadow-md transition"
+        }
+        showBack
+        actions={
+          !isLessonCompleted() && !lessonJustCompleted && showResults && exerciseResults?.passed && (
+            <Button
+              onClick={markLessonComplete}
+              loading={completeLessonMutation.isPending}
+              variant="success"
+              icon={<Award className="w-4 h-4" />}
             >
-              <BookOpen className="w-4 h-4 text-gray-700" /> Back to Course
-            </button>
-          </div>
-        </div>
-      </div>
+              Complete Lesson
+            </Button>
+          )
+        }
+      />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Success message after completion */}
         {lessonJustCompleted && (
-          <div className="bg-green-50 border-2 border-green-500 rounded-2xl p-6 mb-6 shadow-md">
+          <div className="bg-green-50 border-2 border-green-500 rounded-lg p-6 mb-6 shadow-lg">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
                 <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
@@ -246,7 +238,6 @@ const LessonPage = () => {
                 <div className="flex gap-3">
                   <Button
                     onClick={() => navigate(`/course/${courseId}`)}
-                    className="bg-gradient-to-r from-blue-100 to-indigo-100 text-indigo-900"
                     variant="primary"
                     icon={<BookOpen className="w-4 h-4" />}
                   >
@@ -255,7 +246,6 @@ const LessonPage = () => {
                   <Button
                     onClick={generateAdditionalExercises}
                     loading={generateExercisesMutation.isPending}
-                    className="bg-gradient-to-r from-orange-400 to-teal-400 text-white"
                     variant="secondary"
                     icon={<Play className="w-4 h-4" />}
                   >
@@ -263,7 +253,6 @@ const LessonPage = () => {
                   </Button>
                   <Button
                     onClick={() => window.location.reload()}
-                    className="bg-white border border-gray-200"
                     variant="secondary"
                     icon={<RotateCcw className="w-4 h-4" />}
                   >
@@ -275,9 +264,9 @@ const LessonPage = () => {
           </div>
         )}
 
-        {/* Alerts */}
+        {/* Alert for exercise requirement */}
         {!isLessonCompleted() && !lessonJustCompleted && !showResults && exercises.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
               <div>
@@ -292,7 +281,7 @@ const LessonPage = () => {
         )}
 
         {!isLessonCompleted() && !lessonJustCompleted && exercises.length === 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-6">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
               <div>
@@ -306,7 +295,7 @@ const LessonPage = () => {
         )}
 
         {/* Lesson Overview */}
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
           <p className="text-gray-700 mb-4">{lesson.description}</p>
           
           {isLessonCompleted() && (
@@ -343,25 +332,22 @@ const LessonPage = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 mb-8">
-          <div className="border-b border-gray-100">
-            <nav className="flex space-x-4 px-6 py-4 overflow-x-auto" aria-label="Tabs">
-              {['vocabulary', 'grammar', 'exercises'].map((tab) => {
-                const active = currentSection === tab;
-                return (
-                  <button
-                    key={tab}
-                    onClick={() => setCurrentSection(tab)}
-                    className={`py-2 px-4 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                      active
-                        ? 'bg-gradient-to-r from-orange-400 to-teal-400 text-white shadow-md'
-                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                  </button>
-                );
-              })}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
+          <div className="border-b border-gray-200">
+            <nav className="flex space-x-8 px-6" aria-label="Tabs">
+              {['vocabulary', 'grammar', 'exercises'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setCurrentSection(tab)}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                    currentSection === tab
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
             </nav>
           </div>
 
@@ -373,7 +359,7 @@ const LessonPage = () => {
                 {vocabulary.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {vocabulary.map((item, index) => (
-                      <div key={index} className="border border-gray-100 rounded-2xl p-4 bg-white shadow-sm">
+                      <div key={index} className="border border-gray-200 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-semibold text-lg">{item.word}</span>
                           <span className="text-sm text-gray-600">[{item.pronunciation}]</span>
@@ -394,7 +380,7 @@ const LessonPage = () => {
                 <h3 className="text-lg font-semibold mb-4">Grammar Points</h3>
                 {grammarPoints.length > 0 ? (
                   grammarPoints.map((point, index) => (
-                    <div key={index} className="border border-gray-100 rounded-2xl p-4 bg-white shadow-sm">
+                    <div key={index} className="border border-gray-200 rounded-lg p-4">
                       <h4 className="font-semibold mb-2">{point.topic || point.title}</h4>
                       <p className="text-gray-700 mb-3">{point.explanation}</p>
                       {point.examples && point.examples.length > 0 && (
@@ -417,47 +403,22 @@ const LessonPage = () => {
 
             {currentSection === 'exercises' && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between mb-4 overflow-visible">
-                <h3 className="text-lg font-semibold">Exercises (Need 3/5 Correct to Pass)</h3>
-
-            {/* ⭐ ALWAYS show generate button if exercises are empty */}
-            {!showResults && exercises.length === 0 && !generateExercisesMutation.isPending && (
-              <Button
-                onClick={generateAdditionalExercises}
-                loading={generateExercisesMutation.isPending}
-                size="sm"
-              className="bg-gradient-to-r from-orange-400 to-teal-400 text-white shadow-md"
-              icon={<Play className="w-4 h-4" />}
-            >
-            Generate Exercises
-            </Button>
-            )}
-
-  {/* ⭐ Show retry button only after answering */}
-  {showResults && (
-    <Button
-  onClick={generateAdditionalExercises}
-  loading={generateExercisesMutation.isPending}
-  size="sm"
-  className="
-    rounded-full
-    bg-gradient-to-r from-orange-400 to-teal-400
-    text-white
-    shadow-md hover:shadow-lg
-    transition-all
-    px-4 py-2
-  "
-  icon={<Play className="w-4 h-4 text-white" />}
->
-  Generate New Exercises
-</Button>
-
-  )}
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Exercises (Need 3/5 Correct to Pass)</h3>
+                  {showResults && (
+                    <Button
+                      onClick={generateAdditionalExercises}
+                      loading={generateExercisesMutation.isPending}
+                      size="sm"
+                      icon={<RotateCcw className="w-4 h-4" />}
+                    >
+                      Generate New Exercises
+                    </Button>
+                  )}
                 </div>
-
                 
                 {showResults && exerciseResults && (
-                  <div className={`p-4 rounded-2xl border-2 ${exerciseResults.passed ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
+                  <div className={`p-4 rounded-lg border-2 ${exerciseResults.passed ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
                     <div className="flex items-center gap-2 mb-2">
                       {exerciseResults.passed ? (
                         <CheckCircle className="w-6 h-6 text-green-600" />
@@ -484,17 +445,19 @@ const LessonPage = () => {
                         const result = showResults ? exerciseResults?.results[index] : null;
                         
                         return (
-                          <div key={index} className={`border-2 rounded-2xl p-4 transition-all ${
+                          <div key={index} className={`border-2 rounded-lg p-4 ${
                             showResults
                               ? result?.isCorrect 
-                                ? 'border-green-500 bg-green-50 shadow-sm' 
-                                : 'border-red-500 bg-red-50 shadow-sm'
-                              : 'border-gray-100 bg-white shadow-sm'
+                                ? 'border-green-500 bg-green-50' 
+                                : 'border-red-500 bg-red-50'
+                              : 'border-gray-200'
                           }`}>
                             <div className="flex items-start justify-between mb-3">
                               <span className="font-medium">Question {index + 1}</span>
                               {showResults && (
-                                <span className={`flex items-center gap-1 text-sm font-medium ${result?.isCorrect ? 'text-green-700' : 'text-red-700'}`}>
+                                <span className={`flex items-center gap-1 text-sm font-medium ${
+                                  result?.isCorrect ? 'text-green-700' : 'text-red-700'
+                                }`}>
                                   {result?.isCorrect ? (
                                     <><CheckCircle className="w-4 h-4" /> Correct</>
                                   ) : (
@@ -513,16 +476,16 @@ const LessonPage = () => {
                                 return (
                                   <label 
                                     key={idx} 
-                                    className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors border ${
+                                    className={`flex items-center space-x-3 p-3 rounded cursor-pointer transition-colors ${
                                       showResults
                                         ? isCorrectAnswer
                                           ? 'bg-green-100 border-2 border-green-500'
                                           : isWrongSelection
                                           ? 'bg-red-100 border-2 border-red-500'
-                                          : 'bg-white border border-gray-100'
+                                          : 'bg-white border border-gray-200'
                                         : isSelected
                                         ? 'bg-blue-100 border-2 border-blue-500'
-                                        : 'bg-white border border-gray-100 hover:bg-gray-50'
+                                        : 'bg-white border border-gray-200 hover:bg-gray-50'
                                     }`}
                                   >
                                     <input
@@ -545,7 +508,7 @@ const LessonPage = () => {
                               })}
                             </div>
                             {showResults && exercise.explanation && (
-                              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
                                 <p className="text-sm text-blue-900">
                                   <strong>Explanation:</strong> {exercise.explanation}
                                 </p>
@@ -561,7 +524,6 @@ const LessonPage = () => {
                         <Button
                           onClick={handleSubmitExercises}
                           disabled={Object.keys(userAnswers).length !== exercises.length}
-                          className="bg-gradient-to-r from-orange-400 to-teal-400 text-white"
                           variant="primary"
                           icon={<CheckCircle className="w-4 h-4" />}
                         >
@@ -597,7 +559,6 @@ const LessonPage = () => {
                     <Button
                       onClick={generateAdditionalExercises}
                       loading={generateExercisesMutation.isPending}
-                      className="bg-gradient-to-r from-orange-400 to-teal-400 text-white"
                       icon={<Play className="w-4 h-4" />}
                     >
                       Generate Exercises
@@ -610,28 +571,8 @@ const LessonPage = () => {
         </div>
       </main>
 
-      {/* Floating Chat Widget — styled similar to Dashboard */}
-      <div className="fixed bottom-6 right-6 z-50">
-        {/* small floating button */}
-        <div className="flex flex-col items-end">
-          {/* collapsed panel will be handled by your FloatingChatWidget component; show a matching floating button to keep UI consistent */}
-          <button
-            onClick={() => {
-              // try to open the provided floating widget if it supports a prop or global toggle.
-              // fallback to scroll to chat widget component position or reload if not available.
-              const el = document.querySelector('.floating-chat-widget-toggle');
-              if (el) el.dispatchEvent(new Event('click'));
-            }}
-            className="w-16 h-16 bg-gradient-to-r from-orange-400 to-teal-400 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group hover:scale-110"
-            aria-label="Open chat"
-          >
-            <Play className="text-white" />
-          </button>
-        </div>
-
-        {/* keep the original widget mounted */}
-        <FloatingChatWidget />
-      </div>
+      {/* Floating Chat Widget */}
+      <FloatingChatWidget />
     </div>
   );
 };
