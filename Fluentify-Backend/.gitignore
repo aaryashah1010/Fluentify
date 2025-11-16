@@ -135,3 +135,5 @@ docker-compose.override.yml
 db-backups/
 *.sql.backup
 *.dump
+
+.early.coverage
