@@ -83,7 +83,7 @@ function ProtectedRoute({ children, role }) {
   return children;
 }
 
-/** Smart redirect - go to landing page for new users, dashboard for authenticated users */
+/** Smart redirect - go to login page for new users, dashboard/admin dashboard for authenticated users */
 function SmartRedirect() {
   const token = localStorage.getItem('jwt');
 

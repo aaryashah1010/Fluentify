@@ -46,16 +46,16 @@ const TutorChat = ({ compact = false }) => {
   };
 
   return (
-    <div className={`flex flex-col h-full bg-white ${compact ? '' : 'rounded-lg shadow-sm border'}`}>
+    <div className={`flex flex-col h-full bg-white ${compact ? '' : 'rounded-lg shadow-sm border border-gray-100'}`}>
       {/* Header - Only show in full mode */}
       {!compact && (
-        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-purple-50 to-blue-50">
+        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-orange-50 to-teal-50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white flex items-center justify-center text-lg">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white flex items-center justify-center text-lg shadow">
               🤖
             </div>
             <div>
-              <h2 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Fluent - AI Tutor</h2>
+              <h2 className="text-lg font-semibold bg-gradient-to-r from-orange-400 to-teal-400 bg-clip-text text-transparent">Fluent - AI Tutor</h2>
               <p className="text-sm text-gray-600">🌍 Multilingual Expert • Any Language, Any Context</p>
             </div>
           </div>
@@ -95,10 +95,10 @@ const TutorChat = ({ compact = false }) => {
       >
         {showWelcome && (
           <div className={`text-center ${compact ? 'py-4' : 'py-8'}`}>
-            <div className={`${compact ? 'w-12 h-12' : 'w-16 h-16'} mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white flex items-center justify-center ${compact ? 'text-xl' : 'text-2xl'}`}>
+            <div className={`${compact ? 'w-12 h-12' : 'w-16 h-16'} mx-auto mb-4 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white flex items-center justify-center shadow ${compact ? 'text-xl' : 'text-2xl'}`}>
               🤖
             </div>
-            <h3 className={`${compact ? 'text-base' : 'text-xl'} font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2`}>
+            <h3 className={`${compact ? 'text-base' : 'text-xl'} font-bold text-gray-900 mb-2`}>
               Welcome to Fluent - Your Multilingual AI Tutor! 🌎
             </h3>
             {!compact && (
@@ -106,7 +106,7 @@ const TutorChat = ({ compact = false }) => {
                 <p className="text-gray-700 max-w-2xl mx-auto mb-4 font-medium">
                   I'm an expert polyglot ready to help you learn ANY language - from Spanish to Japanese, Arabic to French, and everything in between!
                 </p>
-                <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-4 rounded-xl mb-4 max-w-2xl mx-auto border border-purple-200">
+                <div className="bg-gradient-to-br from-orange-50 to-teal-50 p-4 rounded-xl mb-4 max-w-2xl mx-auto border border-orange-200">
                   <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
                     <span className="text-lg">✨</span> What I Can Do:
                   </h4>
@@ -140,17 +140,17 @@ const TutorChat = ({ compact = false }) => {
                 <div className="max-w-2xl mx-auto">
                   <p className="text-sm text-gray-600 mb-3 font-medium">💡 Try asking me:</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                    <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-purple-300 transition-colors">
-                      <span className="text-purple-600">"Teach me French greetings"</span>
+                    <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-orange-300 transition-colors">
+                      <span className="text-orange-600">"Teach me French greetings"</span>
                     </div>
-                    <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-purple-300 transition-colors">
-                      <span className="text-purple-600">"How do I say 'thank you' in Japanese?"</span>
+                    <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-orange-300 transition-colors">
+                      <span className="text-orange-600">"How do I say 'thank you' in Japanese?"</span>
                     </div>
-                    <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-purple-300 transition-colors">
-                      <span className="text-purple-600">"Explain Spanish verb conjugations"</span>
+                    <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-orange-300 transition-colors">
+                      <span className="text-orange-600">"Explain Spanish verb conjugations"</span>
                     </div>
-                    <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-purple-300 transition-colors">
-                      <span className="text-purple-600">"Business vocabulary in German"</span>
+                    <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-orange-300 transition-colors">
+                      <span className="text-orange-600">"Business vocabulary in German"</span>
                     </div>
                   </div>
                 </div>

@@ -55,8 +55,8 @@ const ChatMessage = ({ message, isStreaming = false }) => {
         <div className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
           <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
             isUser 
-              ? 'bg-blue-600 text-white' 
-              : 'bg-gradient-to-r from-purple-500 to-blue-500 text-white'
+              ? 'bg-gradient-to-r from-orange-400 to-teal-400 text-white' 
+              : 'bg-gradient-to-r from-orange-100 to-teal-200 text-teal-700'
           }`}>
             {isUser ? 'U' : '🤖'}
           </div>
@@ -64,8 +64,8 @@ const ChatMessage = ({ message, isStreaming = false }) => {
           {/* Message Content */}
           <div className={`rounded-2xl px-4 py-3 ${
             isUser 
-              ? 'bg-blue-600 text-white rounded-br-md' 
-              : 'bg-gray-100 text-gray-800 rounded-bl-md'
+              ? 'bg-gradient-to-r from-orange-400 to-teal-400 text-white rounded-br-md' 
+              : 'bg-gray-50 text-gray-800 rounded-bl-md border border-orange-100'
           }`}>
             <div className="text-sm leading-relaxed">
               {renderText(text)}
@@ -77,7 +77,7 @@ const ChatMessage = ({ message, isStreaming = false }) => {
             {/* Timestamp */}
             {timestamp && !isStreaming && (
               <div className={`text-xs mt-2 opacity-70 ${
-                isUser ? 'text-blue-100' : 'text-gray-500'
+                isUser ? 'text-teal-50' : 'text-gray-500'
               }`}>
                 {formatTime(timestamp)}
               </div>

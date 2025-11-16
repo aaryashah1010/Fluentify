@@ -138,7 +138,7 @@ const VoiceAIModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative">
         {/* Close Button */}
         <button
@@ -162,8 +162,8 @@ const VoiceAIModal = ({ isOpen, onClose }) => {
             {/* Outer pulsing ring when AI is speaking */}
             {isAgentSpeaking && (
               <>
-                <div className="absolute inset-0 rounded-full bg-blue-400 opacity-30 animate-ping" />
-                <div className="absolute inset-0 rounded-full bg-blue-400 opacity-20 animate-pulse" style={{ animationDelay: '150ms' }} />
+                <div className="absolute inset-0 rounded-full bg-teal-400 opacity-30 animate-ping" />
+                <div className="absolute inset-0 rounded-full bg-teal-400 opacity-20 animate-pulse" style={{ animationDelay: '150ms' }} />
               </>
             )}
             
@@ -171,9 +171,9 @@ const VoiceAIModal = ({ isOpen, onClose }) => {
             <div className={`relative w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 ${
               isConnected 
                 ? isAgentSpeaking 
-                  ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-300' 
+                  ? 'bg-gradient-to-br from-teal-500 to-teal-600 shadow-lg shadow-teal-300' 
                   : 'bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-300'
-                : 'bg-gradient-to-br from-gray-400 to-gray-500'
+                : 'bg-gradient-to-br from-orange-400 to-teal-400 shadow-lg shadow-teal-200'
             }`}>
               {isConnecting ? (
                 <Loader className="w-12 h-12 text-white animate-spin" />
@@ -214,7 +214,7 @@ const VoiceAIModal = ({ isOpen, onClose }) => {
             <button
               onClick={startCall}
               disabled={isConnecting}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full font-semibold hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-8 py-3 bg-gradient-to-r from-orange-400 to-teal-400 text-white rounded-full font-semibold hover:opacity-95 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <Phone className="w-5 h-5" />
               {isConnecting ? 'Connecting...' : 'Start Call'}

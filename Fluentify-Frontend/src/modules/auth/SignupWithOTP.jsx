@@ -273,7 +273,7 @@ export default function SignupWithOTP({ onNavigate }) {
             if (form.role === "learner") {
               onNavigate?.("learner");
             } else {
-              onNavigate?.("dashboard");
+              onNavigate?.("admin-dashboard");
             }
           },
           onError: (err) => {

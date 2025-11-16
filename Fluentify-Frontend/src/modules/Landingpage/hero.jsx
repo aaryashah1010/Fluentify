@@ -35,7 +35,7 @@ export function Hero({ onNavigate }) {
               className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-6 text-lg group"
               onClick={() => onNavigate('signup')}
             >
-              Start Learning Free
+              Start Learning 
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>

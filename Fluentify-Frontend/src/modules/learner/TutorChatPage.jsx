@@ -22,7 +22,7 @@ const TutorChatPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
