@@ -6,10 +6,6 @@ import TypingIndicator from '../../components/TypingIndicator';
 import Button from '../../components/Button';
 import ErrorMessage from '../../components/ErrorMessage';
 
-/**
- * AI Tutor Chat Interface
- * Main chat component with streaming support
- */
 const TutorChat = ({ compact = false }) => {
   const token = localStorage.getItem('jwt');
   const { 
@@ -25,14 +21,12 @@ const TutorChat = ({ compact = false }) => {
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isTyping]);
 
-  // Welcome message for empty chat
   const showWelcome = messages.length === 0 && !isLoading;
 
   const handleSendMessage = async (message) => {
@@ -47,7 +41,6 @@ const TutorChat = ({ compact = false }) => {
 
   return (
     <div className={`flex flex-col h-full bg-white ${compact ? '' : 'rounded-lg shadow-sm border border-gray-100'}`}>
-      {/* Header - Only show in full mode */}
       {!compact && (
         <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-orange-50 to-teal-50">
           <div className="flex items-center gap-3">
@@ -84,7 +77,7 @@ const TutorChat = ({ compact = false }) => {
         </div>
       )}
 
-      {/* Messages Area */}
+      {/* Messages */}
       <div 
         ref={chatContainerRef}
         className={`flex-1 overflow-y-auto space-y-4 ${compact ? 'p-2' : 'p-4'}`}

@@ -737,7 +737,7 @@ export default function SignupWithOTP({ onNavigate }) {
                   </div>
                 </div>
 
-                {/* LOGIN LINK — CENTERED */}
+                {/* LOGIN LINK */}
                 <div className="flex justify-center w-full mt-3">
                   <button
                     type="button"
@@ -757,7 +757,7 @@ export default function SignupWithOTP({ onNavigate }) {
               </>
             )}
 
-            {/* ---------- STEP 2 : OTP VERIFY ---------- */}
+            {/*  OTP VERIFY  */}
             {step === 2 && (
               <>
                 <div className="text-center mb-4">

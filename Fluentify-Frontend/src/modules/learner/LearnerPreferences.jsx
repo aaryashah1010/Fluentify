@@ -16,7 +16,6 @@ const LearnerPreferences = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   
-  // React Query mutation
   const savePreferencesMutation = useSaveLearnerPreferences();
 
   const handleChange = e => {
@@ -29,7 +28,6 @@ const LearnerPreferences = () => {
     
     savePreferencesMutation.mutate(form, {
       onSuccess: () => {
-        // Preferences saved successfully
         navigate("/dashboard", { 
           replace: true,
           state: { fromForm: true }
@@ -60,7 +58,7 @@ const LearnerPreferences = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          {/* Step 1: Language */}
+          {/* Language */}
           {step === 0 && (
             <div className="space-y-4 text-center">
               <p className="text-lg font-medium text-gray-700">
@@ -85,7 +83,7 @@ const LearnerPreferences = () => {
             </div>
           )}
 
-          {/* Step 2: Duration */}
+          {/*Duration */}
           {step === 1 && (
             <div className="space-y-4 text-center">
               <p className="text-lg font-medium text-gray-700">
@@ -117,7 +115,7 @@ const LearnerPreferences = () => {
             </div>
           )}
           
-          {/* Step 3: Expertise */}
+          {/* Expertise */}
           {step === 2 && (
             <div className="space-y-4 text-center">
               <p className="text-lg font-medium text-gray-700">

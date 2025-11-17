@@ -5,10 +5,6 @@ import { useLogout } from '../../hooks/useAuth';
 import TutorChat from './TutorChat';
 import Button from '../../components/Button';
 
-/**
- * AI Tutor Chat Page
- * Full-page chat interface with navigation
- */
 const TutorChatPage = () => {
   const navigate = useNavigate();
   const logout = useLogout();

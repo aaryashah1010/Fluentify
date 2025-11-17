@@ -17,7 +17,6 @@ export function CTASection({ onNavigate }) {
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-white border border-teal-200 rounded-full px-6 py-2 mb-8 shadow-sm">
             <Sparkles className="w-4 h-4 text-teal-500" />
-            <span className="text-gray-700 text-sm">Join thousands of learners worldwide</span>
           </div>
 
           <h2 className="text-gray-900 text-4xl md:text-6xl mb-6">

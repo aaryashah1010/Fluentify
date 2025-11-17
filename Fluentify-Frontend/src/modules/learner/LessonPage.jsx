@@ -1,448 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import { useParams, useNavigate } from 'react-router-dom';
-// import { 
-//   BookOpen, 
-//   Target, 
-//   Play, 
-//   RotateCcw, 
-//   Award, 
-//   CheckCircle, 
-//   XCircle, 
-//   AlertCircle 
-// } from 'lucide-react';
-
-// import { 
-//   useLessonDetails, 
-//   useGenerateExercises, 
-//   useCompleteLesson 
-// } from '../../hooks/useCourses';
-
-// import { 
-//   PageHeader, 
-//   Button, 
-//   SkeletonPageHeader, 
-//   SkeletonCard, 
-//   SkeletonText, 
-//   FloatingChatWidget 
-// } from '../../components';
-
-// import { useQueryClient } from "@tanstack/react-query";
-
-// const LessonPage = () => {
-//   const { courseId, unitId, lessonId } = useParams();
-//   const navigate = useNavigate();
-
-//   const [currentSection, setCurrentSection] = useState('vocabulary');
-//   const [userAnswers, setUserAnswers] = useState({});
-//   const [showResults, setShowResults] = useState(false);
-//   const [exerciseResults, setExerciseResults] = useState(null);
-//   const [lessonJustCompleted, setLessonJustCompleted] = useState(false);
-
-//   // ⭐ NEW: ensures button ALWAYS appears when passed
-//   const [canCompleteLesson, setCanCompleteLesson] = useState(false);
-
-//   // React Query
-//   const queryClient = useQueryClient();
-//   const { data, isLoading: loading, error: queryError } = useLessonDetails({
-//     courseId: Number(courseId),
-//     unitId: Number(unitId),
-//     lessonId: Number(lessonId)
-//   });
-
-//   const generateExercisesMutation = useGenerateExercises();
-//   const completeLessonMutation = useCompleteLesson();
-
-//   const lesson = data?.data?.lesson;
-//   const lessonProgress = data?.data?.progress;
-
-//   const exercises = Array.isArray(lesson?.exercises) ? lesson.exercises : [];
-//   const grammarPoints = Array.isArray(lesson?.grammarPoints)
-//     ? lesson.grammarPoints
-//     : Array.isArray(lesson?.grammar_points)
-//     ? lesson.grammar_points
-//     : [];
-//   const vocabulary = Array.isArray(lesson?.vocabulary) ? lesson.vocabulary : [];
-
-//   const error = queryError?.message;
-
-//   // Reset answers when exercises change
-//   useEffect(() => {
-//     setUserAnswers({});
-//     setShowResults(false);
-//     setExerciseResults(null);
-//     setCanCompleteLesson(false);
-//   }, [exercises]);
-
-//   const isLessonCompleted = () => lessonProgress?.is_completed === true;
-
-//   const generateAdditionalExercises = () => {
-//     setUserAnswers({});
-//     setShowResults(false);
-//     setExerciseResults(null);
-//     setCanCompleteLesson(false);
-//     setLessonJustCompleted(false);
-
-//     generateExercisesMutation.mutate({
-//       courseId: Number(courseId),
-//       unitId: Number(unitId),
-//       lessonId: Number(lessonId)
-//     });
-//   };
-
-//   const handleAnswerSelect = (exerciseIndex, optionIndex) => {
-//     if (showResults) return;
-//     setUserAnswers(prev => ({
-//       ...prev,
-//       [exerciseIndex]: optionIndex
-//     }));
-//   };
-
-//   const handleSubmitExercises = () => {
-//     const results = exercises.map((exercise, index) => {
-//       const userAnswer = userAnswers[index];
-//       const isCorrect = userAnswer === exercise.correctAnswer;
-//       return { exerciseIndex: index, userAnswer, correctAnswer: exercise.correctAnswer, isCorrect };
-//     });
-
-//     const correctCount = results.filter(r => r.isCorrect).length;
-//     const totalCount = results.length;
-//     const passed = correctCount >= 3;
-
-//     setExerciseResults({ results, correctCount, totalCount, passed });
-//     setShowResults(true);
-
-//     // ⭐ ALWAYS show the COMPLETE button when passed
-//     if (passed) setCanCompleteLesson(true);
-//   };
-
-//   const markLessonComplete = () => {
-//     if (!exerciseResults?.passed) {
-//       alert("You must pass the exercises first!");
-//       return;
-//     }
-
-//     const exerciseData = exerciseResults.results.map((r, index) => ({
-//       exerciseIndex: index,
-//       isCorrect: r.isCorrect,
-//       userAnswer: r.userAnswer?.toString() || ""
-//     }));
-
-//     const score = Math.round(
-//       (exerciseResults.correctCount / exerciseResults.totalCount) * 100
-//     );
-
-//     completeLessonMutation.mutate(
-//       {
-//         courseId: Number(courseId),
-//         unitId: Number(unitId),
-//         lessonId: Number(lessonId),
-//         score,
-//         exercises: exerciseData
-//       },
-//       {
-//         onSuccess: (response) => {
-//           console.log("Lesson completed:", response);
-
-//           // ⭐ IMPORTANT: refresh course so next lesson unlocks
-//           queryClient.invalidateQueries(["course", courseId]);
-
-//           setLessonJustCompleted(true);
-//           window.scrollTo({ top: 0, behavior: "smooth" });
-//         },
-//         onError: (error) => {
-//           console.error(error);
-//           alert(error.message || "Failed to complete lesson.");
-//         }
-//       }
-//     );
-//   };
-
-//   // Loading state
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-teal-50/30">
-//         <SkeletonPageHeader />
-//       </div>
-//     );
-//   }
-
-//   // Error state
-//   if (error || !lesson) {
-//     return (
-//       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-//         <p className="text-red-500">{error || "Lesson not found"}</p>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-teal-50/30">
-      
-//       {/* HEADER */}
-//       <div className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
-//         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-
-//           <div className="flex items-center gap-3">
-//             <h2 className="text-lg font-semibold text-gray-900">{lesson.title}</h2>
-//             {(isLessonCompleted() || lessonJustCompleted) && (
-//               <span className="flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-//                 ✓ Completed
-//               </span>
-//             )}
-//           </div>
-
-//           <div className="flex items-center gap-3">
-
-//             {/* ⭐ TOP COMPLETE LESSON BUTTON FIXED */}
-//             {canCompleteLesson && !lessonJustCompleted && !isLessonCompleted() && (
-//               <button
-//                 onClick={markLessonComplete}
-//                 className="
-//                   px-4 py-2 rounded-full shadow 
-//                   bg-gradient-to-r from-orange-400 to-teal-400 
-//                   text-white font-semibold flex items-center gap-2 
-//                   hover:opacity-90
-//                 "
-//               >
-//                 <Award className="w-4 h-4" />
-//                 Complete Lesson
-//               </button>
-//             )}
-
-//             {/* Back */}
-//             <button
-//               onClick={() => navigate(`/course/${courseId}`)}
-//               className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:shadow"
-//             >
-//               <BookOpen className="w-4 h-4" /> Back to Course
-//             </button>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* MAIN CONTENT */}
-//       <main className="max-w-7xl mx-auto px-4 py-8">
-
-//         {/* Lesson Description */}
-//         <div className="bg-white rounded-2xl shadow border border-gray-100 p-6 mb-6">
-//           <p className="text-gray-700 mb-4">{lesson.description}</p>
-//         </div>
-
-//         {/* TABS */}
-//         <div className="bg-white rounded-2xl border shadow mb-8">
-//           <nav className="border-b border-gray-100 flex gap-4 px-6 py-4 overflow-x-auto">
-//             {["vocabulary", "grammar", "exercises"].map((tab) => (
-//               <button
-//                 key={tab}
-//                 onClick={() => setCurrentSection(tab)}
-//                 className={`px-4 py-2 rounded-full text-sm font-medium ${
-//                   currentSection === tab
-//                     ? "bg-gradient-to-r from-orange-400 to-teal-400 text-white shadow"
-//                     : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-//                 }`}
-//               >
-//                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
-//               </button>
-//             ))}
-//           </nav>
-
-//           {/* TAB CONTENT */}
-//           <div className="p-6">
-
-//             {/* VOCABULARY */}
-//             {currentSection === "vocabulary" && (
-//               <div>
-//                 <h3 className="text-lg font-semibold mb-4">Vocabulary</h3>
-//                 {vocabulary.length === 0 ? (
-//                   <p className="text-gray-600">No vocabulary available</p>
-//                 ) : (
-//                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//                     {vocabulary.map((item, i) => (
-//                       <div key={i} className="p-4 border rounded-xl shadow-sm">
-//                         <h4 className="font-semibold">{item.word}</h4>
-//                         <p className="text-gray-600">{item.translation}</p>
-//                       </div>
-//                     ))}
-//                   </div>
-//                 )}
-//               </div>
-//             )}
-
-//             {/* GRAMMAR */}
-//             {currentSection === "grammar" && (
-//               <div>
-//                 <h3 className="text-lg font-semibold mb-4">Grammar Points</h3>
-//                 {grammarPoints.length === 0 ? (
-//                   <p className="text-gray-600">No grammar points</p>
-//                 ) : (
-//                   grammarPoints.map((g, i) => (
-//                     <div key={i} className="border rounded-xl p-4 shadow-sm mb-4">
-//                       <h4 className="font-semibold">{g.topic || g.title}</h4>
-//                       <p className="text-gray-600">{g.explanation}</p>
-//                     </div>
-//                   ))
-//                 )}
-//               </div>
-//             )}
-
-//             {/* ====================================================== */}
-//             {/*                     EXERCISES TAB                     */}
-//             {/* ====================================================== */}
-
-//             {currentSection === "exercises" && (
-//               <div className="space-y-6">
-
-//                 <div className="flex justify-between items-center">
-//                   <h3 className="text-lg font-semibold">Exercises (Need 3/5 Correct)</h3>
-
-//                   {/* Generate button (when no exercises yet) */}
-//                   {!isLessonCompleted() &&
-//                     !lessonJustCompleted &&
-//                     exercises.length === 0 &&
-//                     !generateExercisesMutation.isPending && (
-//                       <Button
-//                         onClick={generateAdditionalExercises}
-//                         className="bg-gradient-to-r from-orange-400 to-teal-400 text-white"
-//                         icon={<Play className="w-4 h-4" />}
-//                       >
-//                         Generate Exercises
-//                       </Button>
-//                     )}
-//                 </div>
-
-//                 {/* Results Box */}
-//                 {showResults && exerciseResults && (
-//                   <div
-//                     className={`p-4 rounded-xl border-2 ${
-//                       exerciseResults.passed
-//                         ? "bg-green-50 border-green-400"
-//                         : "bg-red-50 border-red-400"
-//                     }`}
-//                   >
-//                     <h4
-//                       className={`font-bold ${
-//                         exerciseResults.passed ? "text-green-700" : "text-red-700"
-//                       }`}
-//                     >
-//                       {exerciseResults.passed ? "Passed!" : "Failed"}
-//                     </h4>
-//                     <p>
-//                       Score: {exerciseResults.correctCount}/{exerciseResults.totalCount}
-//                     </p>
-//                   </div>
-//                 )}
-
-//                 {/* Exercise List */}
-//                 {!generateExercisesMutation.isPending && exercises.length > 0 && (
-//                   <div className="space-y-4">
-//                     {exercises.map((exercise, index) => {
-//                       const result = showResults ? exerciseResults?.results[index] : null;
-//                       const userAnswer = userAnswers[index];
-
-//                       return (
-//                         <div
-//                           key={index}
-//                           className={`p-4 rounded-xl border-2 ${
-//                             showResults
-//                               ? result?.isCorrect
-//                                 ? "border-green-400 bg-green-50"
-//                                 : "border-red-400 bg-red-50"
-//                               : "border-gray-200 bg-white"
-//                           }`}
-//                         >
-//                           <h4 className="font-semibold mb-2">Question {index + 1}</h4>
-//                           <p className="text-gray-800 mb-3">{exercise.question}</p>
-
-//                           <div className="space-y-2">
-//                             {exercise.options.map((option, optIndex) => {
-//                               const isSelected = userAnswer === optIndex;
-//                               const isCorrect = showResults && optIndex === exercise.correctAnswer;
-//                               const isWrong =
-//                                 showResults && isSelected && !result?.isCorrect;
-
-//                               return (
-//                                 <label
-//                                   key={optIndex}
-//                                   className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer border ${
-//                                     showResults
-//                                       ? isCorrect
-//                                         ? "border-green-500 bg-green-100"
-//                                         : isWrong
-//                                         ? "border-red-500 bg-red-100"
-//                                         : "border-gray-200 bg-white"
-//                                       : isSelected
-//                                       ? "border-blue-500 bg-blue-100"
-//                                       : "border-gray-200 bg-white"
-//                                   }`}
-//                                 >
-//                                   <input
-//                                     type="radio"
-//                                     checked={isSelected}
-//                                     disabled={showResults}
-//                                     onChange={() => handleAnswerSelect(index, optIndex)}
-//                                   />
-//                                   {option}
-//                                 </label>
-//                               );
-//                             })}
-//                           </div>
-//                         </div>
-//                       );
-//                     })}
-//                   </div>
-//                 )}
-
-//                 {/* Submit Answers */}
-//                 {!showResults &&
-//                   exercises.length > 0 &&
-//                   !isLessonCompleted() &&
-//                   !lessonJustCompleted && (
-//                     <Button
-//                       onClick={handleSubmitExercises}
-//                       disabled={Object.keys(userAnswers).length !== exercises.length}
-//                       className="bg-gradient-to-r from-orange-400 to-teal-400 text-white"
-//                       icon={<CheckCircle className="w-4 h-4" />}
-//                     >
-//                       Submit Answers
-//                     </Button>
-//                   )}
-
-//                 {/* No exercises */}
-//                 {!generateExercisesMutation.isPending &&
-//                   exercises.length === 0 &&
-//                   !isLessonCompleted() &&
-//                   !lessonJustCompleted && (
-//                     <div className="text-center py-6">
-//                       <p className="text-gray-700 mb-4">No exercises available.</p>
-//                       <Button
-//                         onClick={generateAdditionalExercises}
-//                         className="bg-gradient-to-r from-orange-400 to-teal-400 text-white"
-//                       >
-//                         Generate Exercises
-//                       </Button>
-//                     </div>
-//                   )}
-
-//                 {/* Loading spinner */}
-//                 {generateExercisesMutation.isPending && (
-//                   <div className="py-12 text-center">
-//                     <div className="animate-spin h-12 w-12 border-4 border-gray-300 border-t-teal-500 rounded-full mx-auto"></div>
-//                     <p className="mt-4 text-gray-700">Generating...</p>
-//                   </div>
-//                 )}
-//               </div>
-//             )}
-//           </div>
-//         </div>
-//       </main>
-
-//       <FloatingChatWidget />
-//     </div>
-//   );
-// };
-
-// export default LessonPage;
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { BookOpen, Target, Play, RotateCcw, Award, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
@@ -460,8 +15,6 @@ const LessonPage = () => {
   const [exerciseResults, setExerciseResults] = useState(null);
   const [lessonJustCompleted, setLessonJustCompleted] = useState(false);
   
-  
-  // React Query hooks
   const { data, isLoading: loading, error: queryError } = useLessonDetails({
     courseId: Number(courseId),
     unitId: Number(unitId),
@@ -472,8 +25,6 @@ const LessonPage = () => {
   const completeLessonMutation = useCompleteLesson();
   const queryClient = useQueryClient();
 
-  
-  // Extract data
   const lesson = data?.data?.lesson;
   const lessonProgress = data?.data?.progress;
   const exercises = Array.isArray(lesson?.exercises) ? lesson.exercises : [];
@@ -481,21 +32,18 @@ const LessonPage = () => {
   const vocabulary = Array.isArray(lesson?.vocabulary) ? lesson.vocabulary : [];
   const error = queryError?.message;
 
-  // Reset answers when exercises change
   useEffect(() => {
     setUserAnswers({});
     setShowResults(false);
     setExerciseResults(null);
   }, [exercises]);
 
-  // Auto-switch to exercises tab if no exercises and lesson not completed
   useEffect(() => {
     if (!isLessonCompleted() && exercises.length === 0 && !generateExercisesMutation.isPending) {
       setCurrentSection('exercises');
     }
   }, [exercises.length, generateExercisesMutation.isPending]);
 
-  // Helper function to check if lesson is truly completed
   const isLessonCompleted = () => {
     return lessonProgress?.is_completed === true;
   };
@@ -504,7 +52,7 @@ const LessonPage = () => {
     setUserAnswers({});
     setShowResults(false);
     setExerciseResults(null);
-    setLessonJustCompleted(false); // Allow practicing again
+    setLessonJustCompleted(false); 
     generateExercisesMutation.mutate({
       courseId: Number(courseId),
       unitId: Number(unitId),
@@ -513,7 +61,7 @@ const LessonPage = () => {
   };
 
   const handleAnswerSelect = (exerciseIndex, optionIndex) => {
-    if (showResults) return; // Don't allow changes after submission
+    if (showResults) return; 
     setUserAnswers(prev => ({
       ...prev,
       [exerciseIndex]: optionIndex
@@ -521,7 +69,6 @@ const LessonPage = () => {
   };
 
   const handleSubmitExercises = () => {
-    // Calculate results
     const results = exercises.map((exercise, index) => {
       const userAnswer = userAnswers[index];
       const isCorrect = userAnswer === exercise.correctAnswer;
@@ -552,7 +99,6 @@ const LessonPage = () => {
       return;
     }
 
-    // Prepare exercise data for backend
     const exerciseData = exerciseResults.results.map((result, index) => ({
       exerciseIndex: index,
       isCorrect: result.isCorrect,
@@ -572,10 +118,8 @@ const LessonPage = () => {
       {
         onSuccess: (data) => {
           console.log('Lesson completed successfully:', data);
-          // Ensure course details are refreshed so status changes to completed
           queryClient.invalidateQueries({ queryKey: ['course', Number(courseId)] });
-          setLessonJustCompleted(true);
-          // Scroll to top to show success message
+          setLessonJustCompleted(true)
           window.scrollTo({ top: 0, behavior: 'smooth' });
         },
         onError: (error) => {
@@ -591,7 +135,7 @@ const LessonPage = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-teal-50/30">
         <SkeletonPageHeader />
         <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-          {/* Lesson overview skeleton */}
+          {/* Lesson overview */}
           <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-8">
             <div className="space-y-4">
               <SkeletonText lines={2} />
@@ -681,7 +225,6 @@ const LessonPage = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Success message after completion */}
         {lessonJustCompleted && (
           <div className="bg-green-50 border-2 border-green-500 rounded-2xl p-6 mb-6 shadow-md">
             <div className="flex items-start gap-4">
@@ -875,7 +418,6 @@ const LessonPage = () => {
                 <div className="flex items-center justify-between mb-4 overflow-visible">
                 <h3 className="text-lg font-semibold">Exercises (Need 3/5 Correct to Pass)</h3>
 
-            {/* ⭐ ALWAYS show generate button if exercises are empty */}
             {!showResults && exercises.length === 0 && !generateExercisesMutation.isPending && (
               <Button
                 onClick={generateAdditionalExercises}
@@ -888,7 +430,7 @@ const LessonPage = () => {
             </Button>
             )}
 
-  {/* ⭐ Show retry button only after answering */}
+  {/* Show retry button only after answering */}
   {showResults && (
     <Button
   onClick={generateAdditionalExercises}
@@ -1065,15 +607,12 @@ const LessonPage = () => {
         </div>
       </main>
 
-      {/* Floating Chat Widget — styled similar to Dashboard */}
+      {/* Floating Chat Widget */}
       <div className="fixed bottom-6 right-6 z-50">
         {/* small floating button */}
         <div className="flex flex-col items-end">
-          {/* collapsed panel will be handled by your FloatingChatWidget component; show a matching floating button to keep UI consistent */}
-          <button
+         <button
             onClick={() => {
-              // try to open the provided floating widget if it supports a prop or global toggle.
-              // fallback to scroll to chat widget component position or reload if not available.
               const el = document.querySelector('.floating-chat-widget-toggle');
               if (el) el.dispatchEvent(new Event('click'));
             }}
@@ -1083,8 +622,6 @@ const LessonPage = () => {
             <Play className="text-white" />
           </button>
         </div>
-
-        {/* keep the original widget mounted */}
         <FloatingChatWidget />
       </div>
     </div>

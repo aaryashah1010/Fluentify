@@ -22,10 +22,8 @@ const LearnerDashboard = () => {
   const navigate = useNavigate();
   const logout = useLogout();
 
-  // Existing generated AI courses for this learner
   const { data: courses = [] } = useCourses();
 
-  // Streaming AI course generation state
   const { generateCourse: startStreamGeneration, state: streamState } = useStreaming();
 
   const { data: profileData, isLoading } = useUserProfile();
@@ -46,8 +44,6 @@ const LearnerDashboard = () => {
     expertise: "",
   });
 
-  // When we just requested generation and the backend reports a new courseId via SSE,
-  // automatically take the learner to that AI-generated course page.
   useEffect(() => {
     if (pendingGeneratedCourse && streamState.courseId) {
       setPendingGeneratedCourse(false);
@@ -65,7 +61,6 @@ const LearnerDashboard = () => {
     setGenerating(true);
 
     try {
-      // Start AI course generation via SSE
       startStreamGeneration({
         language: form.language,
         expectedDuration: form.expectedDuration,
@@ -80,20 +75,17 @@ const LearnerDashboard = () => {
   };
 
   const handleStartCourseClick = () => {
-    // If an AI-generated course is currently tracked by the streaming state, go there
     if (streamState.courseId) {
       navigate(`/course/${streamState.courseId}`);
       return;
     }
 
-    // Otherwise, if there are existing generated courses, open the latest/first
     if (courses.length > 0) {
       const firstCourse = courses[0];
       navigate(`/course/${firstCourse.id}`);
       return;
     }
 
-    // No course yet – ask the learner to configure and generate one
     setShowGenerateForm(true);
   };
 
@@ -106,11 +98,11 @@ const LearnerDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
       
-      {/* ================= HEADER ================= */}
+      {/* HEADER */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
 
-          {/* Large Fluentify Logo */}
+          {/* Fluentify Logo */}
           <img
             src={fluentifyLogo}
             alt="Fluentify"
@@ -191,7 +183,7 @@ const LearnerDashboard = () => {
         </div>
       </header>
 
-      {/* ================= MAIN ================= */}
+      {/* MAIN */}
       <main className="max-w-7xl mx-auto px-6 py-10">
 
         {/* Welcome */}
@@ -241,7 +233,7 @@ const LearnerDashboard = () => {
           </div>
         </div>
 
-        {/* =============== COURSE CARDS (Design B) =============== */}
+        {/* COURSE CARDS  */}
         <section>
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Your Courses
@@ -316,10 +308,10 @@ const LearnerDashboard = () => {
 
       </main>
 
-      {/* Dashboard-only tutor chat widget (orange→teal gradient) */}
+      {/*tutor chat */}
       <FloatingChatWidget position="right" />
 
-      {/* Voice calling AI modal for "Talk with AI" */}
+      {/* Voice calling AI modal */}
       <VoiceAIModal
         isOpen={showVoiceAiModal}
         onClose={() => setShowVoiceAiModal(false)}

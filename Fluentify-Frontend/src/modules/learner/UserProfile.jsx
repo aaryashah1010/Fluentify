@@ -15,7 +15,6 @@ const UserProfile = () => {
   const [editError, setEditError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Initialize form data when profile is loaded
   React.useEffect(() => {
     if (profileData?.data?.user) {
       setFormData({ 
@@ -46,7 +45,6 @@ const UserProfile = () => {
       return;
     }
 
-    // Validate contest_name if provided
     if (formData.contest_name && formData.contest_name.trim().length > 50) {
       setEditError('Contest name must be 50 characters or less');
       return;
@@ -223,7 +221,6 @@ const UserProfile = () => {
               </p>
             </div>
 
-            {/* Save/Cancel Buttons (only show when editing) */}
             {isEditing && (
               <div className="flex gap-2 pt-2">
                 <Button
