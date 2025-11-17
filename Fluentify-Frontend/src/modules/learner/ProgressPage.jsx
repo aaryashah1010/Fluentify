@@ -52,11 +52,11 @@ const ProgressPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50 flex items-center justify-center">
         <div className="text-center">
           <div className="relative">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200 border-t-indigo-600 mx-auto"></div>
-            <TrendingUp className="w-8 h-8 text-indigo-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-orange-200 border-t-teal-400 mx-auto"></div>
+            <TrendingUp className="w-8 h-8 text-orange-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
           </div>
           <p className="mt-6 text-lg font-medium text-gray-700">Loading your progress...</p>
           <p className="mt-2 text-sm text-gray-500">Preparing your learning insights</p>
@@ -67,7 +67,7 @@ const ProgressPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50 flex items-center justify-center">
         <div className="text-center bg-white rounded-2xl shadow-xl p-8 max-w-md">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Activity className="w-8 h-8 text-red-600" />
@@ -76,7 +76,7 @@ const ProgressPage = () => {
           <p className="text-gray-600 mb-6">We couldn't fetch your progress data. Please try again.</p>
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg"
+            className="px-6 py-3 bg-gradient-to-r from-orange-400 to-teal-400 text-white rounded-xl hover:opacity-90 transition-all shadow-lg"
           >
             ← Back to Dashboard
           </button>
@@ -88,19 +88,19 @@ const ProgressPage = () => {
   // Empty state
   if (summary.lessons_completed === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
         <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
           <button
             onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-6 font-medium transition-colors"
+            className="flex items-center gap-2 text-orange-600 hover:text-orange-700 mb-6 font-medium transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             Back to Dashboard
           </button>
 
-          <div className="bg-white rounded-3xl shadow-2xl p-12 text-center border border-indigo-100">
-            <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <TrendingUp className="w-12 h-12 text-indigo-600" />
+          <div className="bg-white rounded-3xl shadow-2xl p-12 text-center border border-orange-100">
+            <div className="w-24 h-24 bg-gradient-to-br from-orange-100 to-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <TrendingUp className="w-12 h-12 text-orange-500" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-3">Your Journey Begins Here</h2>
             <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
@@ -108,7 +108,7 @@ const ProgressPage = () => {
             </p>
             <button
               onClick={() => navigate('/dashboard')}
-              className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold"
+              className="px-8 py-4 bg-gradient-to-r from-orange-400 to-teal-400 text-white rounded-xl hover:opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold"
             >
               Start Learning Now
             </button>
@@ -119,13 +119,13 @@ const ProgressPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-6 font-medium transition-colors group"
+            className="flex items-center gap-2 text-orange-600 hover:text-orange-700 mb-6 font-medium transition-colors group"
           >
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             Back to Dashboard
@@ -134,10 +134,10 @@ const ProgressPage = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-teal-400 rounded-xl flex items-center justify-center shadow-lg">
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Your Progress Report</h1>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-400 to-teal-400 bg-clip-text text-transparent">Your Progress Report</h1>
               </div>
               <p className="text-gray-600 text-lg ml-15">Track your learning journey and celebrate achievements</p>
             </div>
@@ -149,7 +149,7 @@ const ProgressPage = () => {
                 <select
                   value={selectedCourse || ''}
                   onChange={(e) => setSelectedCourse(e.target.value || null)}
-                  className="appearance-none px-4 py-2 pr-10 text-sm font-medium rounded-xl bg-white text-gray-700 border-2 border-gray-200 hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-all shadow-sm hover:shadow-md"
+                  className="appearance-none px-4 py-2 pr-10 text-sm font-medium rounded-xl bg-white text-gray-700 border-2 border-gray-200 hover:border-teal-300 focus:border-teal-500 focus:outline-none transition-all shadow-sm hover:shadow-md"
                 >
                   <option value="">All Courses</option>
                   {courses.map((course) => (
@@ -168,8 +168,8 @@ const ProgressPage = () => {
                   onClick={() => setTimeRange(btn.value)}
                   className={`px-4 py-2 text-sm font-medium rounded-xl transition-all ${
                     timeRange === btn.value
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-indigo-300 hover:shadow-md'
+                      ? 'bg-gradient-to-r from-orange-400 to-teal-400 text-white shadow-lg'
+                      : 'bg-white text-gray-700 border border-gray-200 hover:border-teal-300 hover:shadow-md'
                   }`}
                 >
                   {btn.label}
@@ -180,7 +180,7 @@ const ProgressPage = () => {
               <button
                 onClick={handleRefresh}
                 disabled={isLoading}
-                className="px-4 py-2 text-sm font-medium rounded-xl transition-all bg-white text-gray-700 border border-gray-200 hover:border-indigo-300 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2 text-sm font-medium rounded-xl transition-all bg-white text-gray-700 border border-gray-200 hover:border-teal-300 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 title="Refresh data"
               >
                 <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -205,12 +205,12 @@ const ProgressPage = () => {
           </div>
 
           {/* Lessons Completed Card */}
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-blue-100">
+          <div className="bg-gradient-to-br from-blue-50 to-teal-50 rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-teal-100">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-md">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-teal-400 rounded-xl flex items-center justify-center shadow-md">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
-              <Star className="w-5 h-5 text-blue-600" />
+              <Star className="w-5 h-5 text-teal-600" />
             </div>
             <p className="text-sm font-medium text-gray-600 mb-1">Lessons Completed</p>
             <p className="text-3xl font-bold text-gray-900">{summary.lessons_completed || 0}</p>
@@ -285,7 +285,7 @@ const ProgressPage = () => {
           {/* Fluency Score Chart */}
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-teal-400 rounded-lg flex items-center justify-center">
                 <Activity className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -339,7 +339,7 @@ const ProgressPage = () => {
         {recentActivity.length > 0 && (
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-teal-400 rounded-lg flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -370,7 +370,7 @@ const ProgressPage = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {recentActivity.map((activity, index) => (
-                    <tr key={index} className="hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-colors">
+                    <tr key={index} className="hover:bg-gradient-to-r hover:from-orange-50 hover:to-teal-50 transition-colors">
                       <td className="px-4 py-4 text-sm font-medium text-gray-900">{activity.lesson_title}</td>
                       <td className="px-4 py-4 text-sm text-gray-600">
                         <div className="flex flex-col">

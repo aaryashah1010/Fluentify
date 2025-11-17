@@ -129,34 +129,34 @@ const ModuleCourseDetailsPage = () => {
 
                 {/* Lessons List */}
                 {expandedUnits[unit.id] && (
-                  <div className="bg-gray-50 border-t border-gray-200">
+                  <div className="bg-orange-50/40 border-t border-orange-100">
                     {unit.lessons && unit.lessons.length > 0 ? (
-                      <div className="divide-y divide-gray-200">
+                      <div className="px-4 py-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                         {unit.lessons.map((lesson, lessonIndex) => (
                           <div
                             key={lesson.id}
-                            className="p-4 hover:bg-gray-100 transition-colors"
+                            className="rounded-2xl bg-white border border-orange-100 shadow-sm p-4 flex flex-col gap-2"
                           >
                             <div className="flex items-start gap-3">
-                              <div className="flex items-center justify-center w-6 h-6 bg-blue-50 rounded text-blue-600 text-xs font-semibold">
+                              <div className="flex items-center justify-center w-7 h-7 bg-gradient-to-br from-orange-400 to-teal-400 rounded-full text-white text-xs font-semibold">
                                 {lessonIndex + 1}
                               </div>
                               <div className="flex-1">
                                 <h5 className="font-medium text-gray-900">{lesson.title}</h5>
-                                <p className="text-sm text-gray-600 mt-1">
+                                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                                   {lesson.description || 'No description'}
                                 </p>
-                                <div className="flex items-center gap-2 mt-2">
-                                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                                    {lesson.content_type || 'Lesson'}
-                                  </span>
-                                  {lesson.xp_reward && (
-                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                                      +{lesson.xp_reward} XP
-                                    </span>
-                                  )}
-                                </div>
                               </div>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600 mt-2">
+                              <span className="px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-100">
+                                {lesson.content_type || 'Lesson'}
+                              </span>
+                              {lesson.xp_reward != null && (
+                                <span className="px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-100">
+                                  +{lesson.xp_reward} XP
+                                </span>
+                              )}
                             </div>
                           </div>
                         ))}

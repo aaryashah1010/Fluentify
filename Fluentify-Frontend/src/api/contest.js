@@ -69,14 +69,18 @@ export const apiAdminAddQuestion = async (contestId, data) => {
  * @returns {Promise<{success: boolean, data: object}>}
  */
 export const apiAdminPublishContest = async (contestId) => {
-  const baseHeaders = { ...getAuthHeader(), Accept: 'application/json' };
+  const baseHeaders = { 
+    ...getAuthHeader(), 
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  };
 
   const tryRequest = async (url, method, body = {}) => {
     try {
       const res = await fetch(url, {
         method,
         headers: baseHeaders,
-        body: JSON.stringify(body),
+        body: Object.keys(body).length > 0 ? JSON.stringify(body) : undefined,
       });
       if (res.ok) return handleResponse(res);
       // Only allow fallback on obvious route/method issues

@@ -98,6 +98,7 @@ export const usePublishContest = () => {
     mutationFn: apiAdminPublishContest,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-contests'] });
+      queryClient.invalidateQueries({ queryKey: ['available-contests'] });
     },
   });
 };

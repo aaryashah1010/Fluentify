@@ -1,218 +1,447 @@
-import React, { useMemo, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { BookOpen, Target, Award, Flame } from 'lucide-react';
-import { useCourseDetails } from '../../hooks/useCourses';
-import { useStreaming } from '../../contexts/StreamingContext';
-import { calculateProgress, calculateTotalXP } from '../../utils/courseHelpers';
-import { PageHeader, SkeletonPageHeader, SkeletonCard, SkeletonUnitCard, FloatingChatWidget } from '../../components';
-import { StatCard, UnitCard } from './components';
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  ArrowLeft,
+  Flame,
+  BookOpen,
+  Award,
+  Target,
+  CheckCircle2,
+  Lock,
+  Clock,
+  PlayCircle,
+} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCourseDetails } from "../../api/courses";
+
+// Stat Card Component
+const StatCard = ({ icon: Icon, label, value }) => (
+  <div className="flex flex-col rounded-2xl bg-white border border-gray-100 shadow-sm px-5 py-4">
+    <div className="flex items-center gap-3 mb-3">
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md bg-gradient-to-r from-orange-400 to-teal-400">
+        <Icon className="w-5 h-5 text-white" />
+      </div>
+      <div className="flex flex-col">
+        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+          {label}
+        </span>
+        <span className="text-lg font-semibold text-gray-900">{value}</span>
+      </div>
+    </div>
+  </div>
+);
+
+// Lesson Status Badge
+const LessonStatusBadge = ({ status }) => {
+  if (status === "completed") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-semibold border border-green-100">
+        <CheckCircle2 className="w-3.5 h-3.5" />
+        Completed
+      </span>
+    );
+  }
+  if (status === "active") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">
+        <Target className="w-3.5 h-3.5" />
+        In Progress
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-50 text-gray-500 text-xs font-semibold border border-gray-100">
+      <Lock className="w-3.5 h-3.5" />
+      Locked
+    </span>
+  );
+};
+
+const getLessonStatus = (lesson) => {
+
+  const progress =
+    lesson.progress ||
+    lesson.lesson_progress ||
+    lesson.lessonProgress ||
+    lesson.user_progress ||
+    null;
+
+  const isCompleted =
+    lesson.isCompleted ||
+    lesson.is_completed ||
+    progress?.is_completed;
+
+  const isLocked =
+    lesson.isUnlocked === false ||
+    lesson.is_locked ||
+    progress?.is_locked;
+  const rawStatus = lesson.status || progress?.status;
+
+  if (isCompleted) return "completed";
+
+  if (isLocked) return "locked";
+
+  if (rawStatus === "completed" || rawStatus === "done") return "completed";
+  if (rawStatus === "locked") return "locked";
+  if (rawStatus === "in_progress" || rawStatus === "active") return "active";
+
+  // Default
+  return "active";
+};
+
+
+const deriveLessonStatus = (lesson, index, lessons) => {
+  const baseStatus = getLessonStatus(lesson);
+
+  if (baseStatus === "completed" || baseStatus === "locked") {
+    return baseStatus;
+  }
+
+  if (lesson.status || lesson.is_locked || lesson.is_completed) {
+    return baseStatus;
+  }
+
+  if (index === 0) {
+    return "active";
+  }
+
+  const prev = lessons[index - 1];
+  const prevStatus = getLessonStatus(prev);
+
+  if (prevStatus !== "completed") {
+    return "locked";
+  }
+
+  return "active";
+};
 
 const CoursePage = () => {
-  const { courseId } = useParams();
   const navigate = useNavigate();
-  
-  // React Query hook for course details
-  const { data, isLoading: loading, error: queryError, refetch } = useCourseDetails(courseId);
-  
-  // Streaming context for real-time generation
-  const { state: streamState } = useStreaming();
-  
-  // Check if this course is currently being generated
-  const isGenerating = streamState.isGenerating && streamState.courseId === Number(courseId);
-  
-  // Refetch data when component mounts (navigating back from lesson page)
-  useEffect(() => {
-    if (courseId) {
-      refetch();
-    }
-  }, [courseId, refetch]);
-  
-  // Extract data from query response
-  const course = data?.data?.course;
-  const stats = data?.data?.stats || null;
-  let units = course?.units || [];
-  
-  // If generating, merge with stream state units
-  if (isGenerating && streamState.units) {
-    units = streamState.units.map((streamUnit, index) => {
-      if (streamUnit) {
-        // Use stream unit data but ensure first lesson of unit 1 is unlocked
-        const isUnit1 = index === 0; // Unit 1 (0-indexed)
-        const lessons = streamUnit.lessons?.map((lesson, lessonIndex) => ({
+  const { courseId } = useParams();
+  const numericCourseId = Number(courseId);
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["course", numericCourseId],
+    queryFn: () => fetchCourseDetails(numericCourseId),
+    enabled: !!numericCourseId,
+  });
+
+  const payload = data?.data || data || {};
+  const course = payload.course || payload;
+  const stats = payload.stats || {};
+
+  const units = course.units || course.course_units || [];
+
+  const flatLessons = [];
+  units.forEach((unit) => {
+    const lessonList = unit.lessons || unit.unit_lessons || [];
+    const unitIdForRoute = unit.id ?? unit.unit_id ?? unit.unitId;
+    lessonList.forEach((lesson) => {
+      const lessonIdForRoute =
+        lesson.id ?? lesson.lesson_id ?? lesson.lessonId;
+      const status = getLessonStatus(lesson);
+      flatLessons.push({
+        unitId: unitIdForRoute,
+        lesson: {
           ...lesson,
-          isUnlocked: isUnit1 && lessonIndex === 0 ? true : lesson.isUnlocked || false
-        })) || [];
-
-        return {
-          ...streamUnit,
-          isUnlocked: true, // Generated units are unlocked
-          isGenerating: false,
-          lessons
-        };
-      } else if (streamState.currentGenerating === index + 1) {
-        // Currently generating
-        return {
-          id: index + 1,
-          title: `Unit ${index + 1}`,
-          description: 'Generating...',
-          isUnlocked: false,
-          isGenerating: true,
-          lessons: []
-        };
-      } else {
-        // Not generated yet
-        return {
-          id: index + 1,
-          title: `Unit ${index + 1}`,
-          description: 'Waiting...',
-          isUnlocked: false,
-          isGenerating: false,
-          lessons: []
-        };
-      }
+          _routeUnitId: unitIdForRoute,
+          _routeLessonId: lessonIdForRoute,
+        },
+        status,
+      });
     });
-  }
-  
-  // Calculate progress and XP
-  const progress = useMemo(() => calculateProgress(units), [units]);
-  const totalXpEarned = useMemo(() => calculateTotalXP(units), [units]);
-  
-  // Error handling
-  const error = queryError?.message;
+  });
 
-  const handleLessonClick = (lesson, unitId, unitIndex) => {
-    if (!lesson.isUnlocked) {
-      alert('🔒 This lesson is locked. Complete previous lessons first!');
-      return;
-    }
+  const totalLessons = flatLessons.length;
 
-    // Use unit-aware navigation
-    navigate(`/lesson/${courseId}/${unitId}/${lesson.id}`);
-  };
+  const lessonsCompleted = flatLessons.filter(
+    (l) => l.status === "completed"
+  ).length;
 
-  const handleUnitClick = (unit) => {
-    if (!unit.isUnlocked) {
-      alert('🔒 This unit is locked. Complete the previous unit first!');
-    }
-  };
+  const unitsCompleted = units.filter((unit) => {
+    const list = unit.lessons || unit.unit_lessons || [];
+    if (!list.length) return false;
+    return list.every((lesson) => getLessonStatus(lesson) === "completed");
+  }).length;
 
-  if (loading) {
+  const totalXP = flatLessons.reduce(
+    (sum, l) => sum + (l.lesson.xpEarned ?? 0),
+    0
+  );
+
+  const streakDays =
+    stats.current_streak ??
+    course.streak ??
+    0;
+
+  const language =
+    course.language ||
+    course.target_language ||
+    "Language";
+
+  const title =
+    course.title ||
+    `${language} Learning Journey`;
+
+  const progressPercent = totalLessons
+    ? (lessonsCompleted / totalLessons) * 100
+    : 0;
+
+  const resumeLesson =
+    flatLessons.find((l) => l.status === "active") ||
+    flatLessons.find((l) => l.status !== "completed" && l.status !== "locked") ||
+    flatLessons.find((l) => l.status === "completed");
+
+  const currentUnitId =
+    resumeLesson?.lesson._routeUnitId ??
+    resumeLesson?.unitId ??
+    (units[0]
+      ? units[0].id ?? units[0].unit_id ?? units[0].unitId
+      : null);
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-green-50">
-        <SkeletonPageHeader />
-        <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-          {/* Stats skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            {[1, 2, 3, 4].map((i) => (
-              <SkeletonCard key={i} />
-            ))}
-          </div>
-          
-          {/* Units skeleton */}
-          <div className="space-y-6">
-            {[1, 2, 3].map((i) => (
-              <SkeletonUnitCard key={i} />
-            ))}
-          </div>
-        </main>
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-teal-50 flex items-center justify-center">
+        <div className="animate-spin h-14 w-14 rounded-full border-4 border-indigo-200 border-t-indigo-600" />
       </div>
     );
   }
 
   if (error || !course) {
     return (
-      <div className="min-h-screen bg-green-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error || 'Course not found'}</p>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
-            Back to Dashboard
-          </button>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-red-50">
+        Failed to load course.
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-green-50">
-      {/* Header */}
-      <PageHeader
-        title={course.title}
-        showBack
-        onBack={() => navigate('/dashboard')}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-teal-50">
+      <div className="max-w-6xl mx-auto px-6 py-8">
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Course Overview */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatCard
-              icon={Target}
-              label="Language"
-              value={course.language}
-              bgColor="bg-blue-100"
-              iconColor="text-blue-600"
-            />
-            <StatCard
-              icon={BookOpen}
-              label="Total Lessons"
-              value={course.total_lessons || units.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0)}
-              bgColor="bg-green-100"
-              iconColor="text-green-600"
-            />
-            <StatCard
-              icon={Award}
-              label="Total XP"
-              value={totalXpEarned}
-              bgColor="bg-yellow-100"
-              iconColor="text-yellow-600"
-            />
-            <StatCard
-              icon={Flame}
-              label="Streak"
-              value={`${stats?.current_streak || 0} days`}
-              bgColor="bg-orange-100"
-              iconColor="text-orange-600"
-            />
-          </div>
+        {/* Back */}
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="px-4 py-2 mb-6 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white flex items-center gap-2 text-sm font-medium shadow hover:opacity-90"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dashboard
+        </button>
 
-          {/* Progress Bar */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Course Progress</span>
-              <span className="text-sm font-medium text-gray-700">{progress.progressPercentage}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
-              <div 
-                className="bg-blue-600 h-3 rounded-full transition-all duration-300" 
-                style={{ width: `${progress.progressPercentage}%` }}
-              ></div>
-            </div>
-            <div className="text-xs text-gray-600 text-center">
-              {progress.lessonsCompleted} lessons completed • {progress.unitsCompleted} units completed
-            </div>
-          </div>
+        {/* Title */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
         </div>
 
-        {/* Units and Lessons */}
-        <div className="space-y-6">
-          {units.map((unit, unitIndex) => (
-            <UnitCard
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+          <StatCard icon={BookOpen} label="Language" value={language} />
+          <StatCard icon={BookOpen} label="Lessons" value={totalLessons} />
+          <StatCard icon={Award} label="Total XP" value={totalXP} />
+          <StatCard icon={Flame} label="Streak" value={`${streakDays} days`} />
+        </div>
+
+        {/* Progress */}
+        <div className="bg-white border border-gray-100 rounded-2xl shadow px-6 py-5 mb-8">
+          <div className="flex justify-between mb-3">
+            <div>
+              <p className="font-semibold text-gray-900">Course Progress</p>
+              <p className="text-sm text-gray-500">
+                {lessonsCompleted} lessons • {unitsCompleted} units
+              </p>
+            </div>
+            <p className="font-semibold text-gray-700">
+              {progressPercent.toFixed(1)}%
+            </p>
+          </div>
+
+          <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+            <div
+              className="h-2.5 bg-gradient-to-r from-orange-400 to-teal-400"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+
+          {resumeLesson && (
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() =>
+                  navigate(
+                    `/lesson/${courseId}/${
+                      resumeLesson.lesson._routeUnitId ?? resumeLesson.unitId
+                    }/${
+                      resumeLesson.lesson._routeLessonId ??
+                      resumeLesson.lesson.id
+                    }`
+                  )
+                }
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white shadow hover:opacity-90"
+              >
+                <PlayCircle className="w-4 h-4" />
+                Resume Course
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Units */}
+        {units.map((unit, unitIndex) => {
+          const lessonList = unit.lessons || unit.unit_lessons || [];
+
+          const unitIdForRoute = unit.id ?? unit.unit_id ?? unit.unitId;
+          const isCurrentUnit =
+            currentUnitId != null && unitIdForRoute === currentUnitId;
+
+          // All non-current units are slightly blurred/faded but remain visible
+          const unitContainerClasses = `bg-white rounded-2xl shadow border border-gray-100 mb-10 ${
+            isCurrentUnit ? "" : "opacity-70 blur-[1px]"
+          }`;
+
+          return (
+            <section
               key={unit.id}
-              unit={unit}
-              unitIndex={unitIndex}
-              onLessonClick={handleLessonClick}
-              onUnitClick={handleUnitClick}
-            />
-          ))}
-        </div>
-      </main>
+              className={unitContainerClasses}
+            >
+              <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-indigo-500 rounded-full" />
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      {unit.title}
+                    </h2>
+                  </div>
+                  {unit.description && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {unit.description}
+                    </p>
+                  )}
+                </div>
+                <p className="text-xs text-gray-600">
+                  {
+                    lessonList.filter(
+                      (l) => getLessonStatus(l) === "completed"
+                    ).length
+                  }
+                  /{lessonList.length} lessons
+                </p>
+              </div>
 
-      {/* Floating Chat Widget */}
-      <FloatingChatWidget />
+              <div className="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {lessonList.map((lesson, index) => {
+                  const baseStatus = deriveLessonStatus(lesson, index, lessonList);
+                  const status = baseStatus;
+
+                  const xpEarned = lesson.xpEarned ?? null;
+                  const xpReward = lesson.xp_reward ?? lesson.xp ?? 0;
+                  const xp = xpEarned != null ? xpEarned : xpReward;
+
+                  const lessonIdForRoute =
+                    lesson.id ?? lesson.lesson_id ?? lesson.lessonId;
+
+                  const nextLesson = lessonList[index + 1];
+                  let nextLessonPath = null;
+                  if (nextLesson) {
+                    const nextLessonIdForRoute =
+                      nextLesson.id ?? nextLesson.lesson_id ?? nextLesson.lessonId;
+                    nextLessonPath = `/lesson/${courseId}/${unitIdForRoute}/${nextLessonIdForRoute}`;
+                  }
+
+                  return (
+                    <div
+                      key={lesson.id}
+                      className={`rounded-2xl border shadow-sm p-4 flex flex-col transition-all ${
+                        status === "completed"
+                          ? "bg-gradient-to-br from-green-50 to-emerald-50 border-green-200"
+                          : status === "active"
+                          ? "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
+                          : "bg-gray-50 border-gray-200"
+                      } ${
+                        // Only lessons in the current unit are fully sharp; all others are slightly blurred
+                        isCurrentUnit ? "" : "opacity-70 blur-[1px]"
+                      }`}
+                    >
+                      <div className="flex justify-between mb-2">
+                        <h3 className="font-semibold text-gray-900">
+                          {lesson.title}
+                        </h3>
+                        <LessonStatusBadge status={status} />
+                      </div>
+
+                      <p className="text-sm text-gray-600 mb-3">
+                        {lesson.description}
+                      </p>
+
+                      <div className="flex items-center gap-4 text-xs text-gray-600 mb-4">
+                        <span className="inline-flex items-center gap-1">
+                          <Clock className="w-4 h-4" />{" "}
+                          {lesson.duration || "30 min"}
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <Award className="w-4 h-4 text-indigo-600" />
+                          {xp} XP
+                        </span>
+                      </div>
+
+                      {/* Buttons */}
+                      {status === "completed" && (
+                        <button
+                          className="mt-auto px-4 py-2 rounded-full bg-white text-green-700 border border-green-300 shadow-sm hover:bg-green-50"
+                          onClick={() =>
+                            navigate(
+                              `/lesson/${courseId}/${unitIdForRoute}/${lessonIdForRoute}`,
+                              {
+                                state: {
+                                  lesson,
+                                  progress:
+                                    lesson.progress ||
+                                    lesson.lesson_progress ||
+                                    null,
+                                  nextLessonPath,
+                                },
+                              }
+                            )
+                          }
+                        >
+                          Review Lesson
+                        </button>
+                      )}
+
+                      {status === "active" && (
+                        <button
+                          className="mt-auto px-4 py-2 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white shadow hover:opacity-90"
+                          onClick={() =>
+                            navigate(
+                              `/lesson/${courseId}/${unitIdForRoute}/${lessonIdForRoute}`,
+                              {
+                                state: {
+                                  lesson,
+                                  progress:
+                                    lesson.progress ||
+                                    lesson.lesson_progress ||
+                                    null,
+                                  nextLessonPath,
+                                },
+                              }
+                            )
+                          }
+                        >
+                          Start Lesson →
+                        </button>
+                      )}
+
+                      {status === "locked" && (
+                        <p className="text-xs text-gray-500 mt-auto">
+                          Complete previous lessons to unlock.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+      </div>
     </div>
   );
 };

@@ -15,7 +15,6 @@ const UserProfile = () => {
   const [editError, setEditError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Initialize form data when profile is loaded
   React.useEffect(() => {
     if (profileData?.data?.user) {
       setFormData({ 
@@ -46,7 +45,6 @@ const UserProfile = () => {
       return;
     }
 
-    // Validate contest_name if provided
     if (formData.contest_name && formData.contest_name.trim().length > 50) {
       setEditError('Contest name must be 50 characters or less');
       return;
@@ -84,7 +82,7 @@ const UserProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-green-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50 flex items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -92,7 +90,7 @@ const UserProfile = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-green-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50 flex items-center justify-center p-4">
         <ErrorMessage message="Failed to load profile. Please try again." />
       </div>
     );
@@ -112,7 +110,7 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
@@ -141,7 +139,7 @@ const UserProfile = () => {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white rounded-3xl shadow-lg p-8">
           {/* Success Message */}
           {successMessage && (
             <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
@@ -151,14 +149,14 @@ const UserProfile = () => {
 
           {/* Profile Header */}
           <div className="flex items-center gap-6 mb-8 pb-8 border-b border-gray-200">
-            <div className="w-24 h-24 bg-indigo-500 rounded-full flex items-center justify-center">
+            <div className="w-24 h-24 rounded-full flex items-center justify-center bg-gradient-to-r from-orange-400 to-teal-400">
               <User className="w-12 h-12 text-white" />
             </div>
             <div className="flex-1">
               <h2 className="text-3xl font-bold text-gray-900 mb-2">
                 {user?.name || 'User'}
               </h2>
-              <p className="text-gray-600">Language Learner</p>
+              <p className="text-gray-600">Learner</p>
             </div>
           </div>
 
@@ -223,7 +221,6 @@ const UserProfile = () => {
               </p>
             </div>
 
-            {/* Save/Cancel Buttons (only show when editing) */}
             {isEditing && (
               <div className="flex gap-2 pt-2">
                 <Button

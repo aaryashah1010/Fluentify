@@ -78,6 +78,7 @@ const CourseGenerationForm = ({
           loading={isGenerating}
           disabled={isGenerating}
           icon={<BookOpen className="w-4 h-4" />}
+          className="bg-gradient-to-r from-orange-400 to-teal-400 text-white hover:opacity-90"
         >
           {isGenerating ? 'Generating...' : 'Generate Course'}
         </Button>

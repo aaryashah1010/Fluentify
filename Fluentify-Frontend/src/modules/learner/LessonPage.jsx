@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { BookOpen, Target, Play, RotateCcw, Award, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useLessonDetails, useGenerateExercises, useCompleteLesson } from '../../hooks/useCourses';
 import { PageHeader, Button, SkeletonPageHeader, SkeletonCard, SkeletonText, FloatingChatWidget } from '../../components';
+import { useQueryClient } from "@tanstack/react-query";
+
 
 const LessonPage = () => {
   const { courseId, unitId, lessonId } = useParams();
@@ -13,7 +15,6 @@ const LessonPage = () => {
   const [exerciseResults, setExerciseResults] = useState(null);
   const [lessonJustCompleted, setLessonJustCompleted] = useState(false);
   
-  // React Query hooks
   const { data, isLoading: loading, error: queryError } = useLessonDetails({
     courseId: Number(courseId),
     unitId: Number(unitId),
@@ -22,8 +23,8 @@ const LessonPage = () => {
   
   const generateExercisesMutation = useGenerateExercises();
   const completeLessonMutation = useCompleteLesson();
-  
-  // Extract data
+  const queryClient = useQueryClient();
+
   const lesson = data?.data?.lesson;
   const lessonProgress = data?.data?.progress;
   const exercises = Array.isArray(lesson?.exercises) ? lesson.exercises : [];
@@ -31,21 +32,18 @@ const LessonPage = () => {
   const vocabulary = Array.isArray(lesson?.vocabulary) ? lesson.vocabulary : [];
   const error = queryError?.message;
 
-  // Reset answers when exercises change
   useEffect(() => {
     setUserAnswers({});
     setShowResults(false);
     setExerciseResults(null);
   }, [exercises]);
 
-  // Auto-switch to exercises tab if no exercises and lesson not completed
   useEffect(() => {
     if (!isLessonCompleted() && exercises.length === 0 && !generateExercisesMutation.isPending) {
       setCurrentSection('exercises');
     }
   }, [exercises.length, generateExercisesMutation.isPending]);
 
-  // Helper function to check if lesson is truly completed
   const isLessonCompleted = () => {
     return lessonProgress?.is_completed === true;
   };
@@ -54,6 +52,7 @@ const LessonPage = () => {
     setUserAnswers({});
     setShowResults(false);
     setExerciseResults(null);
+    setLessonJustCompleted(false); 
     generateExercisesMutation.mutate({
       courseId: Number(courseId),
       unitId: Number(unitId),
@@ -62,7 +61,7 @@ const LessonPage = () => {
   };
 
   const handleAnswerSelect = (exerciseIndex, optionIndex) => {
-    if (showResults) return; // Don't allow changes after submission
+    if (showResults) return; 
     setUserAnswers(prev => ({
       ...prev,
       [exerciseIndex]: optionIndex
@@ -70,7 +69,6 @@ const LessonPage = () => {
   };
 
   const handleSubmitExercises = () => {
-    // Calculate results
     const results = exercises.map((exercise, index) => {
       const userAnswer = userAnswers[index];
       const isCorrect = userAnswer === exercise.correctAnswer;
@@ -101,7 +99,6 @@ const LessonPage = () => {
       return;
     }
 
-    // Prepare exercise data for backend
     const exerciseData = exerciseResults.results.map((result, index) => ({
       exerciseIndex: index,
       isCorrect: result.isCorrect,
@@ -110,33 +107,36 @@ const LessonPage = () => {
 
     const score = Math.round((exerciseResults.correctCount / exerciseResults.totalCount) * 100);
 
-    completeLessonMutation.mutate({
-      courseId: Number(courseId),
-      unitId: Number(unitId),
-      lessonId: Number(lessonId),
-      score,
-      exercises: exerciseData
-    }, {
-      onSuccess: (data) => {
-        console.log('Lesson completed successfully:', data);
-        setLessonJustCompleted(true);
-        // Scroll to top to show success message
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    completeLessonMutation.mutate(
+      {
+        courseId: Number(courseId),
+        unitId: Number(unitId),
+        lessonId: Number(lessonId),
+        score,
+        exercises: exerciseData,
       },
-      onError: (error) => {
-        console.error('Error completing lesson:', error);
-        alert(error.message || 'Failed to complete lesson. Please try again.');
+      {
+        onSuccess: (data) => {
+          console.log('Lesson completed successfully:', data);
+          queryClient.invalidateQueries({ queryKey: ['course', Number(courseId)] });
+          setLessonJustCompleted(true)
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+        onError: (error) => {
+          console.error('Error completing lesson:', error);
+          alert(error.message || 'Failed to complete lesson. Please try again.');
+        },
       }
-    });
+    );
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-green-50">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-teal-50/30">
         <SkeletonPageHeader />
         <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-          {/* Lesson overview skeleton */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          {/* Lesson overview */}
+          <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-8">
             <div className="space-y-4">
               <SkeletonText lines={2} />
               <div className="flex gap-6 pt-4">
@@ -151,7 +151,7 @@ const LessonPage = () => {
           </div>
           
           {/* Content skeleton */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
+          <div className="bg-white rounded-2xl shadow-md border border-gray-100 mb-8">
             {/* Tabs skeleton */}
             <div className="border-b border-gray-200 px-6 py-4">
               <div className="flex gap-8">
@@ -187,39 +187,46 @@ const LessonPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-teal-50/30">
       {/* Header */}
-      <PageHeader
-        title={
-          <div className="flex items-center gap-2">
-            <span>{lesson.title}</span>
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-semibold text-gray-900">{lesson.title}</h2>
             {(isLessonCompleted() || lessonJustCompleted) && (
-              <span className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-sm font-normal">
+              <span className="flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
                 ✓ Completed
               </span>
             )}
           </div>
-        }
-        showBack
-        actions={
-          !isLessonCompleted() && !lessonJustCompleted && showResults && exerciseResults?.passed && (
-            <Button
-              onClick={markLessonComplete}
-              loading={completeLessonMutation.isPending}
-              variant="success"
-              icon={<Award className="w-4 h-4" />}
+
+          <div className="flex items-center gap-3">
+            {!isLessonCompleted() && !lessonJustCompleted && showResults && exerciseResults?.passed && (
+              <Button
+                onClick={markLessonComplete}
+                loading={completeLessonMutation.isPending}
+                className="bg-gradient-to-r from-orange-400 to-teal-400 text-white"
+                variant="primary"
+                icon={<Award className="w-4 h-4" />}
+              >
+                Complete Lesson
+              </Button>
+            )}
+
+            <button
+              onClick={() => navigate(`/course/${courseId}`)}
+              className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:shadow-md transition"
             >
-              Complete Lesson
-            </Button>
-          )
-        }
-      />
+              <BookOpen className="w-4 h-4 text-gray-700" /> Back to Course
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Success message after completion */}
         {lessonJustCompleted && (
-          <div className="bg-green-50 border-2 border-green-500 rounded-lg p-6 mb-6 shadow-lg">
+          <div className="bg-green-50 border-2 border-green-500 rounded-2xl p-6 mb-6 shadow-md">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
                 <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
@@ -237,13 +244,24 @@ const LessonPage = () => {
                 <div className="flex gap-3">
                   <Button
                     onClick={() => navigate(`/course/${courseId}`)}
+                    className="bg-gradient-to-r from-blue-100 to-indigo-100 text-indigo-900"
                     variant="primary"
                     icon={<BookOpen className="w-4 h-4" />}
                   >
                     Back to Course
                   </Button>
                   <Button
+                    onClick={generateAdditionalExercises}
+                    loading={generateExercisesMutation.isPending}
+                    className="bg-gradient-to-r from-orange-400 to-teal-400 text-white"
+                    variant="secondary"
+                    icon={<Play className="w-4 h-4" />}
+                  >
+                    Practice More
+                  </Button>
+                  <Button
                     onClick={() => window.location.reload()}
+                    className="bg-white border border-gray-200"
                     variant="secondary"
                     icon={<RotateCcw className="w-4 h-4" />}
                   >
@@ -255,9 +273,9 @@ const LessonPage = () => {
           </div>
         )}
 
-        {/* Alert for exercise requirement */}
+        {/* Alerts */}
         {!isLessonCompleted() && !lessonJustCompleted && !showResults && exercises.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
               <div>
@@ -272,7 +290,7 @@ const LessonPage = () => {
         )}
 
         {!isLessonCompleted() && !lessonJustCompleted && exercises.length === 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-6">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
               <div>
@@ -286,7 +304,7 @@ const LessonPage = () => {
         )}
 
         {/* Lesson Overview */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-8">
           <p className="text-gray-700 mb-4">{lesson.description}</p>
           
           {isLessonCompleted() && (
@@ -323,22 +341,25 @@ const LessonPage = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6" aria-label="Tabs">
-              {['vocabulary', 'grammar', 'exercises'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setCurrentSection(tab)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    currentSection === tab
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              ))}
+        <div className="bg-white rounded-2xl shadow-md border border-gray-100 mb-8">
+          <div className="border-b border-gray-100">
+            <nav className="flex space-x-4 px-6 py-4 overflow-x-auto" aria-label="Tabs">
+              {['vocabulary', 'grammar', 'exercises'].map((tab) => {
+                const active = currentSection === tab;
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setCurrentSection(tab)}
+                    className={`py-2 px-4 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                      active
+                        ? 'bg-gradient-to-r from-orange-400 to-teal-400 text-white shadow-md'
+                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                );
+              })}
             </nav>
           </div>
 
@@ -350,7 +371,7 @@ const LessonPage = () => {
                 {vocabulary.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {vocabulary.map((item, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg p-4">
+                      <div key={index} className="border border-gray-100 rounded-2xl p-4 bg-white shadow-sm">
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-semibold text-lg">{item.word}</span>
                           <span className="text-sm text-gray-600">[{item.pronunciation}]</span>
@@ -371,7 +392,7 @@ const LessonPage = () => {
                 <h3 className="text-lg font-semibold mb-4">Grammar Points</h3>
                 {grammarPoints.length > 0 ? (
                   grammarPoints.map((point, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4">
+                    <div key={index} className="border border-gray-100 rounded-2xl p-4 bg-white shadow-sm">
                       <h4 className="font-semibold mb-2">{point.topic || point.title}</h4>
                       <p className="text-gray-700 mb-3">{point.explanation}</p>
                       {point.examples && point.examples.length > 0 && (
@@ -394,22 +415,39 @@ const LessonPage = () => {
 
             {currentSection === 'exercises' && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Exercises (Need 3/5 Correct to Pass)</h3>
-                  {showResults && !exerciseResults?.passed && (
-                    <Button
-                      onClick={generateAdditionalExercises}
-                      loading={generateExercisesMutation.isPending}
-                      size="sm"
-                      icon={<RotateCcw className="w-4 h-4" />}
-                    >
-                      Generate New Exercises
-                    </Button>
-                  )}
+                <div className="flex items-center justify-between mb-4 overflow-visible">
+                <h3 className="text-lg font-semibold">Exercises (Need 3/5 Correct to Pass)</h3>
+
+            {!showResults && exercises.length === 0 && !generateExercisesMutation.isPending && (
+              <Button
+                onClick={generateAdditionalExercises}
+                loading={generateExercisesMutation.isPending}
+                size="sm"
+              className="bg-gradient-to-r from-orange-400 to-teal-400 text-white shadow-md"
+              icon={<Play className="w-4 h-4" />}
+            >
+            Generate Exercises
+            </Button>
+            )}
+
+            {/* Show retry button only after answering */}
+             {showResults && (
+                <Button
+                  onClick={generateAdditionalExercises}
+                  loading={generateExercisesMutation.isPending}
+                  size="sm"
+                 className="rounded-fullbg-gradient-to-r from-orange-400 to-teal-400text-whiteshadow-md hover:shadow-lgtransition-allpx-4 py-2"
+                  icon={<Play className="w-4 h-4 text-white" />}
+>
+  Generate New Exercises
+</Button>
+
+  )}
                 </div>
+
                 
                 {showResults && exerciseResults && (
-                  <div className={`p-4 rounded-lg border-2 ${exerciseResults.passed ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
+                  <div className={`p-4 rounded-2xl border-2 ${exerciseResults.passed ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
                     <div className="flex items-center gap-2 mb-2">
                       {exerciseResults.passed ? (
                         <CheckCircle className="w-6 h-6 text-green-600" />
@@ -428,7 +466,7 @@ const LessonPage = () => {
                   </div>
                 )}
                 
-                {exercises.length > 0 ? (
+                {!generateExercisesMutation.isPending && exercises.length > 0 ? (
                   <>
                     <div className="space-y-4">
                       {exercises.map((exercise, index) => {
@@ -436,19 +474,17 @@ const LessonPage = () => {
                         const result = showResults ? exerciseResults?.results[index] : null;
                         
                         return (
-                          <div key={index} className={`border-2 rounded-lg p-4 ${
+                          <div key={index} className={`border-2 rounded-2xl p-4 transition-all ${
                             showResults
                               ? result?.isCorrect 
-                                ? 'border-green-500 bg-green-50' 
-                                : 'border-red-500 bg-red-50'
-                              : 'border-gray-200'
+                                ? 'border-green-500 bg-green-50 shadow-sm' 
+                                : 'border-red-500 bg-red-50 shadow-sm'
+                              : 'border-gray-100 bg-white shadow-sm'
                           }`}>
                             <div className="flex items-start justify-between mb-3">
                               <span className="font-medium">Question {index + 1}</span>
                               {showResults && (
-                                <span className={`flex items-center gap-1 text-sm font-medium ${
-                                  result?.isCorrect ? 'text-green-700' : 'text-red-700'
-                                }`}>
+                                <span className={`flex items-center gap-1 text-sm font-medium ${result?.isCorrect ? 'text-green-700' : 'text-red-700'}`}>
                                   {result?.isCorrect ? (
                                     <><CheckCircle className="w-4 h-4" /> Correct</>
                                   ) : (
@@ -467,16 +503,16 @@ const LessonPage = () => {
                                 return (
                                   <label 
                                     key={idx} 
-                                    className={`flex items-center space-x-3 p-3 rounded cursor-pointer transition-colors ${
+                                    className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors border ${
                                       showResults
                                         ? isCorrectAnswer
                                           ? 'bg-green-100 border-2 border-green-500'
                                           : isWrongSelection
                                           ? 'bg-red-100 border-2 border-red-500'
-                                          : 'bg-white border border-gray-200'
+                                          : 'bg-white border border-gray-100'
                                         : isSelected
                                         ? 'bg-blue-100 border-2 border-blue-500'
-                                        : 'bg-white border border-gray-200 hover:bg-gray-50'
+                                        : 'bg-white border border-gray-100 hover:bg-gray-50'
                                     }`}
                                   >
                                     <input
@@ -499,7 +535,7 @@ const LessonPage = () => {
                               })}
                             </div>
                             {showResults && exercise.explanation && (
-                              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                 <p className="text-sm text-blue-900">
                                   <strong>Explanation:</strong> {exercise.explanation}
                                 </p>
@@ -515,6 +551,7 @@ const LessonPage = () => {
                         <Button
                           onClick={handleSubmitExercises}
                           disabled={Object.keys(userAnswers).length !== exercises.length}
+                          className="bg-gradient-to-r from-orange-400 to-teal-400 text-white"
                           variant="primary"
                           icon={<CheckCircle className="w-4 h-4" />}
                         >
@@ -529,12 +566,28 @@ const LessonPage = () => {
                       </div>
                     )}
                   </>
+                ) : generateExercisesMutation.isPending ? (
+                  <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                    <div className="relative">
+                      <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Play className="w-6 h-6 text-blue-600 animate-pulse" />
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-2">Generating Exercises...</h4>
+                      <p className="text-sm text-gray-600 max-w-sm">
+                        Our AI is creating personalized exercises for you. This should only take a moment!
+                      </p>
+                    </div>
+                  </div>
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-gray-600 mb-4">No exercises available for this lesson.</p>
                     <Button
                       onClick={generateAdditionalExercises}
                       loading={generateExercisesMutation.isPending}
+                      className="bg-gradient-to-r from-orange-400 to-teal-400 text-white"
                       icon={<Play className="w-4 h-4" />}
                     >
                       Generate Exercises
@@ -548,7 +601,22 @@ const LessonPage = () => {
       </main>
 
       {/* Floating Chat Widget */}
-      <FloatingChatWidget />
+      <div className="fixed bottom-6 right-6 z-50">
+        {/* small floating button */}
+        <div className="flex flex-col items-end">
+         <button
+            onClick={() => {
+              const el = document.querySelector('.floating-chat-widget-toggle');
+              if (el) el.dispatchEvent(new Event('click'));
+            }}
+            className="w-16 h-16 bg-gradient-to-r from-orange-400 to-teal-400 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group hover:scale-110"
+            aria-label="Open chat"
+          >
+            <Play className="text-white" />
+          </button>
+        </div>
+        <FloatingChatWidget />
+      </div>
     </div>
   );
 };

@@ -19,7 +19,6 @@ export const DURATIONS = [
   "3 months",
   "6 months",
   "1 year",
-  "More than 1 year",
 ];
 
 // Expertise levels for learner preferences
