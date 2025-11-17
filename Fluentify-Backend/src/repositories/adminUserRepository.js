@@ -8,16 +8,15 @@ class AdminUserRepository {
    */
   async findLearners({ search = '', limit = 20, offset = 0 }) {
     // Ensure limit and offset are valid integers
-    const limitInt = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
-    const offsetInt = Math.max(parseInt(offset, 10) || 0, 0);
+    const limitInt = Math.min(Math.max(Number.parseInt(limit, 10) || 20, 1), 100);
+    const offsetInt = Math.max(Number.parseInt(offset, 10) || 0, 0);
     
     const params = [];
     let where = '';
     let paramIndex = 1;
     
     if (search) {
-      params.push(`%${search}%`);
-      params.push(`%${search}%`);
+      params.push(`%${search}%`, `%${search}%`);
       where = `WHERE LOWER(name) ILIKE LOWER($${paramIndex}) OR LOWER(email) ILIKE LOWER($${paramIndex + 1})`;
       paramIndex += 2;
     }
@@ -58,8 +57,7 @@ class AdminUserRepository {
     const params = [];
     let where = '';
     if (search) {
-      params.push(`%${search}%`);
-      params.push(`%${search}%`);
+      params.push(`%${search}%`, `%${search}%`);
       where = 'WHERE LOWER(name) ILIKE LOWER($1) OR LOWER(email) ILIKE LOWER($2)';
     }
     const result = await db.query(

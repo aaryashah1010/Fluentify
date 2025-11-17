@@ -5,7 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 function authMiddleware(req, res, next) {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = authHeader?.split(' ')[1];
   
   if (!token) {
     return next(ERRORS.NO_TOKEN_PROVIDED);
@@ -27,7 +27,7 @@ function authMiddleware(req, res, next) {
 // Middleware to check for admin role
 export const adminOnly = (req, res, next) => {
   // Check if user exists and has admin role
-  if (req.user && req.user.role === 'admin') {
+  if (req.user?.role === 'admin') {
     return next();
   }
   return res.status(403).json({ 

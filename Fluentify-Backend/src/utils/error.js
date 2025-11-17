@@ -129,8 +129,7 @@ const ERRORS = {
   CONTEST_NOT_ACTIVE: new RequestError("Contest is not currently active", 90003, 403),
   CONTEST_ENDED: new RequestError("Contest has ended", 90004, 403),
   INVALID_INPUT: new RequestError("Invalid input provided", 90005, 400),
-  NOT_FOUND: new RequestError("Resource not found", 90006, 404),
-  FORBIDDEN: new RequestError("Access forbidden", 90007, 403)
+  NOT_FOUND: new RequestError("Resource not found", 90006, 404)
 };
 
 export {

@@ -24,9 +24,13 @@ class EmailService {
         pass: process.env.EMAIL_PASS // Use App Password for Gmail
       }
     });
+  }
 
-    // Verify connection on startup
-    this.verifyConnection();
+  /**
+   * Initialize email service - must be called after construction
+   */
+  async init() {
+    await this.verifyConnection();
   }
 
   /**

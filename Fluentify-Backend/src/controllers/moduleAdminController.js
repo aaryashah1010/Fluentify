@@ -132,7 +132,7 @@ class ModuleAdminController {
           req.body.language || 'Unknown',
           'CREATE_UNIT',
           {
-            courseId: parseInt(courseId),
+            courseId: Number.parseInt(courseId),
             unitId: result.data?.id,
             details: {
               title: req.body.title,
@@ -197,7 +197,7 @@ class ModuleAdminController {
           req.body.language || 'Unknown',
           'CREATE_LESSON',
           {
-            unitId: parseInt(unitId),
+            unitId: Number.parseInt(unitId),
             lessonId: result.data?.id,
             details: {
               title: req.body.title,

@@ -77,7 +77,7 @@ class CourseRepository {
           unit.title,
           unit.description,
           unit.difficulty,
-          parseInt(unit.estimatedTime) || unit.estimatedTime?.match(/\d+/)?.[0] || 150
+          Number.parseInt(unit.estimatedTime) || unit.estimatedTime?.match(/\d+/)?.[0] || 150
         ]
       );
       const unitDbId = unitResult.rows[0].id;
@@ -337,9 +337,9 @@ class CourseRepository {
     );
     
     console.log(`✅ Found ${result.rows.length} courses for user ${userId}`);
-    result.rows.forEach(course => {
+    for (const course of result.rows) {
       console.log(`  - ${course.title} (${course.source_type}) - learner_id: ${course.learner_id || 'N/A (admin course)'}`);
-    });
+    }
     
     return result.rows;
   }

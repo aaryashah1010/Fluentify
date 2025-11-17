@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import { ERRORS } from './error.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '2h';
@@ -70,7 +69,7 @@ function decodeAuthToken(token) {
     const decoded = jwt.verify(token, JWT_SECRET);
     
     if (typeof decoded === 'string') {
-      throw new Error('Invalid token');
+      throw new TypeError('Invalid token');
     }
     
     return decoded;
@@ -79,7 +78,7 @@ function decodeAuthToken(token) {
       throw new Error('Token expired');
     }
     if (error.name === 'JsonWebTokenError') {
-      throw new Error('Invalid token');
+      throw new TypeError('Invalid token');
     }
     throw error;
   }
@@ -99,7 +98,7 @@ function decodeRefreshToken(token) {
     const decoded = jwt.verify(token, JWT_SECRET);
     
     if (typeof decoded === 'string') {
-      throw new Error('Invalid token');
+      throw new TypeError('Invalid token');
     }
     
     return decoded;
@@ -107,7 +106,7 @@ function decodeRefreshToken(token) {
     if (error.name === 'TokenExpiredError') {
       throw new Error('Token expired');
     }
-    throw new Error('Invalid token');
+    throw new TypeError('Invalid token');
   }
 }
 

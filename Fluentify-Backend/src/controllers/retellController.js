@@ -4,7 +4,7 @@
  */
 
 import axios from 'axios';
-import { successResponse, createdResponse } from '../utils/response.js';
+import { createdResponse } from '../utils/response.js';
 import { ERRORS } from '../utils/error.js';
 
 /**

@@ -101,7 +101,7 @@ class CourseController {
         units.push(unit);
 
         totalLessons += unit.lessons.length;
-        totalTime += parseInt(unit.estimatedTime) || 150;
+        totalTime += Number.parseInt(unit.estimatedTime) || 150;
 
         // Update course data with new unit
         courseData.course.units = units;
@@ -320,22 +320,22 @@ class CourseController {
 
       // Create progress maps for easy lookup
       const unitProgressMap = {};
-      unitProgressResult.forEach(up => {
+      for (const up of unitProgressResult) {
         unitProgressMap[up.unit_id] = {
           isUnlocked: up.is_unlocked,
           isCompleted: up.is_completed
         };
-      });
+      }
 
       const lessonProgressMap = {};
-      lessonProgressResult.forEach(lp => {
+      for (const lp of lessonProgressResult) {
         const key = `${lp.unit_id}-${lp.lesson_id}`;
         lessonProgressMap[key] = {
           isCompleted: lp.is_completed,
           score: lp.score,
           xpEarned: lp.xp_earned
         };
-      });
+      }
 
       // Enhance course data with progress
       const enhancedUnits = courseData.course.units.map(unit => {
@@ -406,8 +406,8 @@ class CourseController {
       }
 
       const courseData = courseResult.course_data;
-      const unit = courseData.course.units.find(u => u.id === parseInt(unitId));
-      const lesson = unit?.lessons.find(l => l.id === parseInt(lessonId));
+      const unit = courseData.course.units.find(u => u.id === Number.parseInt(unitId));
+      const lesson = unit?.lessons.find(l => l.id === Number.parseInt(lessonId));
 
       if (!lesson) {
         throw ERRORS.LESSON_NOT_FOUND;
@@ -448,7 +448,7 @@ class CourseController {
       let foundUnitId = null;
 
       for (const unit of courseData.course.units) {
-        const lesson = unit.lessons.find(l => l.id === parseInt(lessonId));
+        const lesson = unit.lessons.find(l => l.id === Number.parseInt(lessonId));
         if (lesson) {
           foundLesson = lesson;
           foundUnitId = unit.id;
@@ -475,6 +475,85 @@ class CourseController {
   }
 
   /**
+   * Find lesson in course units
+   */
+  findLessonInCourse(courseData, lessonId) {
+    for (const unit of courseData.course.units) {
+      const lesson = unit.lessons.find(l => l.id === Number.parseInt(lessonId));
+      if (lesson) {
+        return { unitId: unit.id, lesson };
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Validate exercise score - must get at least 3/5 correct
+   */
+  validateExerciseScore(exercises) {
+    if (exercises && exercises.length > 0) {
+      const correctAnswers = exercises.filter(ex => ex.isCorrect === true).length;
+      const totalExercises = exercises.length;
+      
+      if (totalExercises >= 5 && correctAnswers < 3) {
+        return {
+          valid: false,
+          correctAnswers,
+          totalExercises
+        };
+      }
+    }
+    return { valid: true };
+  }
+
+  /**
+   * Handle unit completion and unlocking next unit
+   */
+  async handleUnitCompletionLegacy(userId, courseId, foundUnitId, courseData) {
+    const unit = courseData.course.units.find(u => u.id === foundUnitId);
+    const totalLessonsInUnit = unit.lessons.length;
+    const completedLessons = await progressRepository.countCompletedLessonsInUnit(userId, courseId, foundUnitId);
+
+    if (completedLessons >= totalLessonsInUnit) {
+      await progressRepository.markUnitComplete(userId, courseId, foundUnitId);
+      const nextUnitId = foundUnitId + 1;
+      const nextUnit = courseData.course.units.find(u => u.id === nextUnitId);
+      
+      if (nextUnit) {
+        await progressRepository.unlockUnit(userId, courseId, nextUnitId);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Update user streak information
+   */
+  async updateUserStreakLegacy(userId, courseId) {
+    const today = new Date().toISOString().split('T')[0];
+    const stats = await progressRepository.findUserStats(userId, courseId);
+
+    if (stats) {
+      const lastDate = stats.last_activity_date ? new Date(stats.last_activity_date).toISOString().split('T')[0] : null;
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      let newStreak = 1;
+      if (lastDate === yesterdayStr) {
+        newStreak = stats.current_streak + 1;
+      } else if (lastDate === today) {
+        newStreak = stats.current_streak;
+      }
+
+      await progressRepository.updateUserStreak(userId, courseId, newStreak, today);
+    } else {
+      await progressRepository.createUserStats(userId, courseId, 0, 0, today);
+    }
+  }
+
+  /**
    * Complete lesson (legacy - without unit ID in URL)
    * Finds the unit ID and calls the progress controller
    */
@@ -483,9 +562,23 @@ class CourseController {
       const { courseId, lessonId } = req.params;
       const userId = req.user.id;
       const { score = 100, exercises = [] } = req.body || {};
+
+      // Validate exercise score
+      const exerciseValidation = this.validateExerciseScore(exercises);
+      if (!exerciseValidation.valid) {
+        return res.status(400).json({
+          success: false,
+          message: 'You need at least 3 out of 5 correct answers to complete this lesson',
+          data: {
+            correctAnswers: exerciseValidation.correctAnswers,
+            totalExercises: exerciseValidation.totalExercises,
+            passed: false
+          }
+        });
+      }
+
       // Get course data to find unit ID
       const courseResult = await courseRepository.findCourseDataById(courseId, userId);
-
       if (!courseResult) {
         throw ERRORS.COURSE_NOT_FOUND;
       }
@@ -493,43 +586,15 @@ class CourseController {
       const courseData = courseResult.course_data;
       
       // Find which unit contains this lesson
-      let foundUnitId = null;
-      let foundLesson = null;
-
-      for (const unit of courseData.course.units) {
-        const lesson = unit.lessons.find(l => l.id === parseInt(lessonId));
-        if (lesson) {
-          foundUnitId = unit.id;
-          foundLesson = lesson;
-          break;
-        }
-      }
-
-      if (!foundUnitId || !foundLesson) {
+      const foundLessonData = this.findLessonInCourse(courseData, lessonId);
+      if (!foundLessonData) {
         throw ERRORS.LESSON_NOT_FOUND;
       }
 
-      // Validate exercise score - must get at least 3/5 correct
-      if (exercises && exercises.length > 0) {
-        const correctAnswers = exercises.filter(ex => ex.isCorrect === true).length;
-        const totalExercises = exercises.length;
-        
-        if (totalExercises >= 5 && correctAnswers < 3) {
-          return res.status(400).json({
-            success: false,
-            message: 'You need at least 3 out of 5 correct answers to complete this lesson',
-            data: {
-              correctAnswers,
-              totalExercises,
-              passed: false
-            }
-          });
-        }
-      }
+      const { unitId: foundUnitId, lesson: foundLesson } = foundLessonData;
 
       // Get lesson database ID from course_lessons table
       const lessonDbId = await courseRepository.findLessonDbId(courseId, foundUnitId, lessonId);
-      
       if (!lessonDbId) {
         throw ERRORS.LESSON_NOT_FOUND;
       }
@@ -538,8 +603,7 @@ class CourseController {
 
       // Check if lesson already completed
       const existingProgress = await progressRepository.findSpecificLessonProgress(userId, courseId, foundUnitId, lessonId);
-
-      if (existingProgress && existingProgress.is_completed) {
+      if (existingProgress?.is_completed) {
         throw ERRORS.LESSON_ALREADY_COMPLETED;
       }
 
@@ -555,52 +619,11 @@ class CourseController {
         );
       }
 
-      // Check if all lessons in unit are completed
-      const unit = courseData.course.units.find(u => u.id === foundUnitId);
-      const totalLessonsInUnit = unit.lessons.length;
+      // Handle unit completion
+      const unitCompleted = await this.handleUnitCompletionLegacy(userId, courseId, foundUnitId, courseData);
 
-      const completedLessons = await progressRepository.countCompletedLessonsInUnit(userId, courseId, foundUnitId);
-      let unitCompleted = false;
-
-      if (completedLessons >= totalLessonsInUnit) {
-        // Mark unit as complete
-        await progressRepository.markUnitComplete(userId, courseId, foundUnitId);
-
-        // Unlock next unit
-        const nextUnitId = foundUnitId + 1;
-        const nextUnit = courseData.course.units.find(u => u.id === nextUnitId);
-        
-        if (nextUnit) {
-          await progressRepository.unlockUnit(userId, courseId, nextUnitId);
-        }
-
-        unitCompleted = true;
-      }
-
-      // Update user stats (only streak tracking now)
-      const today = new Date().toISOString().split('T')[0];
-
-      const stats = await progressRepository.findUserStats(userId, courseId);
-
-      if (!stats) {
-        // Create new stats (only for streak tracking)
-        await progressRepository.createUserStats(userId, courseId, 0, 0, today);
-      } else {
-        // Update only streak information
-        const lastDate = stats.last_activity_date ? new Date(stats.last_activity_date).toISOString().split('T')[0] : null;
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-        let newStreak = 1;
-        if (lastDate === yesterdayStr) {
-          newStreak = stats.current_streak + 1;
-        } else if (lastDate === today) {
-          newStreak = stats.current_streak;
-        }
-
-        await progressRepository.updateUserStreak(userId, courseId, newStreak, today);
-      }
+      // Update user streak
+      await this.updateUserStreakLegacy(userId, courseId);
 
       console.log(`✅ Lesson ${lessonId} completed! XP: ${xpEarned}, Unit completed: ${unitCompleted}`);
 
@@ -634,8 +657,8 @@ class CourseController {
       }
 
       const courseData = courseResult.course_data;
-      const unit = courseData.course.units.find(u => u.id === parseInt(unitId));
-      const lesson = unit?.lessons.find(l => l.id === parseInt(lessonId));
+      const unit = courseData.course.units.find(u => u.id === Number.parseInt(unitId));
+      const lesson = unit?.lessons.find(l => l.id === Number.parseInt(lessonId));
 
       if (!lesson) {
         throw ERRORS.LESSON_NOT_FOUND;
@@ -649,7 +672,7 @@ class CourseController {
       );
 
       // Update the lesson exercises in the database
-      const lessonDbId = await courseRepository.findLessonDbId(courseId, parseInt(unitId), parseInt(lessonId));
+      const lessonDbId = await courseRepository.findLessonDbId(courseId, Number.parseInt(unitId), Number.parseInt(lessonId));
       
       if (!lessonDbId) {
         throw ERRORS.LESSON_NOT_FOUND;
@@ -692,7 +715,7 @@ class CourseController {
       console.log(`✅ Course ${courseId} deleted successfully`);
 
       res.json(successResponse(
-        { courseId: parseInt(courseId) },
+        { courseId: Number.parseInt(courseId) },
         'Course and all related data deleted successfully!'
       ));
     } catch (error) {

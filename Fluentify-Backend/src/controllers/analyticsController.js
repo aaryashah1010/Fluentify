@@ -23,7 +23,7 @@ class AnalyticsController {
   async getAnalyticsForPeriod(req, res, next) {
     try {
       const { days = 30 } = req.query;
-      const analytics = await analyticsService.getAnalyticsForPeriod(parseInt(days));
+      const analytics = await analyticsService.getAnalyticsForPeriod(Number.parseInt(days));
       res.json(successResponse(analytics, `Analytics for ${days} days retrieved successfully`));
     } catch (error) {
       console.error('Error fetching period analytics:', error);
@@ -95,7 +95,7 @@ class AnalyticsController {
   async getLessonCompletionTrends(req, res, next) {
     try {
       const { days = 30 } = req.query;
-      const trendsData = await analyticsService.getAnalyticsForPeriod(parseInt(days));
+      const trendsData = await analyticsService.getAnalyticsForPeriod(Number.parseInt(days));
       res.json(successResponse(
         { lessonCompletionTrends: trendsData.lessonCompletionTrends },
         'Lesson completion trends retrieved successfully'

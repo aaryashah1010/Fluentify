@@ -235,9 +235,9 @@ class ContestService {
     // Get correct answers
     const correctAnswers = await contestRepository.getCorrectAnswers(contestId);
     const correctAnswersMap = {};
-    correctAnswers.forEach(qa => {
+    for (const qa of correctAnswers) {
       correctAnswersMap[qa.id] = qa.correct_option_id;
-    });
+    }
 
     // Calculate score and prepare submissions with correctness
     let score = 0;

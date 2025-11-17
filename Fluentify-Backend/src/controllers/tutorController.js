@@ -111,7 +111,7 @@ class TutorController {
   async getChatHistory(req, res, next) {
     try {
       const userId = req.user.id;
-      const limit = parseInt(req.query.limit) || 10;
+      const limit = Number.parseInt(req.query.limit) || 10;
 
       const sessions = await tutorService.getUserChatHistory(userId, limit);
 
@@ -161,6 +161,7 @@ class TutorController {
         timestamp: new Date().toISOString()
       });
     } catch (error) {
+      console.error('Error in health check:', error);
       res.status(503).json({
         success: false,
         error: 'service_unavailable',

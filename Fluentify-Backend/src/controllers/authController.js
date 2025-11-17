@@ -420,57 +420,62 @@ class AuthController {
   }
 
   /**
-   * Update user profile
+   * Validate update profile input
+   */
+  validateUpdateInput(name, contestName) {
+    if (!name && contestName === undefined) {
+      return { isValid: false, error: 'At least one field (name or contest_name) is required' };
+    }
+
+    if (name !== undefined) {
+      if (!name?.trim()) {
+        return { isValid: false, error: 'Name cannot be empty' };
+      }
+
+      const nameValidation = validateName(name);
+      if (!nameValidation.isValid) {
+        return { isValid: false, error: nameValidation.errors.join(', ') };
+      }
+    }
+
+    if (contestName?.trim?.().length > 0) {
+      if (contestName.trim().length > 50) {
+        return { isValid: false, error: 'Contest name must be 50 characters or less' };
+      }
+    }
+
+    return { isValid: true };
+  }
+
+  /**
+   * Update learner profile
+   */
+  async updateLearnerProfileData(id, name, contestName) {
+    const updates = {};
+    if (name !== undefined) updates.name = name.trim();
+    if (contestName !== undefined) updates.contest_name = contestName ? contestName.trim() : null;
+    return authRepository.updateLearnerProfile(id, updates);
+  }
+
+  /**
+   * Update profile
    */
   async updateProfile(req, res, next) {
     try {
       const { id, role } = req.user;
       const { name, contest_name } = req.body;
 
-      // At least one field must be provided
-      if (!name && contest_name === undefined) {
+      const validation = this.validateUpdateInput(name, contest_name);
+      if (!validation.isValid) {
         return res.status(400).json({
           success: false,
-          message: 'At least one field (name or contest_name) is required'
+          message: validation.error
         });
       }
 
-      // Validate name if provided
-      if (name !== undefined) {
-        if (!name || !name.trim()) {
-          return res.status(400).json({
-            success: false,
-            message: 'Name cannot be empty'
-          });
-        }
-
-        const nameValidation = validateName(name);
-        if (!nameValidation.isValid) {
-          return res.status(400).json({
-            success: false,
-            message: nameValidation.errors.join(', ')
-          });
-        }
-      }
-
-      // Validate contest_name if provided
-      if (contest_name !== undefined && contest_name !== null && contest_name.trim()) {
-        if (contest_name.trim().length > 50) {
-          return res.status(400).json({
-            success: false,
-            message: 'Contest name must be 50 characters or less'
-          });
-        }
-      }
-
-      // Update profile based on role
       let updatedProfile;
       if (role === 'learner') {
-        const updates = {};
-        if (name !== undefined) updates.name = name.trim();
-        if (contest_name !== undefined) updates.contest_name = contest_name ? contest_name.trim() : null;
-        
-        updatedProfile = await authRepository.updateLearnerProfile(id, updates);
+        updatedProfile = await this.updateLearnerProfileData(id, name, contest_name);
       } else if (role === 'admin') {
         if (contest_name !== undefined) {
           return res.status(400).json({
@@ -685,6 +690,67 @@ class AuthController {
   }
 
   /**
+   * Validate resend OTP request parameters
+   */
+  async validateResendOTPRequest(email, otpType, role) {
+    // Validate email
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      return { isValid: false, error: emailValidation.errors.join(', ') };
+    }
+
+    // For password reset, verify user exists and is verified
+    if (otpType === 'password_reset') {
+      const user = role === 'learner' 
+        ? await authRepository.findLearnerByEmail(email)
+        : await authRepository.findAdminByEmail(email);
+
+      if (!user) {
+        return { isValid: false, error: `No ${role} account found with this email.`, status: 404 };
+      }
+
+      if (!user.is_email_verified) {
+        return { isValid: false, error: 'Email not verified. Please complete signup verification first.' };
+      }
+    }
+
+    return { isValid: true };
+  }
+
+  /**
+   * Check OTP resend cooldown
+   */
+  async checkResendCooldown(email, otpType, role) {
+    const latest = await authRepository.getLatestOTP(email, otpType, role);
+    if (!latest) return { allowed: true };
+
+    const createdAt = new Date(latest.created_at).getTime();
+    const elapsedMs = Date.now() - createdAt;
+    const cooldownMs = 60 * 1000;
+
+    if (elapsedMs < cooldownMs) {
+      const remaining = Math.ceil((cooldownMs - elapsedMs) / 1000);
+      return { allowed: false, remaining };
+    }
+
+    return { allowed: true };
+  }
+
+  /**
+   * Send OTP email based on type
+   */
+  async sendOTPEmail(email, otpType, role, otp, name) {
+    if (otpType === 'signup') {
+      await emailService.sendSignupOTP(email, name || 'User', otp);
+    } else if (otpType === 'password_reset') {
+      const user = role === 'learner'
+        ? await authRepository.findLearnerByEmail(email)
+        : await authRepository.findAdminByEmail(email);
+      await emailService.sendPasswordResetOTP(email, user?.name || 'User', otp);
+    }
+  }
+
+  /**
    * Resend OTP
    */
   async resendOTP(req, res, next) {
@@ -695,74 +761,31 @@ class AuthController {
         throw ERRORS.MISSING_REQUIRED_FIELDS;
       }
 
-      // Validate email
-      const emailValidation = validateEmail(email);
-      if (!emailValidation.isValid) {
-        return res.status(400).json({
+      // Validate request
+      const validation = await this.validateResendOTPRequest(email, otpType, role);
+      if (!validation.isValid) {
+        return res.status(validation.status || 400).json({
           success: false,
-          message: emailValidation.errors.join(', ')
+          message: validation.error
         });
       }
 
-      // For password reset, verify user exists and is verified
-      if (otpType === 'password_reset') {
-        let user;
-        if (role === 'learner') {
-          user = await authRepository.findLearnerByEmail(email);
-        } else if (role === 'admin') {
-          user = await authRepository.findAdminByEmail(email);
-        }
-
-        if (!user) {
-          return res.status(404).json({
-            success: false,
-            message: `No ${role} account found with this email.`
-          });
-        }
-
-        if (!user.is_email_verified) {
-          return res.status(400).json({
-            success: false,
-            message: 'Email not verified. Please complete signup verification first.'
-          });
-        }
+      // Check cooldown
+      const cooldown = await this.checkResendCooldown(email, otpType, role);
+      if (!cooldown.allowed) {
+        return res.status(429).json({
+          success: false,
+          message: `Please wait ${cooldown.remaining}s before requesting a new OTP.`
+        });
       }
 
-      // Enforce 60-second resend cooldown
-      const latest = await authRepository.getLatestOTP(email, otpType, role);
-      if (latest) {
-        const createdAt = new Date(latest.created_at).getTime();
-        const elapsedMs = Date.now() - createdAt;
-        const cooldownMs = 60 * 1000;
-        if (elapsedMs < cooldownMs) {
-          const remaining = Math.ceil((cooldownMs - elapsedMs) / 1000);
-          return res.status(429).json({
-            success: false,
-            message: `Please wait ${remaining}s before requesting a new OTP.`
-          });
-        }
-      }
-
-      // Generate new OTP
+      // Generate and store OTP
       const otp = emailService.generateOTP();
       await authRepository.storeOTP(email, otp, otpType, role);
 
-      // Send OTP based on type
+      // Send OTP email
       console.log(`🔄 Resending ${otpType} OTP to: ${email}`);
-      
-      if (otpType === 'signup') {
-        await emailService.sendSignupOTP(email, name || 'User', otp);
-      } else if (otpType === 'password_reset') {
-        // Get user name
-        let user;
-        if (role === 'learner') {
-          user = await authRepository.findLearnerByEmail(email);
-        } else {
-          user = await authRepository.findAdminByEmail(email);
-        }
-        await emailService.sendPasswordResetOTP(email, user?.name || 'User', otp);
-      }
-
+      await this.sendOTPEmail(email, otpType, role, otp, name);
       console.log(`✅ OTP resent successfully to: ${email}`);
 
       res.json(successResponse(

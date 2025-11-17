@@ -17,7 +17,7 @@ class UserManagementService {
         return {
             users,
             pagination: {
-                total: parseInt(count),
+                total: Number.parseInt(count),
                 page,
                 limit,
                 totalPages: Math.ceil(count / limit)

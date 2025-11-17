@@ -164,7 +164,7 @@ class AnalyticsService {
     } catch (error) {
       console.error('Error getting analytics:', error);
       // If it's a "relation does not exist" error, provide helpful message
-      if (error.message && error.message.includes('does not exist')) {
+      if (error.message?.includes('does not exist')) {
         throw new Error('Analytics table not found. Please run the analytics migration script.');
       }
       throw error;
@@ -207,18 +207,26 @@ class AnalyticsService {
       (languageDistribution.length > 0 ? languageDistribution[0].language_name : 'N/A');
 
     const totalLessons = realTimeStats.total_lessons || 
-      languageDistribution.reduce((sum, lang) => sum + parseInt(lang.count || 0), 0);
+      languageDistribution.reduce((sum, lang) => sum + Number.parseInt(lang.count || 0), 0);
 
     // Module preference
     const adminLessons = moduleUsage.find(m => m.module_type === 'ADMIN')?.count || 0;
     const aiLessons = moduleUsage.find(m => m.module_type === 'AI')?.count || 0;
-    const preferredModule = adminLessons > aiLessons ? 'ADMIN' : (aiLessons > 0 ? 'AI' : 'N/A');
+    let preferredModule = 'N/A';
+    if (adminLessons > aiLessons) {
+      preferredModule = 'ADMIN';
+    } else if (aiLessons > 0) {
+      preferredModule = 'AI';
+    }
 
     // AI success rate - use real-time data if available
     const totalGenerations = realTimeStats.ai_courses_generated || aiPerformance.total_generations || 0;
-    const aiSuccessRate = aiPerformance.total_generations > 0 
-      ? ((aiPerformance.success_count / aiPerformance.total_generations) * 100).toFixed(1)
-      : (totalGenerations > 0 ? '100' : '0');
+    let aiSuccessRate = '0';
+    if (aiPerformance.total_generations > 0) {
+      aiSuccessRate = ((aiPerformance.success_count / aiPerformance.total_generations) * 100).toFixed(1);
+    } else if (totalGenerations > 0) {
+      aiSuccessRate = '100';
+    }
 
     return {
       mostPopularLanguage,
@@ -228,7 +236,7 @@ class AnalyticsService {
       aiSuccessRate: `${aiSuccessRate}%`,
       avgLessonsPerUser: realTimeStats.active_users > 0 
         ? (totalLessons / realTimeStats.active_users).toFixed(1)
-        : parseFloat(userEngagement.avg_lessons_per_user || 0).toFixed(1)
+        : Number.parseFloat(userEngagement.avg_lessons_per_user || 0).toFixed(1)
     };
   }
 }

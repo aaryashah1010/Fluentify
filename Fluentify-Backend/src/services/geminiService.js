@@ -82,7 +82,7 @@ class GeminiService {
           totalUnits: units.length,
           totalLessons: units.reduce((sum, unit) => sum + unit.lessons.length, 0),
           estimatedTotalTime: units.reduce((sum, unit) => {
-            const unitTime = parseInt(unit.estimatedTime) || 150;
+            const unitTime = Number.parseInt(unit.estimatedTime) || 150;
             return sum + unitTime;
           }, 0)
         }
@@ -141,7 +141,7 @@ Requirements:
       },
     });
     
-    const response = await result.response;
+    const response = result.response;
     const text = response.text();
     
     return this.parseJSON(text);
@@ -232,11 +232,75 @@ IMPORTANT:
         },
       });
       
-      const response = await result.response;
+      const response = result.response;
       const text = response.text();
       
       return this.parseJSON(text);
     });
+  }
+
+  /**
+   * Clean AI response text
+   */
+  cleanResponseText(text) {
+    let cleanText = text.trim();
+    // Remove markdown code blocks if present
+    cleanText = cleanText.replaceAll('```json\n', '').replaceAll('```', '').trim();
+    return cleanText;
+  }
+
+  /**
+   * Extract JSON from text
+   */
+  extractJSON(cleanText) {
+    let jsonMatch = cleanText.match(/\{[\s\S]*\}/);
+    
+    if (!jsonMatch) {
+      const startIdx = cleanText.indexOf('{');
+      const endIdx = cleanText.lastIndexOf('}');
+      
+      if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+        jsonMatch = [cleanText.substring(startIdx, endIdx + 1)];
+      }
+    }
+    
+    if (!jsonMatch) {
+      throw new Error('No valid JSON found in AI response');
+    }
+    
+    return jsonMatch[0];
+  }
+
+  /**
+   * Fix common JSON formatting issues
+   */
+  fixJSON(jsonStr) {
+    return jsonStr
+      .replaceAll(', }', '}')
+      .replaceAll(', ]', ']')
+      .replaceAll('"\n  "', '" "')
+      .replaceAll('\n', ' ');
+  }
+
+  /**
+   * Auto-close incomplete JSON
+   */
+  autoCloseJSON(jsonStr, errorMsg) {
+    const errorPos = Number.parseInt(errorMsg.match(/position (\d+)/)?.[1] || '0');
+    if (errorPos <= 0) throw new Error(errorMsg);
+
+    let truncated = jsonStr.substring(0, errorPos);
+    // Count open braces/brackets and close them
+    const openBraces = (truncated.match(/\{/g) || []).length;
+    const closeBraces = (truncated.match(/\}/g) || []).length;
+    const openBrackets = (truncated.match(/\[/g) || []).length;
+    const closeBrackets = (truncated.match(/\]/g) || []).length;
+    
+    // Add missing closing characters
+    for (let i = 0; i < (openBrackets - closeBrackets); i++) truncated += ']';
+    for (let i = 0; i < (openBraces - closeBraces); i++) truncated += '}';
+    
+    return truncated;
   }
 
   /**
@@ -246,63 +310,29 @@ IMPORTANT:
     try {
       console.log('Response length:', text.length, 'characters');
       
-      // Clean the response text
-      let cleanText = text.trim();
-      
-      // Remove markdown code blocks if present
-      cleanText = cleanText.replace(/```json\n?/g, '').replace(/```/g, '').trim();
-      
-      // Try to extract JSON from the response
-      let jsonMatch = cleanText.match(/\{[\s\S]*\}/);
-      
-      if (!jsonMatch) {
-        const startIdx = cleanText.indexOf('{');
-        const endIdx = cleanText.lastIndexOf('}');
-        
-        if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-          jsonMatch = [cleanText.substring(startIdx, endIdx + 1)];
-        }
-      }
-      
-      if (!jsonMatch) {
-        throw new Error('No valid JSON found in AI response');
-      }
+      const cleanText = this.cleanResponseText(text);
+      const jsonStr = this.extractJSON(cleanText);
 
       let data;
       try {
-        data = JSON.parse(jsonMatch[0]);
+        data = JSON.parse(jsonStr);
       } catch (parseError) {
         console.error('JSON parse error:', parseError.message);
         
         // Try to fix common JSON issues
-        let fixedJson = jsonMatch[0]
-          .replace(/,\s*([}\]])/g, '$1') // Remove trailing commas
-          .replace(/"\s*\n\s*"/g, '" "') // Fix line breaks in strings
-          .replace(/([^\\])\n/g, '$1 '); // Remove unescaped newlines
+        const fixedJson = this.fixJSON(jsonStr);
         
-        // If still fails, try to truncate at last valid closing brace
         try {
           data = JSON.parse(fixedJson);
         } catch (secondError) {
           console.error('Second parse attempt failed, trying to auto-close JSON');
           
-          // Find the position of the error and try to close JSON properly
-          const errorPos = parseInt(secondError.message.match(/position (\d+)/)?.[1] || '0');
-          if (errorPos > 0) {
-            let truncated = fixedJson.substring(0, errorPos);
-            // Count open braces/brackets and close them
-            const openBraces = (truncated.match(/\{/g) || []).length;
-            const closeBraces = (truncated.match(/\}/g) || []).length;
-            const openBrackets = (truncated.match(/\[/g) || []).length;
-            const closeBrackets = (truncated.match(/\]/g) || []).length;
-            
-            // Add missing closing characters
-            for (let i = 0; i < (openBrackets - closeBrackets); i++) truncated += ']';
-            for (let i = 0; i < (openBraces - closeBraces); i++) truncated += '}';
-            
+          try {
+            const autoClosedJson = this.autoCloseJSON(fixedJson, secondError.message);
             console.log('Attempting to parse auto-closed JSON');
-            data = JSON.parse(truncated);
-          } else {
+            data = JSON.parse(autoClosedJson);
+          } catch (thirdError) {
+            console.error('Third parse attempt failed:', thirdError.message);
             throw secondError;
           }
         }
@@ -348,7 +378,7 @@ Make sure to generate exactly 5 exercises.`;
       // Use retry with backoff to handle rate limits
       return await this.retryWithBackoff(async () => {
         const result = await this.model.generateContent(prompt);
-        const response = await result.response;
+        const response = result.response;
         const text = response.text();
         
         return this.parseJSON(text);

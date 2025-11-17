@@ -36,7 +36,7 @@ class ContestController {
       }
 
       const question = await contestService.addQuestion(
-        parseInt(contestId),
+        Number.parseInt(contestId),
         question_text,
         options,
         correct_option_id
@@ -58,7 +58,7 @@ class ContestController {
       const { title, description, start_time, end_time } = req.body;
 
       const contest = await contestService.updateContest(
-        parseInt(contestId),
+        Number.parseInt(contestId),
         { title, description, start_time, end_time }
       );
       
@@ -76,7 +76,7 @@ class ContestController {
     try {
       const { contestId } = req.params;
 
-      const contest = await contestService.publishContest(parseInt(contestId));
+      const contest = await contestService.publishContest(Number.parseInt(contestId));
       
       return res.json(successResponse(contest, 'Contest published successfully'));
     } catch (error) {
@@ -106,7 +106,7 @@ class ContestController {
     try {
       const { contestId } = req.params;
 
-      const contest = await contestService.getContestDetails(parseInt(contestId));
+      const contest = await contestService.getContestDetails(Number.parseInt(contestId));
       
       return res.json(successResponse(contest, 'Contest details retrieved successfully'));
     } catch (error) {
@@ -122,7 +122,7 @@ class ContestController {
     try {
       const { contestId } = req.params;
 
-      await contestService.deleteContest(parseInt(contestId));
+      await contestService.deleteContest(Number.parseInt(contestId));
       
       return res.json(deletedResponse('Contest deleted successfully'));
     } catch (error) {
@@ -155,7 +155,7 @@ class ContestController {
       const learnerId = req.user.id;
 
       const contestData = await contestService.getContestForLearner(
-        parseInt(contestId),
+        Number.parseInt(contestId),
         learnerId
       );
       
@@ -185,7 +185,7 @@ class ContestController {
 
       const result = await contestService.submitContest(
         learnerId,
-        parseInt(contestId),
+        Number.parseInt(contestId),
         submissions,
         start_time
       );
@@ -204,7 +204,7 @@ class ContestController {
     try {
       const { contestId } = req.params;
 
-      const leaderboard = await contestService.getLeaderboard(parseInt(contestId));
+      const leaderboard = await contestService.getLeaderboard(Number.parseInt(contestId));
       
       return res.json(successResponse(leaderboard, 'Leaderboard retrieved successfully'));
     } catch (error) {
@@ -239,7 +239,7 @@ class ContestController {
 
       const details = await contestService.getUserContestDetails(
         learnerId,
-        parseInt(contestId)
+        Number.parseInt(contestId)
       );
       
       return res.json(successResponse(details, 'Contest result retrieved successfully'));

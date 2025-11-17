@@ -10,8 +10,8 @@ class UserManagementController {
      */
     async getAllUsers(req, res, next) {
         try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 20;
+            const page = Number.parseInt(req.query.page) || 1;
+            const limit = Number.parseInt(req.query.limit) || 20;
             const users = await userManagementService.getUsersList(page, limit);
             res.status(200).json(users);
         } catch (error) {
@@ -65,7 +65,7 @@ class UserManagementController {
 
             // Get current user data before update
             const currentUser = await userManagementService.getUserWithProgress(req.params.userId);
-            if (!currentUser || !currentUser.user) {
+            if (!currentUser?.user) {
                 return res.status(404).json({ message: 'User not found' });
             }
 

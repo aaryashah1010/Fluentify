@@ -24,6 +24,7 @@ export const connectToDatabase = async (retries = 5, delay = 2000) => {
     } catch (error) {
       retries--;
       console.warn(`⚠️ PostgreSQL connection failed. Retries left: ${retries}`);
+      console.warn(`   Error: ${error?.message || 'Unknown error'}`);
       if (retries > 0) {
         console.log(`🔁 Retrying in ${delay / 1000} seconds...`);
         await new Promise((res) => setTimeout(res, delay));

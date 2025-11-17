@@ -204,8 +204,8 @@ Remember: You're a world-class multilingual tutor ready to help with ANY languag
   sanitizeResponse(response) {
     // Basic sanitization - remove potentially harmful content
     return response
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+      .replaceAll(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replaceAll(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
       .trim();
   }
 }

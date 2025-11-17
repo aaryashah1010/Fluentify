@@ -58,13 +58,13 @@ class AnalyticsRepository {
       
       // Aggregate duplicate languages
       const aggregated = {};
-      result.rows.forEach(row => {
+      for (const row of result.rows) {
         if (aggregated[row.language_name]) {
           aggregated[row.language_name] += row.count;
         } else {
           aggregated[row.language_name] = row.count;
         }
-      });
+      }
       
       return Object.entries(aggregated)
         .map(([language_name, count]) => ({ language_name, count }))
@@ -127,7 +127,7 @@ class AnalyticsRepository {
   async getDailyActivity(days = 30) {
     try {
       // Ensure days is a valid integer
-      const daysInt = parseInt(days, 10) || 30;
+      const daysInt = Number.parseInt(days, 10) || 30;
       const query = `
         SELECT 
           DATE(created_at) as date,
@@ -184,7 +184,7 @@ class AnalyticsRepository {
   async getLessonCompletionTrends(days = 30) {
     try {
       // Ensure days is a valid integer
-      const daysInt = parseInt(days, 10) || 30;
+      const daysInt = Number.parseInt(days, 10) || 30;
       const query = `
         SELECT 
           DATE(created_at) as date,

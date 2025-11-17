@@ -60,7 +60,8 @@ class ProgressRepository {
   /**
    * Create or update lesson progress
    */
-  async upsertLessonProgress(userId, courseId, unitId, lessonId, score, xpEarned, vocabularyMastered = 0, totalVocabulary = 0) {
+  async upsertLessonProgress(userId, courseId, unitId, lessonId, score, xpEarned, options = {}) {
+    const { vocabularyMastered = 0, totalVocabulary = 0 } = options;
     await db.query(
       `INSERT INTO lesson_progress (learner_id, course_id, unit_id, lesson_id, is_completed, score, xp_earned, vocabulary_mastered, total_vocabulary, completion_time)
        VALUES ($1, $2, $3, $4, TRUE, $5, $6, $7, $8, NOW())
@@ -93,7 +94,7 @@ class ProgressRepository {
        WHERE lp.learner_id = $1 AND lp.course_id = $2 AND cu.unit_id = $3 AND lp.is_completed = TRUE`,
       [userId, courseId, unitNumber]
     );
-    return parseInt(result.rows[0].total);
+    return Number.parseInt(result.rows[0].total);
   }
 
   /**
@@ -175,15 +176,15 @@ class ProgressRepository {
    */
   async getSummaryKPIs(userId, days = null, courseId = null) {
     const dateFilter = days ? `AND completion_time >= NOW() - INTERVAL '${days} days'` : '';
-    const courseFilter = courseId ? `AND course_id = ${parseInt(courseId)}` : '';
+    const courseFilter = courseId ? `AND course_id = ${Number.parseInt(courseId)}` : '';
     
     const result = await db.query(
       `SELECT 
         COALESCE(SUM(xp_earned), 0)::INTEGER as total_xp,
         COUNT(DISTINCT CASE WHEN is_completed THEN lesson_id END)::INTEGER as lessons_completed,
         COALESCE(SUM(vocabulary_mastered), 0)::INTEGER as total_vocabulary,
-        (SELECT COALESCE(MAX(current_streak), 0) FROM user_stats WHERE learner_id = $1 ${courseId ? `AND course_id = ${parseInt(courseId)}` : ''})::INTEGER as current_streak,
-        (SELECT COALESCE(MAX(longest_streak), 0) FROM user_stats WHERE learner_id = $1 ${courseId ? `AND course_id = ${parseInt(courseId)}` : ''})::INTEGER as longest_streak
+        (SELECT COALESCE(MAX(current_streak), 0) FROM user_stats WHERE learner_id = $1 ${courseId ? `AND course_id = ${Number.parseInt(courseId)}` : ''})::INTEGER as current_streak,
+        (SELECT COALESCE(MAX(longest_streak), 0) FROM user_stats WHERE learner_id = $1 ${courseId ? `AND course_id = ${Number.parseInt(courseId)}` : ''})::INTEGER as longest_streak
       FROM lesson_progress
       WHERE learner_id = $1 ${dateFilter} ${courseFilter}`,
       [userId]
@@ -204,7 +205,7 @@ class ProgressRepository {
    */
   async getProgressOverTime(userId, days = null, courseId = null) {
     const dateFilter = days ? `AND lp.completion_time >= NOW() - INTERVAL '${days} days'` : '';
-    const courseFilter = courseId ? `AND lp.course_id = ${parseInt(courseId)}` : '';
+    const courseFilter = courseId ? `AND lp.course_id = ${Number.parseInt(courseId)}` : '';
     
     const result = await db.query(
       `SELECT 
@@ -231,7 +232,7 @@ class ProgressRepository {
    * Can be filtered by courseId
    */
   async getRecentActivity(userId, limit = 5, courseId = null) {
-    const courseFilter = courseId ? `AND lp.course_id = ${parseInt(courseId)}` : '';
+    const courseFilter = courseId ? `AND lp.course_id = ${Number.parseInt(courseId)}` : '';
     
     const result = await db.query(
       `SELECT 

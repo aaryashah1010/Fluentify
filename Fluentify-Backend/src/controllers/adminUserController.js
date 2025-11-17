@@ -8,8 +8,8 @@ import emailService from '../utils/emailService.js';
 class AdminUserController {
   async listLearners(req, res, next) {
     try {
-      const page = Math.max(parseInt(req.query.page || '1', 10), 1);
-      const limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 100);
+      const page = Math.max(Number.parseInt(req.query.page || '1', 10), 1);
+      const limit = Math.min(Math.max(Number.parseInt(req.query.limit || '20', 10), 1), 100);
       const offset = (page - 1) * limit;
       const search = (req.query.search || '').trim();
 
@@ -44,27 +44,53 @@ class AdminUserController {
     }
   }
 
+  validateUpdateInput(name, email) {
+    if (!name && !email) {
+      return { isValid: false, error: 'Nothing to update' };
+    }
+
+    if (name) {
+      const nv = validateName(name);
+      if (!nv.isValid) {
+        return { isValid: false, error: nv.errors.join(', ') };
+      }
+    }
+
+    if (email) {
+      const ev = validateEmail(email);
+      if (!ev.isValid) {
+        return { isValid: false, error: ev.errors.join(', ') };
+      }
+    }
+
+    return { isValid: true };
+  }
+
+  buildChangesList(name, email, before, updated) {
+    const changes = [];
+    if (name && name !== before.name) {
+      changes.push({ field: 'Name', from: before.name, to: updated.name });
+    }
+    if (email && email.toLowerCase() !== before.email.toLowerCase()) {
+      changes.push({ field: 'Email', from: before.email, to: updated.email });
+    }
+    return changes;
+  }
+
+  notifyLearnerOfChanges(updated, before, name, email, changes) {
+    emailService
+      .sendAdminProfileChangeNotification(updated.email, updated.name || before.name, changes)
+      .catch(() => {});
+  }
+
   async updateLearner(req, res, next) {
     try {
       const { id } = req.params;
       const { name, email } = req.body || {};
 
-      if (!name && !email) {
-        return res.status(400).json({ success: false, message: 'Nothing to update' });
-      }
-
-      if (name) {
-        const nv = validateName(name);
-        if (!nv.isValid) {
-          return res.status(400).json({ success: false, message: nv.errors.join(', ') });
-        }
-      }
-
-      if (email) {
-        const ev = validateEmail(email);
-        if (!ev.isValid) {
-          return res.status(400).json({ success: false, message: ev.errors.join(', ') });
-        }
+      const validation = this.validateUpdateInput(name, email);
+      if (!validation.isValid) {
+        return res.status(400).json({ success: false, message: validation.error });
       }
 
       const before = await adminUserRepository.getLearnerBasicById(id);
@@ -77,19 +103,8 @@ class AdminUserController {
         throw ERRORS.USER_NOT_FOUND;
       }
 
-      // Email notify learner (non-blocking)
-      try {
-        const changes = [];
-        if (name && name !== before.name) {
-          changes.push({ field: 'Name', from: before.name, to: updated.name });
-        }
-        if (email && email.toLowerCase() !== before.email.toLowerCase()) {
-          changes.push({ field: 'Email', from: before.email, to: updated.email });
-        }
-        emailService
-          .sendAdminProfileChangeNotification(updated.email, updated.name || before.name, changes)
-          .catch(() => {});
-      } catch {}
+      const changes = this.buildChangesList(name, email, before, updated);
+      this.notifyLearnerOfChanges(updated, before, name, email, changes);
 
       res.json(successResponse({ user: updated }, 'Learner updated successfully'));
     } catch (error) {
