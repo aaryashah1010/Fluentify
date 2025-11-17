@@ -8,6 +8,7 @@ const PublishedCourseDetails = () => {
   const { courseId } = useParams();
   const { data: course, isLoading: loading, error } = usePublishedCourseDetails(parseInt(courseId));
   const [expandedUnits, setExpandedUnits] = useState({});
+  const [showContent, setShowContent] = useState(false);
 
   const toggleUnit = (unitId) => {
     setExpandedUnits(prev => ({
@@ -110,87 +111,102 @@ const PublishedCourseDetails = () => {
         </div>
 
         {/* Units and Lessons */}
-        <div className="space-y-3">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Course Content</h2>
-          {!course.units || course.units.length === 0 ? (
-            <div className="bg-white/80 border border-orange-100 rounded-2xl p-8 text-center shadow-sm">
-              <p className="text-gray-600">No units available in this course yet.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {course.units.map((unit) => {
-                const lessons = unit.lessons || [];
-                return (
-                  <section
-                    key={unit.id}
-                    className="bg-white/95 border border-orange-100 rounded-2xl shadow-sm overflow-hidden"
-                  >
-                    <div className="px-5 py-4 border-b border-orange-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="w-2 h-2 rounded-full bg-orange-400" />
-                          <h3 className="text-lg font-semibold text-gray-900">{unit.title}</h3>
-                        </div>
-                        {unit.description && (
-                          <p className="text-sm text-gray-600">
-                            {unit.description}
-                          </p>
-                        )}
-                      </div>
-                      <p className="text-xs sm:text-sm text-gray-500">
-                        {lessons.length} lesson{lessons.length !== 1 ? 's' : ''}
-                      </p>
-                    </div>
-
-                    {lessons.length === 0 ? (
-                      <div className="px-5 py-4 text-sm text-gray-600 bg-orange-50/40">
-                        No lessons in this unit yet.
-                      </div>
-                    ) : (
-                      <div className="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-3 bg-orange-50/40">
-                        {lessons.map((lesson, index) => (
-                          <div
-                            key={lesson.id}
-                            className="rounded-2xl bg-white border border-orange-100 shadow-sm p-4 flex flex-col gap-2"
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className="w-7 h-7 bg-gradient-to-br from-orange-400 to-teal-400 text-white rounded-full flex items-center justify-center text-xs font-semibold">
-                                {index + 1}
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="font-medium text-gray-900">{lesson.title}</h4>
-                                {lesson.description && (
-                                  <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">
-                                    {lesson.description}
-                                  </p>
-                                )}
-                              </div>
+        {showContent && (
+          <div className="space-y-3">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Course Content</h2>
+            {!course.units || course.units.length === 0 ? (
+              <div className="bg-white/80 border border-orange-100 rounded-2xl p-8 text-center shadow-sm">
+                <p className="text-gray-600">No units available in this course yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {course.units.map((unit) => {
+                  const lessons = unit.lessons || [];
+                  return (
+                    <section
+                      key={unit.id}
+                      className="bg-white/95 border border-orange-100 rounded-2xl shadow-sm overflow-hidden"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggleUnit(unit.id)}
+                        className="w-full text-left"
+                      >
+                        <div className="px-5 py-4 border-b border-orange-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="w-2 h-2 rounded-full bg-orange-400" />
+                              <h3 className="text-lg font-semibold text-gray-900">{unit.title}</h3>
                             </div>
-                            <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 mt-2">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-100">
-                                {lesson.content_type || 'Lesson'}
-                              </span>
-                              {lesson.xp_reward != null && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-100">
-                                  {lesson.xp_reward} XP
-                                </span>
-                              )}
-                            </div>
+                            {unit.description && (
+                              <p className="text-sm text-gray-600">
+                                {unit.description}
+                              </p>
+                            )}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </section>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                          <p className="text-xs sm:text-sm text-gray-500">
+                            {lessons.length} lesson{lessons.length !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                      </button>
+
+                      {expandedUnits[unit.id] && (
+                        lessons.length === 0 ? (
+                          <div className="px-5 py-4 text-sm text-gray-600 bg-orange-50/40">
+                            No lessons in this unit yet.
+                          </div>
+                        ) : (
+                          <div className="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-3 bg-orange-50/40">
+                            {lessons.map((lesson, index) => (
+                              <div
+                                key={lesson.id}
+                                className="rounded-2xl bg-white border border-orange-100 shadow-sm p-4 flex flex-col gap-2"
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className="w-7 h-7 bg-gradient-to-br from-orange-400 to-teal-400 text-white rounded-full flex items-center justify-center text-xs font-semibold">
+                                    {index + 1}
+                                  </div>
+                                  <div className="flex-1">
+                                    <h4 className="font-medium text-gray-900">{lesson.title}</h4>
+                                    {lesson.description && (
+                                      <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">
+                                        {lesson.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 mt-2">
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-100">
+                                    {lesson.content_type || 'Lesson'}
+                                  </span>
+                                  {lesson.xp_reward != null && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-100">
+                                      {lesson.xp_reward} XP
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      )}
+                    </section>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Enroll Button */}
-        <button className="w-full py-2.5 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white font-semibold text-base shadow-md hover:opacity-95 transition-colors">
-          Start Learning
-        </button>
+        {!showContent && (
+          <button
+            onClick={() => setShowContent(true)}
+            className="w-full py-2.5 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white font-semibold text-base shadow-md hover:opacity-95 transition-colors"
+          >
+            Start Learning
+          </button>
+        )}
       </div>
     </div>
   );
