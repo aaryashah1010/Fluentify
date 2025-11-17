@@ -176,7 +176,7 @@ export const getUserProfile = async (token) => {
  */
 export const updateUserProfile = async (token, updates) => {
   const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
-    method: 'PATCH',
+    method: 'PUT',
     headers: { 
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'

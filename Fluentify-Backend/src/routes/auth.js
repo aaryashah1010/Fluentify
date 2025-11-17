@@ -30,5 +30,6 @@ router.get('/password-suggestions', authController.getPasswordSuggestions);
 // Protected profile routes
 router.get('/profile', authMiddleware, authController.getProfile);
 router.put('/profile', authMiddleware, authController.updateProfile);
+router.patch('/profile', authMiddleware, authController.updateProfile);
 
 export default router;

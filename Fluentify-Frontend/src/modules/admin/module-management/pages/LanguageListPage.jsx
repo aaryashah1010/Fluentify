@@ -46,13 +46,15 @@ const LanguageListPage = () => {
           <h2 className="text-2xl font-bold text-gray-900">Language Modules</h2>
           <p className="text-gray-600 mt-1">Select a language to manage its courses</p>
         </div>
-        <button
-          onClick={() => navigate('/admin/modules/course/new')}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <ChevronRight className="w-5 h-5" />
-          Create New Course
-        </button>
+        {languages.length > 0 && (
+          <button
+            onClick={() => navigate('/admin/modules/course/new')}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <ChevronRight className="w-5 h-5" />
+            Create New Course
+          </button>
+        )}
       </div>
 
       {languages.length === 0 ? (
