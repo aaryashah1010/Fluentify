@@ -9,7 +9,7 @@ const TypingIndicator = () => {
     <div className="flex justify-start mb-4">
       <div className="flex items-start gap-3">
         {/* AI Avatar */}
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white flex items-center justify-center text-sm font-medium">
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white flex items-center justify-center text-sm font-medium">
           🤖
         </div>
         

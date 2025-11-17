@@ -4,9 +4,9 @@ import TutorChat from '../modules/learner/TutorChat';
 
 /**
  * Floating Chat Widget
- * Bottom-right floating chat widget with compact chat panel
+ * Floating chat widget with compact chat panel
  */
-const FloatingChatWidget = () => {
+const FloatingChatWidget = ({ position = 'right' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
 
@@ -38,23 +38,25 @@ const FloatingChatWidget = () => {
     setIsMinimized(false);
   };
 
+  const sideClass = position === 'left' ? 'left-4' : 'right-4';
+
   return (
     <>
       {/* Chat Panel */}
       {isOpen && (
         <div 
-          className={`fixed bottom-20 right-4 w-96 bg-white rounded-lg shadow-2xl border z-50 transition-all duration-300 ${
+          className={`fixed bottom-20 ${sideClass} w-96 bg-white rounded-lg shadow-2xl border z-50 transition-all duration-300 ${
             isMinimized ? 'h-14' : 'h-[500px]'
           }`}
         >
           {/* Chat Header */}
-          <div className="flex items-center justify-between p-3 border-b bg-gradient-to-r from-purple-50 to-blue-50 rounded-t-lg">
+          <div className="flex items-center justify-between p-3 border-b bg-gradient-to-r from-orange-50 to-teal-50 rounded-t-lg">
             <div 
               className={`flex items-center gap-2 ${isMinimized ? 'cursor-pointer hover:bg-purple-100 rounded px-2 py-1 transition-colors' : ''}`}
               onClick={isMinimized ? maximizeChat : undefined}
               title={isMinimized ? "Click to maximize" : ""}
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white flex items-center justify-center text-sm">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white flex items-center justify-center text-sm">
                 🤖
               </div>
               <div>
@@ -94,7 +96,7 @@ const FloatingChatWidget = () => {
       {(!isOpen || isMinimized) && (
         <button
           onClick={toggleChat}
-          className="fixed bottom-4 right-4 w-14 h-14 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center z-40 hover:scale-105"
+          className={`fixed bottom-4 ${sideClass} w-14 h-14 bg-gradient-to-r from-orange-400 to-teal-400 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center z-40 hover:scale-105`}
           title={isMinimized ? "Maximize Chat" : "Chat with AI Tutor"}
         >
           <MessageCircle className="w-6 h-6" />

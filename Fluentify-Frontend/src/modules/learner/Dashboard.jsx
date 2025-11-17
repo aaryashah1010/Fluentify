@@ -1,230 +1,324 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, BookOpen, MessageCircle, Globe, User, TrendingUp, Trophy } from 'lucide-react';
-import { useCourses } from '../../hooks/useCourses';
-import { useLogout } from '../../hooks/useAuth';
-import { useStreaming } from '../../contexts/StreamingContext';
-import { Button, SkeletonCourseCard, VoiceAIModal, FloatingChatWidget } from '../../components';
-import { CourseCard, CourseGenerationForm, GeneratingCourseCard } from './components';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  BookOpen,
+  BarChart3,
+  Trophy,
+  User,
+  Home,
+  LogOut,
+  ChevronDown,
+  Mic,
+} from "lucide-react";
 
-const Dashboard = () => {
+import { useLogout, useUserProfile } from "../../hooks/useAuth";
+import { useCourses } from "../../hooks/useCourses";
+import { useStreaming } from "../../contexts/StreamingContext";
+import { VoiceAIModal, FloatingChatWidget } from "../../components";
+import fluentifyLogo from "../../assets/fluentify_logo.jpg";
+import CourseGenerationForm from "./components/CourseGenerationForm";
+
+const LearnerDashboard = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const logout = useLogout();
 
-  // Prevent back navigation from dashboard
-  useEffect(() => {
-    // Add a dummy state to history only if we're on the dashboard
-    if (location.pathname === '/dashboard') {
-      window.history.pushState({ page: 'dashboard' }, '', window.location.href);
-    }
-    
-  
-    const handlePopState = (event) => {
-      // Only prevent back navigation if we're still on dashboard
-      if (window.location.pathname === '/dashboard') {
-        event.preventDefault();
-        window.history.pushState({ page: 'dashboard' }, '', window.location.href);
-      }
-    };
+  const { data: courses = [] } = useCourses();
 
-    window.addEventListener('popstate', handlePopState);
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [location]);
-
-  // React Query hooks
-  const { data: courses = [], isLoading: loading } = useCourses();
-
-  // Streaming course generation hook
   const { generateCourse: startStreamGeneration, state: streamState } = useStreaming();
 
-  // Local state
-  const [error, setError] = useState('');
+  const { data: profileData, isLoading } = useUserProfile();
+  const user = profileData?.data?.user || profileData?.user || profileData?.data || profileData || {};
+  const userName = user?.name || user?.fullName || "Learner";
+
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [showVoiceAiModal, setShowVoiceAiModal] = useState(false);
   const [showGenerateForm, setShowGenerateForm] = useState(false);
-  const [generateForm, setGenerateForm] = useState({ language: '', expectedDuration: '', expertise: '' });
-  const [showVoiceAI, setShowVoiceAI] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [pendingGeneratedCourse, setPendingGeneratedCourse] = useState(false);
+  const [formError, setFormError] = useState("");
 
-  const handleLogout = () => {
-    logout();
-  };
+  const [form, setForm] = useState({
+    language: "",
+    expectedDuration: "",
+    expertise: "",
+  });
 
-  // Generate a new course using SSE
-  const generateCourse = () => {
-    if (!generateForm.language || !generateForm.expectedDuration || !generateForm.expertise) {
-      setError('Please select language, duration, and current level');
+  useEffect(() => {
+    if (pendingGeneratedCourse && streamState.courseId) {
+      setPendingGeneratedCourse(false);
+      navigate(`/course/${streamState.courseId}`);
+    }
+  }, [pendingGeneratedCourse, streamState.courseId, navigate]);
+
+  const handleGenerateCourse = async () => {
+    if (!form.language || !form.expectedDuration || !form.expertise) {
+      setFormError("Please fill all fields.");
       return;
     }
 
-    setError('');
-    setShowGenerateForm(false);
+    setFormError("");
+    setGenerating(true);
 
-    // Start streaming course generation
-    startStreamGeneration({
-      language: generateForm.language,
-      expectedDuration: generateForm.expectedDuration,
-      expertise: generateForm.expertise,
-    });
+    try {
+      startStreamGeneration({
+        language: form.language,
+        expectedDuration: form.expectedDuration,
+        expertise: form.expertise,
+      });
+
+      setPendingGeneratedCourse(true);
+      setShowGenerateForm(false);
+    } finally {
+      setGenerating(false);
+    }
   };
 
+  const handleStartCourseClick = () => {
+    if (streamState.courseId) {
+      navigate(`/course/${streamState.courseId}`);
+      return;
+    }
+
+    if (courses.length > 0) {
+      const firstCourse = courses[0];
+      navigate(`/course/${firstCourse.id}`);
+      return;
+    }
+
+    setShowGenerateForm(true);
+  };
+
+  const hasCourses = courses.length > 0;
+  const primaryCourse = hasCourses ? courses[0] : null;
+  const primaryProgress = primaryCourse?.progress || {};
+  const progressPercentage = primaryProgress.progressPercentage || 0;
+  const unitsCompleted = primaryProgress.unitsCompleted || 0;
 
   return (
-    <div className="min-h-screen bg-green-50">
-      {/* Header with Navigation Buttons */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Fluentify</h1>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
+      
+      {/* HEADER */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+
+          {/* Fluentify Logo */}
+          <img
+            src={fluentifyLogo}
+            alt="Fluentify"
+            className="h-20 w-auto cursor-pointer"
+            onClick={() => navigate("/dashboard")}
+          />
+
+
+          {/* Right Controls */}
           <div className="flex items-center gap-3">
-            {/* ✅ Both Profile and Language Modules buttons retained */}
-            <button
-              onClick={() => navigate('/profile')}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
-            >
-              <User className="w-4 h-4" />
-              Profile
-            </button>
 
             <button
-              onClick={() => navigate('/learner/modules')}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+              onClick={() => navigate("/learner/modules")}
+              className="px-4 py-2 bg-white border rounded-full flex items-center gap-2 text-sm hover:shadow-md"
             >
-              <Globe className="w-4 h-4" />
+              <BookOpen className="w-4 h-4" />
               Language Modules
             </button>
 
             <button
-              onClick={() => navigate('/progress')}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+              onClick={() => navigate("/progress")}
+              className="px-4 py-2 bg-white border rounded-full flex items-center gap-2 text-sm hover:shadow-md"
             >
-              <TrendingUp className="w-4 h-4" />
+              <BarChart3 className="w-4 h-4" />
               Progress Report
             </button>
 
             <button
-              onClick={() => navigate('/contests')}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-lg border-0 transition-all shadow-md hover:shadow-lg"
+              onClick={() => navigate("/contests")}
+              className="px-4 py-2 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white flex items-center gap-2 text-sm"
             >
               <Trophy className="w-4 h-4" />
               Contests
             </button>
 
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setProfileMenuOpen((p) => !p)}
+                className="px-3 py-2 bg-white border rounded-full flex items-center gap-2 text-sm hover:shadow-md"
+              >
+                <User className="w-4 h-4" />
+                Profile
+                <ChevronDown className="w-4 h-4" />
+              </button>
+
+              {profileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-44 bg-white shadow-xl rounded-xl border py-2 z-50">
+
+                  <button
+                    onClick={() => { setProfileMenuOpen(false); navigate("/dashboard"); }}
+                    className="w-full flex gap-2 items-center px-4 py-2 text-sm hover:bg-orange-50"
+                  >
+                    <Home className="w-4 h-4 text-teal-600" /> Home
+                  </button>
+
+                  <button
+                    onClick={() => { setProfileMenuOpen(false); navigate("/profile"); }}
+                    className="w-full flex gap-2 items-center px-4 py-2 text-sm hover:bg-orange-50"
+                  >
+                    <User className="w-4 h-4 text-orange-500" /> Profile
+                  </button>
+
+                  <hr className="my-1" />
+
+                  <button
+                    onClick={() => { setProfileMenuOpen(false); logout(); }}
+                    className="w-full flex gap-2 items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <LogOut className="w-4 h-4" /> Logout
+                  </button>
+
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-4">Welcome to Your Dashboard</h2>
-          <p className="text-gray-600">Start your language learning journey today!</p>
-        </div>
+      {/* MAIN */}
+      <main className="max-w-7xl mx-auto px-6 py-10">
 
-        {/* Language Modules Section */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate('/language-modules')}
-            className="w-full p-6 bg-gradient-to-r from-purple-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition-shadow"
-          >
-            <div className="flex items-center gap-3">
-              <Globe className="w-6 h-6" />
-              <div className="text-left">
-                <h3 className="text-lg font-semibold">Language Modules</h3>
-                <p className="text-sm text-purple-100">Explore courses created by instructors</p>
-              </div>
-            </div>
-          </button>
-        </div>
+        {/* Welcome */}
+        <div className="flex justify-between items-center mb-10">
+          <h2 className="text-4xl font-bold text-gray-900">
+            Welcome, {isLoading ? "..." : userName} 👋
+          </h2>
 
-        {/* Course Generation Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold">Your Courses</h3>
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={() => setShowVoiceAI(true)}
-                variant="outline"
-                icon={<MessageCircle className="w-4 h-4" />}
+          {/* Right-Aligned Actions */}
+          <div className="flex gap-3">
+
+            {/* AI */}
+            <div className="relative">
+              <button
+                onClick={() => setAiOpen((p) => !p)}
+                className="px-4 py-2 rounded-full bg-white border hover:shadow-md flex items-center gap-2 text-sm"
               >
+                <Mic className="w-4 h-4" />
                 Talk with AI
-              </Button>
-              <Button
-                onClick={() => setShowGenerateForm(true)}
-                loading={streamState.isGenerating}
-                disabled={streamState.isGenerating}
-                icon={<BookOpen className="w-4 h-4" />}
-              >
-                Generate New Course
-              </Button>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+
+              {aiOpen && (
+                <div className="absolute right-0 mt-2 w-52 bg-white border rounded-xl shadow-xl py-2 z-50">
+                  <button
+                    onClick={() => {
+                      setAiOpen(false);
+                      setShowVoiceAiModal(true);
+                    }}
+                    className="w-full px-4 py-2 flex items-center gap-2 text-sm hover:bg-orange-50"
+                  >
+                    <Mic className="w-4 h-4 text-teal-600" />
+                    Voice Calling AI
+                  </button>
+                </div>
+              )}
             </div>
+
+            {/* Generate Course */}
+            <button
+              onClick={() => setShowGenerateForm((p) => !p)}
+              className="px-4 py-2 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white flex items-center gap-2 text-sm"
+            >
+              <BookOpen className="w-4 h-4" />
+              Generate New Course
+            </button>
           </div>
+        </div>
+
+        {/* COURSE CARDS  */}
+        <section>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Your Courses
+          </h3>
 
           {showGenerateForm && (
-            <CourseGenerationForm
-              form={generateForm}
-              setForm={setGenerateForm}
-              onGenerate={generateCourse}
-              onCancel={() => {
-                setShowGenerateForm(false);
-                setGenerateForm({ language: '', expectedDuration: '', expertise: '' });
-                setError('');
-              }}
-              isGenerating={streamState.isGenerating}
-              error={error}
-            />
-          )}
-
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <SkeletonCourseCard key={i} />
-              ))}
-            </div>
-          ) : courses.length === 0 && !streamState.isGenerating ? (
-            <div className="text-center py-8 bg-gray-50 rounded-lg">
-              <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 mb-4">No courses yet. Generate your first course to get started!</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Show generating course card first */}
-              {streamState.isGenerating && streamState.courseId && (
-                <GeneratingCourseCard
-                  state={streamState}
-                  onClick={() => navigate(`/course/${streamState.courseId}`)}
-                />
-              )}
-
-              {/* Show existing courses */}
-              {courses.map((course) => (
-                <CourseCard
-                  key={course.id}
-                  course={course}
-                  onClick={(course) =>
-                    navigate(`/course/${course.id}`, { state: { progress: course.progress } })
-                  }
-                />
-              ))}
+            <div className="mb-6">
+              <CourseGenerationForm
+                form={form}
+                setForm={setForm}
+                onGenerate={handleGenerateCourse}
+                onCancel={() => setShowGenerateForm(false)}
+                isGenerating={generating}
+                error={formError}
+              />
             </div>
           )}
-        </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {hasCourses && primaryCourse && (
+              <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6">
+
+                <div className="flex justify-between items-start gap-4">
+
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900">
+                      {primaryCourse.title || `${primaryCourse.language} Learning Journey`}
+                    </h4>
+
+                    <p className="text-sm text-gray-500">
+                      {primaryCourse.language} • {primaryCourse.totalUnits || 0} units • {primaryCourse.totalLessons || 0} lessons
+                    </p>
+
+                    <div className="mt-3 flex items-center gap-3 text-xs text-gray-600">
+                      <span>{primaryCourse.expectedDuration || "Custom plan"}</span>
+                      <span>•</span>
+                      <span>Adaptive level</span>
+                    </div>
+                  </div>
+
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-teal-400 flex items-center justify-center shadow">
+                    <BookOpen className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="mt-5">
+                  <p className="text-sm text-gray-600">Progress</p>
+                  <div className="w-full bg-gray-100 h-2 rounded-full mt-2">
+                    <div
+                      className="h-2 rounded-full bg-gradient-to-r from-orange-400 to-teal-400"
+                      style={{ width: `${progressPercentage}%` }}
+                    />
+                  </div>
+
+                  <div className="flex justify-between items-center mt-3 text-xs text-gray-600">
+                    <span>🔥 {primaryProgress.currentStreak || 0} day streak</span>
+                    <span>{unitsCompleted} units done</span>
+                  </div>
+
+                  <button
+                    onClick={handleStartCourseClick}
+                    className="mt-4 w-full px-4 py-3 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white font-medium"
+                  >
+                    Start Course
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
       </main>
 
-      {/* Voice AI Modal */}
-      <VoiceAIModal isOpen={showVoiceAI} onClose={() => setShowVoiceAI(false)} />
+      {/*tutor chat */}
+      <FloatingChatWidget position="right" />
 
-      {/* Floating Chat Widget */}
-      <FloatingChatWidget />
+      {/* Voice calling AI modal */}
+      <VoiceAIModal
+        isOpen={showVoiceAiModal}
+        onClose={() => setShowVoiceAiModal(false)}
+      />
+
     </div>
   );
 };
 
-export default Dashboard;
+export default LearnerDashboard;

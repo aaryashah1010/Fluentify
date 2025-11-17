@@ -43,6 +43,7 @@ import ContestParticipatePage from '../modules/learner/contests/ContestParticipa
 import ContestResultPage from '../modules/learner/contests/ContestResultPage';
 import ContestLeaderboardPage from '../modules/learner/contests/ContestLeaderboardPage';
 import { StreamingProvider } from '../contexts/StreamingContext';
+import { LandingPage } from '../modules/Landingpage/landingpage';
 import './App.css';
 
 /** Decode JWT safely */
@@ -82,19 +83,18 @@ function ProtectedRoute({ children, role }) {
   return children;
 }
 
-/** Smart redirect - always go to login first */
+/** Smart redirect - go to login page for new users, dashboard/admin dashboard for authenticated users */
 function SmartRedirect() {
-  return <Navigate to="/login" replace />;
   const token = localStorage.getItem('jwt');
 
   if (!token) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/landing" replace />;
   }
 
   const payload = decodeJwtPayload(token);
   if (!payload || (payload.exp && payload.exp * 1000 < Date.now())) {
     localStorage.removeItem('jwt');
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/landing" replace />;
   }
 
   // Role-based redirect
@@ -111,9 +111,12 @@ function App() {
       <Routes>
         {/* Root redirect */}
         <Route path="/" element={<SmartRedirect />} />
+        
+        {/* Landing Page */}
+        <Route path="/landing" element={<LandingPage onNavigate={(page) => window.location.href = `/${page}`} />} />
 
         {/* Authentication */}
-        <Route path="/signup" element={<SignupWithOTP />} />
+        <Route path="/signup" element={<SignupWithOTP onNavigate={(page) => window.location.href = `/${page}`} />} />
         <Route path="/signup-old" element={<Signup />} />
         <Route 
           path="/login" 
