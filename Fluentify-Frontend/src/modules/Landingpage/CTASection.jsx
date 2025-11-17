@@ -15,9 +15,6 @@ export function CTASection({ onNavigate }) {
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-white border border-teal-200 rounded-full px-6 py-2 mb-8 shadow-sm">
-            <Sparkles className="w-4 h-4 text-teal-500" />
-          </div>
 
           <h2 className="text-gray-900 text-4xl md:text-6xl mb-6">
             Ready to Start Your
@@ -28,7 +25,7 @@ export function CTASection({ onNavigate }) {
           </h2>
 
           <p className="text-gray-700 text-xl mb-12 max-w-2xl mx-auto">
-            Create your free account today and take the first step towards fluency.
+            Create your account today and take the first step towards fluency.
           </p>
 
           <div className="flex items-center justify-center">
