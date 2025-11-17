@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, Edit, Trash2, BookOpen, Video, Headphones, FileText, MessageSquare } from 'lucide-react';
 
-const LessonList = ({ lessons = [], unitId, onAddLesson, onEditLesson, onDeleteLesson }) => {
+const LessonList = ({ lessons = [], onAddLesson, onEditLesson, onDeleteLesson }) => {
   const getContentIcon = (contentType) => {
     switch (contentType) {
       case 'video':
@@ -21,13 +21,15 @@ const LessonList = ({ lessons = [], unitId, onAddLesson, onEditLesson, onDeleteL
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-gray-700">Lessons</h4>
-        <button
-          onClick={onAddLesson}
-          className="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Add Lesson
-        </button>
+        {lessons.length > 0 && (
+          <button
+            onClick={onAddLesson}
+            className="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Add Lesson
+          </button>
+        )}
       </div>
 
       {lessons.length === 0 ? (

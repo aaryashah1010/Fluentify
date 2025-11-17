@@ -76,7 +76,7 @@ const UnitForm = ({ unitData, onChange, onSubmit, onCancel, loading = false }) =
           <input
             type="number"
             name="estimated_time"
-            value={unitData.estimated_time || 0}
+            value={unitData.estimated_time ?? ''}
             onChange={handleChange}
             disabled={loading}
             min="0"

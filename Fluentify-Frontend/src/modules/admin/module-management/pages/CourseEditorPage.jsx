@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useModuleManagement } from '../../../../hooks/useModuleManagement';
 import CourseForm from '../components/CourseForm';
@@ -14,7 +14,6 @@ const CourseEditorPage = () => {
   const location = window.location.pathname;
   const isNewCourse = location.includes('/new');
   const isViewMode = location.includes('/view/');
-  const isEditMode = location.includes('/edit/');
   const languageParam = searchParams.get('language');
 
   const {
@@ -53,7 +52,7 @@ const CourseEditorPage = () => {
     title: '',
     description: '',
     difficulty: 'Beginner',
-    estimated_time: 0,
+    estimated_time: '',
   });
 
   const [lessonFormData, setLessonFormData] = useState({
@@ -73,8 +72,10 @@ const CourseEditorPage = () => {
   });
 
   // Load course details if editing
+  const hasFetchedRef = useRef(false);
   useEffect(() => {
-    if (!isNewCourse && courseId) {
+    if (!isNewCourse && courseId && !hasFetchedRef.current) {
+      hasFetchedRef.current = true;
       fetchCourseDetails(courseId);
     }
   }, [courseId, isNewCourse]);
@@ -101,12 +102,19 @@ const CourseEditorPage = () => {
       if (isNewCourse) {
         const result = await createCourse(courseData);
         if (result && result.id) {
-          navigate(`/admin/modules/course/edit/${result.id}`);
+          // After creating a new course, go back to listing
+          if (languageParam) {
+            navigate(`/admin/modules/${languageParam}`);
+          } else {
+            navigate(-1);
+          }
         } else {
           console.error('Course created but no ID returned:', result);
         }
       } else {
         await updateCourse(courseId, courseData);
+        // After updating an existing course, go back to the previous page
+        navigate(-1);
       }
     } catch (err) {
       // FIX: Don't throw - let the error state handle it
@@ -123,7 +131,7 @@ const CourseEditorPage = () => {
       title: '',
       description: '',
       difficulty: 'Beginner',
-      estimated_time: 0,
+      estimated_time: '',
     });
     setShowUnitModal(true);
   };
@@ -134,15 +142,19 @@ const CourseEditorPage = () => {
       title: unit.title || '',
       description: unit.description || '',
       difficulty: unit.difficulty || 'Beginner',
-      estimated_time: unit.estimated_time || 0,
+      estimated_time: unit.estimated_time ?? '',
     });
     setShowUnitModal(true);
   };
 
   const handleSaveUnit = async () => {
     try {
+      const sanitizedFormData = { ...unitFormData };
+      if (sanitizedFormData.estimated_time === '') {
+        sanitizedFormData.estimated_time = null;
+      }
       if (editingUnit) {
-        await updateUnit(editingUnit.id, unitFormData);
+        await updateUnit(editingUnit.id, sanitizedFormData);
       } else {
         await createUnit(courseId, unitFormData);
       }
@@ -167,8 +179,7 @@ const CourseEditorPage = () => {
   const handleAddLesson = (unitId) => {
     setSelectedUnitId(unitId);
     setEditingLesson(null);
-    // Find the unit to get lesson count
-    const unit = currentCourse?.units?.find(u => u.id === unitId);
+    // Prepare empty lesson form for the selected unit
     setLessonFormData({
       title: '',
       content_type: '',

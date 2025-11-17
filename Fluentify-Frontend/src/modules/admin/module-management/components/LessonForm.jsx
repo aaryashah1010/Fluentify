@@ -136,7 +136,6 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
           <option value="pdf">PDF Document</option>
           <option value="video">Video</option>
           <option value="audio">Audio / Listening Exercise</option>
-          <option value="quiz">Quiz</option>
           <option value="reading">Reading</option>
           <option value="conversation">Conversation</option>
           <option value="grammar">Grammar</option>

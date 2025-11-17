@@ -19,13 +19,15 @@ const UnitList = ({ units = [], onAddUnit, onEditUnit, onDeleteUnit, onAddLesson
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Units</h3>
-        <button
-          onClick={onAddUnit}
-          className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Add Unit
-        </button>
+        {units.length > 0 && (
+          <button
+            onClick={onAddUnit}
+            className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Add Unit
+          </button>
+        )}
       </div>
 
       {units.length === 0 ? (
