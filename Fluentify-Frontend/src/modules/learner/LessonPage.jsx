@@ -430,21 +430,14 @@ const LessonPage = () => {
             </Button>
             )}
 
-  {/* Show retry button only after answering */}
-  {showResults && (
-    <Button
-  onClick={generateAdditionalExercises}
-  loading={generateExercisesMutation.isPending}
-  size="sm"
-  className="
-    rounded-full
-    bg-gradient-to-r from-orange-400 to-teal-400
-    text-white
-    shadow-md hover:shadow-lg
-    transition-all
-    px-4 py-2
-  "
-  icon={<Play className="w-4 h-4 text-white" />}
+            {/* Show retry button only after answering */}
+             {showResults && (
+                <Button
+                  onClick={generateAdditionalExercises}
+                  loading={generateExercisesMutation.isPending}
+                  size="sm"
+                 className="rounded-fullbg-gradient-to-r from-orange-400 to-teal-400text-whiteshadow-md hover:shadow-lgtransition-allpx-4 py-2"
+                  icon={<Play className="w-4 h-4 text-white" />}
 >
   Generate New Exercises
 </Button>
