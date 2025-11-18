@@ -284,3 +284,47 @@ export const updateLearner = async (userId, { name, email }) => {
   });
   return handleResponse(response);
 };
+
+// ==================== Email Campaign Operations ====================
+
+/**
+ * Get all learners for email campaign
+ * @returns {Promise<{success: boolean, data: {learners: Array, count: number}}>}
+ */
+export const getLearnersForCampaign = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/email-campaign/learners`, {
+    headers: getAuthHeader(),
+  });
+  return handleResponse(response);
+};
+
+/**
+ * Trigger N8N email campaign workflow
+ * @returns {Promise<{success: boolean, data: Object, message: string}>}
+ */
+export const triggerEmailCampaign = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/email-campaign/trigger`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeader(),
+    },
+  });
+  return handleResponse(response);
+};
+
+/**
+ * Export learners as CSV
+ * @returns {Promise<Blob>}
+ */
+export const exportLearnersCSV = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/email-campaign/export-csv`, {
+    headers: getAuthHeader(),
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to export CSV');
+  }
+  
+  return response.blob();
+};

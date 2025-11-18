@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLogout } from '../../hooks/useAuth';
-import { LogOut, BookOpen, Users, BarChart3, Settings, User, Trophy } from 'lucide-react';
+import { LogOut, BookOpen, Users, BarChart3, Settings, User, Trophy, Mail } from 'lucide-react';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -58,13 +58,13 @@ const AdminDashboard = () => {
       disabled: false,
     },
     {
-      title: 'Settings',
-      description: 'Configure platform settings and preferences',
-      icon: Settings,
-      color: 'gray',
-      path: '#',
-      disabled: true,
-    },
+      title: 'Email Campaign',
+      description: 'Automatic send the motivational message to the learners',
+      icon: Mail,
+      color: 'indigo',
+      path: '/admin/email-campaign',
+      disabled: false,
+    }
   ];
 
   return (
@@ -108,6 +108,7 @@ const AdminDashboard = () => {
               orange: 'bg-orange-100 text-orange-600',
               green: 'bg-green-100 text-green-600',
               purple: 'bg-purple-100 text-purple-600',
+              indigo: 'bg-indigo-100 text-indigo-600',
               gray: 'bg-gray-100 text-gray-600',
             };
 

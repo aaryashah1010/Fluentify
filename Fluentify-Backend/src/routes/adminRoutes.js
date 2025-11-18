@@ -5,6 +5,7 @@ import moduleAdminController from '../controllers/moduleAdminController.js';
 import userManagementController from '../controllers/userManagementController.js';
 import analyticsRoutes from './analytics.js';
 import adminUserController from '../controllers/adminUserController.js';
+import emailCampaignController from '../controllers/emailCampaignController.js';
 
 const router = express.Router();
 
@@ -77,6 +78,17 @@ router.delete('/lessons/:lessonId', moduleAdminController.deleteLesson);
 // ==================== Analytics Routes ====================
 // Analytics routes (already protected by admin middleware)
 router.use('/analytics', analyticsRoutes);
+
+// ==================== Email Campaign Routes ====================
+// Get all learners for email campaign
+router.get('/email-campaign/learners', emailCampaignController.getLearnersForCampaign);
+
+// Export learners as CSV
+router.get('/email-campaign/export-csv', emailCampaignController.exportLearnersCSV);
+
+// Trigger n8n email campaign webhook
+router.post('/email-campaign/trigger', emailCampaignController.triggerEmailCampaign);
+
 // ==================== Admin User Management ====================
 router.get('/users', adminUserController.listLearners);
 router.get('/users/:id', adminUserController.getLearnerDetails);
