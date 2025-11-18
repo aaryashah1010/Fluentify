@@ -25,7 +25,8 @@ import {
   ModuleManagementLayout,
   UserProfile as AdminProfile,
   UserManagementLayout,
-  CourseEditorPage
+  CourseEditorPage,
+  EmailCampaignPage
 } from '../modules/admin';
 
 import {
@@ -327,6 +328,15 @@ function App() {
           element={
             <ProtectedRoute role="admin">
               <AdminProfile />
+            </ProtectedRoute>
+          }
+        />
+        {/* Admin Email Campaign */}
+        <Route
+          path="/admin/email-campaign"
+          element={
+            <ProtectedRoute role="admin">
+              <EmailCampaignPage />
             </ProtectedRoute>
           }
         />
