@@ -45,37 +45,37 @@ const FloatingChatWidget = ({ position = 'right' }) => {
       {/* Chat Panel */}
       {isOpen && (
         <div 
-          className={`fixed bottom-20 ${sideClass} w-96 bg-white rounded-lg shadow-2xl border z-50 transition-all duration-300 ${
+          className={`fixed bottom-20 ${sideClass} w-96 bg-slate-950/95 rounded-2xl shadow-2xl border border-white/10 z-50 transition-all duration-300 ${
             isMinimized ? 'h-14' : 'h-[500px]'
           }`}
         >
           {/* Chat Header */}
-          <div className="flex items-center justify-between p-3 border-b bg-gradient-to-r from-orange-50 to-teal-50 rounded-t-lg">
+          <div className="flex items-center justify-between p-3 border-b border-white/10 bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 rounded-t-2xl">
             <div 
               className={`flex items-center gap-2 ${isMinimized ? 'cursor-pointer hover:bg-purple-100 rounded px-2 py-1 transition-colors' : ''}`}
               onClick={isMinimized ? maximizeChat : undefined}
               title={isMinimized ? "Click to maximize" : ""}
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white flex items-center justify-center text-sm">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white flex items-center justify-center text-sm shadow-md">
                 🤖
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-gray-800">AI Tutor</h3>
-                <p className="text-xs text-gray-600">Online</p>
+                <h3 className="text-sm font-semibold text-slate-50">AI Tutor</h3>
+                <p className="text-xs text-teal-200">Online</p>
               </div>
             </div>
             
             <div className="flex items-center gap-1">
               <button
                 onClick={minimizeChat}
-                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                className="p-1 text-slate-300 hover:text-slate-50 hover:bg-white/10 rounded transition-colors"
                 title="Minimize"
               >
                 <Minimize2 className="w-4 h-4" />
               </button>
               <button
                 onClick={closeChat}
-                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                className="p-1 text-slate-300 hover:text-red-200 hover:bg-red-500/20 rounded transition-colors"
                 title="Close"
               >
                 <X className="w-4 h-4" />
@@ -85,7 +85,7 @@ const FloatingChatWidget = ({ position = 'right' }) => {
 
           {/* Chat Content */}
           {!isMinimized && (
-            <div className="h-[calc(100%-56px)]">
+            <div className="h-[calc(100%-56px)] bg-slate-950/95">
               <TutorChat compact={true} />
             </div>
           )}

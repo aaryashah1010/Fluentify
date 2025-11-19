@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { useContestDetails, useSubmitContest } from '../../../hooks/useContest';
 import { Button } from '../../../components';
-import { Clock } from 'lucide-react';
+import { Clock, Trophy, Sparkles } from 'lucide-react';
 
 const ContestParticipatePage = () => {
   const navigate = useNavigate();
@@ -106,10 +106,10 @@ const ContestParticipatePage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-green-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading contest...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-slate-200">Loading contest...</p>
         </div>
       </div>
     );
@@ -117,73 +117,116 @@ const ContestParticipatePage = () => {
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-green-50 flex items-center justify-center px-4">
-        <div className="bg-white rounded-lg shadow-sm p-6 max-w-md w-full text-center">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">Unable to load contest</h2>
-          <p className="text-sm text-gray-600 mb-4">Please go back and try again.</p>
-          <Button onClick={() => navigate('/contests')}>Back to Contests</Button>
+      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center px-4">
+        <div className="bg-slate-900/80 rounded-2xl shadow-xl border border-white/10 p-6 max-w-md w-full text-center text-slate-100">
+          <h2 className="text-lg font-semibold mb-2">Unable to load contest</h2>
+          <p className="text-sm text-slate-300 mb-4">Please go back and try again.</p>
+          <Button
+            onClick={() => navigate('/contests')}
+            className="mt-2 inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-slate-50"
+          >
+            <span>Back to Contests</span>
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-green-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">{contest?.title || 'Contest'}</h1>
-            <div className="flex items-center gap-4">
-              {timeRemaining !== null && (
-                <div className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold ${
-                  timeRemaining < 300 ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
-                }`}>
-                  <Clock className="w-5 h-5" />
-                  <span>{formatTime(timeRemaining)}</span>
-                </div>
-              )}
-              <Button variant="secondary" onClick={() => navigate('/contests')}>Back</Button>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 text-white relative overflow-hidden">
+      {/* Background glow elements */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-72 h-72 bg-purple-500/25 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-72 h-72 bg-cyan-500/25 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Header with title, timer, back button */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-1">
+            <p className="text-xs font-semibold tracking-wide uppercase text-slate-300/80">Contest</p>
+            <h1 className="text-2xl sm:text-3xl font-semibold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              {contest?.title || 'Contest'}
+            </h1>
+          </div>
+          <div className="flex items-center gap-4">
+            {timeRemaining !== null && (
+              <div
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm shadow-md ${
+                  timeRemaining < 300
+                    ? 'bg-red-500/15 text-red-200 border border-red-500/40'
+                    : 'bg-blue-500/15 text-blue-200 border border-blue-500/40'
+                  }
+                `}
+              >
+                <Clock className="w-5 h-5" />
+                <span>{formatTime(timeRemaining)}</span>
+              </div>
+            )}
+            <Button
+              variant="secondary"
+              onClick={() => navigate('/contests')}
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/15 text-slate-50"
+            >
+              <span>Back</span>
+            </Button>
           </div>
         </div>
-      </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {questions.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-600">No questions available.</div>
-        ) : (
-          <div className="space-y-6">
-            {questions.map((q, qi) => (
-              <div key={q.id ?? qi} className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="font-semibold text-gray-900 mb-3">{qi + 1}. {q.question_text}</h3>
-                <div className="space-y-2">
-                  {(Array.isArray(q.options) ? q.options : []).map((opt, oi) => {
-                    const label = typeof opt === 'string' ? opt : (opt?.text ?? '');
-                    return (
-                      <label key={oi} className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer ${selected[qi] === oi ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
-                        <input
-                          type="radio"
-                          name={`q-${qi}`}
-                          checked={selected[qi] === oi}
-                          onChange={() => handleSelect(qi, oi)}
-                          className="w-4 h-4 text-green-600"
-                        />
-                        <span className="text-gray-800">{label}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-
-            <div className="flex justify-end">
-              <Button onClick={handleSubmit} disabled={!allAnswered || submitMutation.isPending}>
-                {submitMutation.isPending ? 'Submitting...' : 'Submit Contest'}
-              </Button>
+        {/* Questions */}
+        <main className="space-y-6">
+          {questions.length === 0 ? (
+            <div className="bg-slate-900/85 border border-slate-700/70 rounded-2xl shadow-xl p-6 text-center text-slate-200">
+              No questions available.
             </div>
-          </div>
-        )}
-      </main>
+          ) : (
+            <div className="space-y-6">
+              {questions.map((q, qi) => (
+                <div
+                  key={q.id ?? qi}
+                  className="bg-slate-900/85 border border-slate-700/70 rounded-2xl shadow-md p-6"
+                >
+                  <h3 className="font-semibold text-slate-50 mb-3">
+                    {qi + 1}. {q.question_text}
+                  </h3>
+                  <div className="space-y-2">
+                    {(Array.isArray(q.options) ? q.options : []).map((opt, oi) => {
+                      const label = typeof opt === 'string' ? opt : opt?.text ?? '';
+                      const isSelected = selected[qi] === oi;
+                      return (
+                        <label
+                          key={oi}
+                          className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                            isSelected
+                              ? 'border-emerald-400 bg-emerald-500/10'
+                              : 'border-slate-700 bg-slate-900/60 hover:border-slate-500'
+                            }
+                          `}
+                        >
+                          <input
+                            type="radio"
+                            name={`q-${qi}`}
+                            checked={isSelected}
+                            onChange={() => handleSelect(qi, oi)}
+                            className="w-4 h-4 text-emerald-500"
+                          />
+                          <span className="text-slate-100">{label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              <div className="flex justify-end">
+                <Button onClick={handleSubmit} disabled={!allAnswered || submitMutation.isPending}>
+                  {submitMutation.isPending ? 'Submitting...' : 'Submit Contest'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 };

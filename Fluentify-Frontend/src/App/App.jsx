@@ -6,6 +6,8 @@ import {
   SignupWithOTP,
   ForgotPassword
 } from '../modules/auth';
+import TermsAndConditions from '../modules/auth/TermsandConditions';
+import PrivacyPolicy from '../modules/auth/privacypolicy';
 
 import {
   Dashboard,
@@ -25,8 +27,7 @@ import {
   ModuleManagementLayout,
   UserProfile as AdminProfile,
   UserManagementLayout,
-  CourseEditorPage,
-  EmailCampaignPage
+  CourseEditorPage
 } from '../modules/admin';
 
 import {
@@ -36,7 +37,6 @@ import {
 
 import UserListPage from '../modules/admin/user-management/pages/UserListPage';
 import UserDetailPage from '../modules/admin/user-management/pages/UserDetailPage';
-import PublishedLanguageList from '../modules/learner/components/PublishedLanguageList';
 import PublishedCourseList from '../modules/learner/components/PublishedCourseList';
 import PublishedCourseDetails from '../modules/learner/components/PublishedCourseDetails';
 import ContestBrowsePage from '../modules/learner/contests/ContestBrowsePage';
@@ -111,8 +111,10 @@ function App() {
     <StreamingProvider>
       <Routes>
         {/* Root redirect */}
-        <Route path="/" element={<SmartRedirect />} />
-        
+        <Route
+          path="/"
+          element={<LandingPage onNavigate={(page) => window.location.href = `/${page}`} />}
+        />
         {/* Landing Page */}
         <Route path="/landing" element={<LandingPage onNavigate={(page) => window.location.href = `/${page}`} />} />
 
@@ -132,6 +134,8 @@ function App() {
           } 
         />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
         {/* Learner Routes */}
         <Route
@@ -245,7 +249,7 @@ function App() {
           path="/learner/modules"
           element={
             <ProtectedRoute role="learner">
-              <PublishedLanguageList />
+              <LanguageModulesPage />
             </ProtectedRoute>
           }
         />
@@ -331,15 +335,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-        {/* Admin Email Campaign */}
-        <Route
-          path="/admin/email-campaign"
-          element={
-            <ProtectedRoute role="admin">
-              <EmailCampaignPage />
-            </ProtectedRoute>
-          }
-        />
         {/* Admin Contest Management */}
         <Route
           path="/admin/contests"
@@ -385,3 +380,4 @@ function App() {
 }
 
 export default App;
+

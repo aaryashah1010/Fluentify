@@ -9,7 +9,7 @@ import PasswordStrengthIndicator from '../../components/PasswordStrengthIndicato
 import OTPInput from '../../components/OTPInput';
 
 const ForgotPassword = () => {
-  const [step, setStep] = useState(1); // 1: Email, 2: OTP, 3: New Password, 4: Success
+  const [step, setStep] = useState(1); 
   const [form, setForm] = useState({ 
     email: '', 
     role: 'learner', 
@@ -24,7 +24,6 @@ const ForgotPassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Role/email locking via query params
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const roleParam = params.get('role');
@@ -49,7 +48,6 @@ const ForgotPassword = () => {
     setPasswordSuggestions([]);
   };
 
-  // Step 1: Submit email
   const handleEmailSubmit = async e => {
     e.preventDefault();
     setError('');
@@ -63,7 +61,7 @@ const ForgotPassword = () => {
       { email: form.email, role: form.role },
       {
         onSuccess: () => {
-          setStep(2); // Move to OTP verification
+          setStep(2); 
           setResendTimer(60);
         },
         onError: (err) => {
@@ -73,7 +71,6 @@ const ForgotPassword = () => {
     );
   };
 
-  // Step 2: Verify OTP
   const handleOTPVerify = async e => {
     e.preventDefault();
     setError('');
@@ -87,7 +84,7 @@ const ForgotPassword = () => {
       { email: form.email, otp: form.otp, role: form.role },
       {
         onSuccess: () => {
-          setStep(3); // Move to password reset
+          setStep(3); 
         },
         onError: (err) => {
           setError(err.message || 'Invalid OTP');
@@ -96,7 +93,6 @@ const ForgotPassword = () => {
     );
   };
 
-  // Step 3: Reset password
   const handlePasswordReset = async e => {
     e.preventDefault();
     setError('');
@@ -122,8 +118,7 @@ const ForgotPassword = () => {
       },
       {
         onSuccess: () => {
-          setStep(4); // Move to success screen
-          // Persist role for login pre-select
+          setStep(4); 
           try { localStorage.setItem('lastRole', form.role); } catch {}
         },
         onError: (err) => {
@@ -163,12 +158,11 @@ const ForgotPassword = () => {
   }, [resendTimer]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-950 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-900 via-orange-900 to-teal-900 p-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-lg rounded-2xl p-8">
         
         {step === 1 && (
           <>
-            {/* Step 1: Email Input */}
             <div className="text-center mb-8">
               <div className="w-14 h-14 bg-red-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-md">
                 <Lock className="w-7 h-7 text-white" />
@@ -180,7 +174,6 @@ const ForgotPassword = () => {
             </div>
 
             <form className="space-y-5" onSubmit={handleEmailSubmit}>
-              {/* Role */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">I am a</label>
                 <select
@@ -195,7 +188,6 @@ const ForgotPassword = () => {
                 </select>
               </div>
 
-              {/* Email */}
               <Input
                 name="email"
                 type="email"
@@ -233,7 +225,6 @@ const ForgotPassword = () => {
 
         {step === 2 && (
           <>
-            {/* Step 2: OTP Verification */}
             <div className="text-center mb-8">
               <div className="w-14 h-14 bg-indigo-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-md">
                 <Mail className="w-7 h-7 text-white" />
@@ -294,7 +285,6 @@ const ForgotPassword = () => {
 
         {step === 3 && (
           <>
-            {/* Step 3: New Password */}
             <div className="text-center mb-8">
               <div className="w-14 h-14 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-md">
                 <Lock className="w-7 h-7 text-white" />
@@ -366,7 +356,6 @@ const ForgotPassword = () => {
 
         {step === 4 && (
           <>
-            {/* Step 4: Success */}
             <div className="text-center">
               <div className="w-20 h-20 bg-green-500 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg">
                 <CheckCircle className="w-12 h-12 text-white" />

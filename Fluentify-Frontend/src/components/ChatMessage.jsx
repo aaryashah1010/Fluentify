@@ -56,7 +56,7 @@ const ChatMessage = ({ message, isStreaming = false }) => {
           <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
             isUser 
               ? 'bg-gradient-to-r from-orange-400 to-teal-400 text-white' 
-              : 'bg-gradient-to-r from-orange-100 to-teal-200 text-teal-700'
+              : 'bg-slate-800 text-teal-200 border border-white/10'
           }`}>
             {isUser ? 'U' : '🤖'}
           </div>
@@ -65,7 +65,7 @@ const ChatMessage = ({ message, isStreaming = false }) => {
           <div className={`rounded-2xl px-4 py-3 ${
             isUser 
               ? 'bg-gradient-to-r from-orange-400 to-teal-400 text-white rounded-br-md' 
-              : 'bg-gray-50 text-gray-800 rounded-bl-md border border-orange-100'
+              : 'bg-slate-900 text-slate-100 rounded-bl-md border border-white/10'
           }`}>
             <div className="text-sm leading-relaxed">
               {renderText(text)}
@@ -77,7 +77,7 @@ const ChatMessage = ({ message, isStreaming = false }) => {
             {/* Timestamp */}
             {timestamp && !isStreaming && (
               <div className={`text-xs mt-2 opacity-70 ${
-                isUser ? 'text-teal-50' : 'text-gray-500'
+                isUser ? 'text-teal-50' : 'text-slate-300'
               }`}>
                 {formatTime(timestamp)}
               </div>
