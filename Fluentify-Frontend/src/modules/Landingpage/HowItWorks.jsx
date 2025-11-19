@@ -31,7 +31,7 @@ export function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="py-24 bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 relative overflow-hidden"
+      className="py-24 bg-gradient-to-br from-slate-950 via-slate-900 to-teal-900 relative overflow-hidden"
     >
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-20">
@@ -47,10 +47,10 @@ export function HowItWorks() {
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-gray-900 text-4xl md:text-5xl mb-4">
-            Your Journey to <span className="text-orange-500">Fluency</span>
+          <h2 className="text-slate-50 text-4xl md:text-5xl mb-4">
+            Your Journey to <span className="text-orange-400">Fluency</span>
           </h2>
-          <p className="text-gray-700 text-xl max-w-2xl mx-auto">
+          <p className="text-slate-300 text-xl max-w-2xl mx-auto">
             A simple, proven process to master any language in months, not years
           </p>
         </div>
@@ -68,7 +68,7 @@ export function HowItWorks() {
                 )}
 
                 <div className="text-center relative z-10">
-                  <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-white border-2 border-gray-200 shadow-md mb-6 mx-auto">
+                  <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-slate-950 border-2 border-white/10 shadow-md mb-6 mx-auto">
                     <Icon
                       className={`w-12 h-12 ${
                         isEven ? 'text-teal-500' : 'text-orange-500'
@@ -82,8 +82,8 @@ export function HowItWorks() {
                   >
                     {item.step}
                   </div>
-                  <h3 className="text-gray-900 text-xl mb-3">{item.title}</h3>
-                  <p className="text-gray-600">{item.description}</p>
+                  <h3 className="text-slate-50 text-xl mb-3">{item.title}</h3>
+                  <p className="text-slate-300">{item.description}</p>
                 </div>
               </div>
             );

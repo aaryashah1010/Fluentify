@@ -138,20 +138,20 @@ const VoiceAIModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-slate-950/95 rounded-3xl shadow-2xl max-w-md w-full p-8 relative border border-white/10">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-100 rounded-full hover:bg-white/10 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">AI Language Tutor</h2>
-          <p className="text-sm text-gray-600">
+          <h2 className="text-2xl font-bold text-slate-50 mb-2">AI Tutor</h2>
+          <p className="text-sm text-slate-300">
             {isConnected ? 'Connected - Start speaking!' : 'Connect to start your conversation'}
           </p>
         </div>
@@ -191,20 +191,20 @@ const VoiceAIModal = ({ isOpen, onClose }) => {
         {/* Status Text */}
         <div className="text-center mb-6">
           {isConnecting && (
-            <p className="text-sm text-gray-600 animate-pulse">Connecting to AI tutor...</p>
+            <p className="text-sm text-slate-300 animate-pulse">Connecting to AI tutor...</p>
           )}
           {isConnected && !isAgentSpeaking && (
-            <p className="text-sm text-green-600 font-medium">🎙️ Listening...</p>
+            <p className="text-sm text-emerald-300 font-medium">🎙️ Listening...</p>
           )}
           {isAgentSpeaking && (
-            <p className="text-sm text-blue-600 font-medium animate-pulse">🗣️ AI is speaking...</p>
+            <p className="text-sm text-cyan-300 font-medium animate-pulse">🗣️ AI is speaking...</p>
           )}
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600 text-center">{error}</p>
+          <div className="mb-4 p-3 bg-red-900/40 border border-red-500/60 rounded-lg">
+            <p className="text-sm text-red-200 text-center">{error}</p>
           </div>
         )}
 
@@ -214,7 +214,7 @@ const VoiceAIModal = ({ isOpen, onClose }) => {
             <button
               onClick={startCall}
               disabled={isConnecting}
-              className="px-8 py-3 bg-gradient-to-r from-orange-400 to-teal-400 text-white rounded-full font-semibold hover:opacity-95 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-8 py-3 bg-gradient-to-r from-teal-500 to-orange-500 text-white rounded-full font-semibold hover:from-teal-600 hover:to-orange-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <Phone className="w-5 h-5" />
               {isConnecting ? 'Connecting...' : 'Start Call'}
@@ -227,7 +227,7 @@ const VoiceAIModal = ({ isOpen, onClose }) => {
                 className={`p-4 rounded-full transition-all shadow-lg ${
                   isMuted 
                     ? 'bg-yellow-500 hover:bg-yellow-600 text-white' 
-                    : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-100'
                 }`}
                 title={isMuted ? 'Unmute' : 'Mute'}
               >
@@ -247,9 +247,9 @@ const VoiceAIModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* Info Text */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <p className="text-xs text-blue-700 text-center">
-            💡 Practice speaking naturally. The AI tutor will help you improve your language skills!
+        <div className="mt-6 p-4 bg-slate-900/80 rounded-lg border border-white/10">
+          <p className="text-xs text-slate-200 text-center">
+            💡 Practice speaking naturally. Your AI tutor will help you improve pronunciation, fluency, and confidence.
           </p>
         </div>
       </div>

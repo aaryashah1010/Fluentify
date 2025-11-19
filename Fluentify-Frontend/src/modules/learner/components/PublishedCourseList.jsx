@@ -74,10 +74,10 @@ const PublishedCourseList = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {courses.map((course) => (
-              <button
+              <div
                 key={course.id}
                 onClick={() => navigate(`/learner/course/${course.id}`)}
-                className="bg-white/90 border border-orange-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-teal-300 transition-all text-left flex flex-col"
+                className="bg-white/90 border border-orange-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-teal-300 transition-all text-left flex flex-col cursor-pointer"
               >
                 {/* Course Thumbnail */}
                 {course.thumbnail_url ? (
@@ -116,7 +116,7 @@ const PublishedCourseList = () => {
                     Explore
                   </button>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         )}

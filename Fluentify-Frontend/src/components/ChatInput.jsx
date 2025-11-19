@@ -41,7 +41,7 @@ const ChatInput = ({ onSendMessage, disabled = false, placeholder = "Ask me anyt
   };
 
   return (
-    <div className="border-t bg-white p-4">
+    <div className="border-t border-white/10 bg-slate-950/95 p-4">
       <form onSubmit={handleSubmit} className="flex gap-3 items-end">
         <div className="flex-1 relative">
           <textarea
@@ -52,8 +52,10 @@ const ChatInput = ({ onSendMessage, disabled = false, placeholder = "Ask me anyt
             placeholder={placeholder}
             disabled={disabled}
             rows={1}
-            className={`w-full px-4 py-3 border border-gray-300 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-              disabled ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'
+            className={`w-full px-4 py-3 border rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors ${
+              disabled
+                ? 'bg-slate-900/60 border-slate-700 cursor-not-allowed text-slate-500'
+                : 'bg-slate-900/80 border-white/10 text-slate-100'
             }`}
             style={{ 
               minHeight: '48px', 
@@ -66,7 +68,7 @@ const ChatInput = ({ onSendMessage, disabled = false, placeholder = "Ask me anyt
           {/* Character count */}
           {message.length > 1500 && (
             <div className={`absolute -top-6 right-0 text-xs ${
-              message.length > 1900 ? 'text-red-500' : 'text-gray-500'
+              message.length > 1900 ? 'text-red-400' : 'text-slate-400'
             }`}>
               {message.length}/2000
             </div>
@@ -100,7 +102,7 @@ const ChatInput = ({ onSendMessage, disabled = false, placeholder = "Ask me anyt
       </form>
       
       {/* Hint text */}
-      <div className="text-xs text-gray-500 mt-2 text-center">
+      <div className="text-xs text-slate-400 mt-2 text-center">
         Press Enter to send, Shift+Enter for new line
       </div>
     </div>
