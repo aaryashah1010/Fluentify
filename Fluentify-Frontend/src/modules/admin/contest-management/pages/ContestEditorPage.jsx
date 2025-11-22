@@ -27,6 +27,7 @@ const ContestEditorPage = () => {
     title: '',
     description: '',
     language: 'Spanish',
+    level: '',
     start_time: '',
     end_time: '',
   });
@@ -66,6 +67,7 @@ const ContestEditorPage = () => {
         title: contestData.title,
         description: contestData.description || '',
         language: contestData.language || 'Spanish',
+        level: contestData.level || '',
         start_time: toInputLocal(contestData.start_time),
         end_time: toInputLocal(contestData.end_time),
       });
@@ -92,6 +94,7 @@ const ContestEditorPage = () => {
   const validateContest = () => {
     const newErrors = {};
     if (!contest.title.trim()) newErrors.title = 'Title is required';
+    if (!contest.level) newErrors.level = 'Level is required';
     if (!contest.start_time) newErrors.start_time = 'Start time is required';
     if (!contest.end_time) newErrors.end_time = 'End time is required';
     if (new Date(contest.start_time) >= new Date(contest.end_time)) {
@@ -125,6 +128,7 @@ const ContestEditorPage = () => {
       await createContest.mutateAsync({
         title: contest.title,
         description: contest.description,
+        level: contest.level,
         start_time: toISTOffsetIso(contest.start_time),
         end_time: toISTOffsetIso(contest.end_time),
       });
@@ -144,6 +148,7 @@ const ContestEditorPage = () => {
         data: {
           title: contest.title,
           description: contest.description,
+          level: contest.level,
           start_time: toISTOffsetIso(contest.start_time),
           end_time: toISTOffsetIso(contest.end_time),
         },
@@ -267,7 +272,7 @@ const ContestEditorPage = () => {
 
   if (loadingContest) {
     return (
-      <div className="min-h-screen bg-yellow-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#F6FFFB] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading contest...</p>
@@ -280,18 +285,24 @@ const ContestEditorPage = () => {
   if (isEditMode && errorContest) {
     console.error('Failed to load contest details', contestError);
     return (
-      <div className="min-h-screen bg-yellow-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#F6FFFB] flex items-center justify-center px-4">
         <div className="bg-white rounded-lg shadow-sm p-6 max-w-md w-full text-center">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">Unable to load contest</h2>
           <p className="text-sm text-gray-600 mb-4">Please go back to the list and try again.</p>
-          <Button onClick={() => navigate('/admin/contests')}>Back to Contests</Button>
+          <Button
+            onClick={() => navigate('/admin/contests')}
+            variant="ghost"
+            className="bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white rounded-full shadow hover:opacity-90 transition-opacity"
+          >
+            Back to Contests
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-yellow-50">
+    <div className="min-h-screen bg-[#F6FFFB]">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
@@ -299,9 +310,9 @@ const ContestEditorPage = () => {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate('/admin/contests')}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] rounded-full text-white shadow hover:opacity-90 transition-opacity"
               >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
+                <ArrowLeft className="w-5 h-5 text-white" />
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
@@ -328,7 +339,7 @@ const ContestEditorPage = () => {
               {/* Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contest Title *
+                  Contest Title <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -342,6 +353,25 @@ const ContestEditorPage = () => {
                 {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
               </div>
 
+              {/* Level */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Level <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={contest.level}
+                  onChange={(e) => handleContestChange('level', e.target.value)}
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                    errors.level ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                >
+                  <option value="">Select level</option>
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                </select>
+                {errors.level && <p className="text-red-500 text-sm mt-1">{errors.level}</p>}
+              </div>
 
               {/* Description */}
               <div>
@@ -361,7 +391,7 @@ const ContestEditorPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Start Date & Time *
+                    Start Date & Time <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="datetime-local"
@@ -377,7 +407,7 @@ const ContestEditorPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    End Date & Time *
+                    End Date & Time <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="datetime-local"
@@ -400,7 +430,8 @@ const ContestEditorPage = () => {
                     onClick={handleCreateContest}
                     loading={createContest.isPending}
                     icon={<Save className="w-4 h-4" />}
-                    className="w-full"
+                    variant="ghost"
+                    className="w-full bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white rounded-full shadow hover:opacity-90 transition-opacity"
                   >
                     Create Contest
                   </Button>
@@ -409,7 +440,8 @@ const ContestEditorPage = () => {
                     onClick={handleUpdateContest}
                     loading={updateContest.isPending}
                     icon={<Save className="w-4 h-4" />}
-                    className="w-full"
+                    variant="ghost"
+                    className="w-full bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white rounded-full shadow hover:opacity-90 transition-opacity"
                   >
                     Save Changes
                   </Button>
@@ -452,7 +484,7 @@ const ContestEditorPage = () => {
                               }`}
                             >
                               {String.fromCharCode(65 + optIndex)}. {typeof opt === 'string' ? opt : (opt?.text ?? '')}
-                              {optIndex === q.correct_option_id && ' ✓'}
+                              {optIndex === q.correct_option_id && ' '}
                             </div>
                           ))}
                         </div>
@@ -469,7 +501,7 @@ const ContestEditorPage = () => {
                   {/* Question Text */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Question Text *
+                      Question Text <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       value={currentQuestion.question_text}
@@ -483,7 +515,7 @@ const ContestEditorPage = () => {
                   {/* Options */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Options (at least 2 required) *
+                      Options (at least 2 required) <span className="text-red-500">*</span>
                     </label>
                     <div className="space-y-2">
                       {currentQuestion.options.map((option, index) => (
@@ -515,7 +547,8 @@ const ContestEditorPage = () => {
                     onClick={handleAddQuestion}
                     loading={addQuestion.isLoading}
                     icon={<Plus className="w-4 h-4" />}
-                    className="w-full"
+                    variant="ghost"
+                    className="w-full bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white rounded-full shadow hover:opacity-90 transition-opacity"
                   >
                     Add Question
                   </Button>
@@ -537,6 +570,8 @@ const ContestEditorPage = () => {
                     loading={publishContest.isLoading}
                     disabled={questions.length === 0}
                     icon={<Send className="w-4 h-4" />}
+                    variant="ghost"
+                    className="bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white rounded-full shadow hover:opacity-90 transition-opacity"
                   >
                     Publish Contest
                   </Button>

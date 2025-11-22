@@ -2,6 +2,7 @@
 export { default as Button } from './Button';
 export { default as ErrorMessage } from './ErrorMessage';
 export { default as Input } from './Input';
+export { default as ToggleSwitch } from './ToggleSwitch';
 export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as PageHeader } from './PageHeader';
 export { default as VoiceAIModal } from './VoiceAiModal';
@@ -15,10 +16,10 @@ export { default as ContestCard } from './ContestCard';
 export { default as LeaderboardTable } from './LeaderboardTable';
 export { default as McqQuestion } from './McqQuestion';
 export { default as ContestTimer } from './ContestTimer';
-export { 
-  Skeleton, 
-  SkeletonText, 
-  SkeletonCard, 
+export {
+  Skeleton,
+  SkeletonText,
+  SkeletonCard,
   SkeletonCourseCard,
   SkeletonUnitCard,
   SkeletonPageHeader

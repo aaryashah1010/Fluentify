@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { UserListPage, UserDetailsPage } from './index';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Users } from 'lucide-react';
 
 const UserManagementLayout = () => {
   const navigate = useNavigate();
@@ -14,12 +14,15 @@ const UserManagementLayout = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/admin-dashboard')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 rounded-full bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white shadow-sm hover:opacity-90 transition"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                User Management
+                <Users className="w-6 h-6" />
+              </h1>
               <p className="text-sm text-gray-600">View and manage learners and their progress</p>
             </div>
           </div>

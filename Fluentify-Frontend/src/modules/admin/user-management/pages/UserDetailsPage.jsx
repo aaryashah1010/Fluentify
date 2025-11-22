@@ -69,14 +69,16 @@ const UserDetailsPage = () => {
       {/* Back Button */}
       <button
         onClick={() => navigate('/admin/users')}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+        className="inline-flex items-center gap-2 text-sm font-medium text-emerald-800 hover:text-emerald-900"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <span className="p-1.5 rounded-full bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white shadow-sm">
+          <ArrowLeft className="w-4 h-4" />
+        </span>
         Back to Users
       </button>
 
       {/* User Info Card */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-[#FCECCC] rounded-3xl border border-[#F3DFC0] p-6 shadow-sm">
         <div className="flex justify-between items-start mb-6">
           <h2 className="text-2xl font-bold text-gray-900">User Details</h2>
           <div className="flex gap-2">
@@ -84,14 +86,14 @@ const UserDetailsPage = () => {
               <>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-full bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] shadow-sm hover:opacity-90 transition"
                 >
                   <Edit2 className="w-4 h-4" />
                   Edit
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-full bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] shadow-sm hover:opacity-90 transition"
                 >
                   <Trash2 className="w-4 h-4" />
                   Delete
@@ -175,7 +177,7 @@ const UserDetailsPage = () => {
 
       {/* Course Progress */}
       {user.courses && user.courses.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-[#F6FFFA] rounded-lg border border-gray-200 p-6">
           <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
             <BookOpen className="w-5 h-5" />
             Course Progress
@@ -191,22 +193,16 @@ const UserDetailsPage = () => {
                       {course.language} • {course.total_lessons} lessons • {course.total_units} units
                     </p>
                   </div>
-                  <span className={`text-sm font-medium px-2 py-1 rounded ${
-                    course.is_completed 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-blue-100 text-blue-700'
-                  }`}>
+                  <span className="text-sm font-semibold px-3 py-1 rounded-full bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white shadow-sm">
                     {course.is_completed ? 'Completed' : `${course.progress_percentage}%`}
                   </span>
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+                <div className="w-full bg-gray-200/70 rounded-full h-2 mb-3">
                   <div
-                    className={`h-2 rounded-full transition-all ${
-                      course.is_completed ? 'bg-green-600' : 'bg-blue-600'
-                    }`}
-                    style={{ width: `${course.progress_percentage}%` }}
+                    className="h-2 rounded-full bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] transition-all"
+                    style={{ width: `${course.is_completed ? 100 : course.progress_percentage}%` }}
                   />
                 </div>
 
@@ -269,3 +265,9 @@ const UserDetailsPage = () => {
 };
 
 export default UserDetailsPage;
+
+
+
+
+
+

@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Mail, 
-  Download, 
-  Send, 
-  Users, 
-  ArrowLeft, 
-  CheckCircle, 
+import {
+  Mail,
+  Download,
+  Send,
+  Users,
+  ArrowLeft,
+  CheckCircle,
   AlertCircle,
   Loader2
 } from 'lucide-react';
-import { 
-  getLearnersForCampaign, 
-  triggerEmailCampaign, 
-  exportLearnersCSV 
+import {
+  getLearnersForCampaign,
+  triggerEmailCampaign,
+  exportLearnersCSV
 } from '../../api/admin';
 
 const EmailCampaignPage = () => {
@@ -34,7 +34,7 @@ const EmailCampaignPage = () => {
       setLoading(true);
       setError(null);
       const response = await getLearnersForCampaign();
-      
+
       if (response.success) {
         setLearners(response.data.learners || []);
       } else {
@@ -62,9 +62,9 @@ const EmailCampaignPage = () => {
       setTriggering(true);
       setError(null);
       setSuccess(null);
-      
+
       const response = await triggerEmailCampaign();
-      
+
       if (response.success) {
         const { learnerCount, updatedRows, spreadsheetId } = response.data || {};
         setSuccess(
@@ -86,9 +86,9 @@ const EmailCampaignPage = () => {
     try {
       setExporting(true);
       setError(null);
-      
+
       const blob = await exportLearnersCSV();
-      
+
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -98,7 +98,7 @@ const EmailCampaignPage = () => {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
+
       setSuccess('Learners exported successfully!');
     } catch (err) {
       console.error('Error exporting CSV:', err);
@@ -109,7 +109,7 @@ const EmailCampaignPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-yellow-50">
+    <div className="min-h-screen bg-[#F6FFFA]">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
@@ -117,17 +117,17 @@ const EmailCampaignPage = () => {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate('/admin-dashboard')}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 rounded-lg bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] hover:opacity-90 transition-opacity shadow-sm"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-5 h-5 text-white" />
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <Mail className="w-6 h-6 text-blue-600" />
                   Email Campaign
+                  <Mail className="w-6 h-6 text-blue-600" />
                 </h1>
                 <p className="text-sm text-gray-600 mt-1">
-                 Append learnes who will receive the email campaign
+                  Append learnes who will receive the email campaign
                 </p>
               </div>
             </div>
@@ -135,7 +135,7 @@ const EmailCampaignPage = () => {
               <button
                 onClick={handleExportCSV}
                 disabled={exporting || learners.length === 0}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] hover:opacity-90 rounded-lg transition-opacity shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {exporting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -147,7 +147,7 @@ const EmailCampaignPage = () => {
               <button
                 onClick={handleTriggerCampaign}
                 disabled={triggering || learners.length === 0}
-                className="flex items-center gap-2 px-6 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] hover:opacity-90 rounded-lg transition-opacity shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {triggering ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -209,8 +209,8 @@ const EmailCampaignPage = () => {
         </div>
 
         {/* Learners Table */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="bg-[#FCEACC] rounded-lg shadow-sm border border-[#F4DDB3] overflow-hidden">
+          <div className="px-6 py-4 border-b-2 border-black">
             <h2 className="text-lg font-semibold text-gray-900">Learner List</h2>
             <p className="text-sm text-gray-600 mt-1">
               All learners who will receive the email campaign
@@ -229,39 +229,39 @@ const EmailCampaignPage = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <thead className="bg-[#FCEACC]">
+                  <tr className="border-t-2 border-black border-b-2">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider border-r-2 border-black">
                       #
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider border-r-2 border-black">
                       Name
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider border-r-2 border-black">
                       Email
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                       Joined Date
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-[#FCEACC] divide-y-2 divide-black">
                   {learners.map((learner, index) => (
                     <tr key={index} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black border-r-2 border-black">
                         {index + 1}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap border-r-2 border-black">
+                        <div className="text-sm font-medium text-black">
                           {learner.name}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap border-r-2 border-black">
+                        <div className="text-sm text-black">
                           {learner.email}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
                         {learner.created_at ? new Date(learner.created_at).toLocaleDateString() : 'N/A'}
                       </td>
                     </tr>

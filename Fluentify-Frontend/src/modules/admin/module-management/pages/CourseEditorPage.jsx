@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useModuleManagement } from '../../../../hooks/useModuleManagement';
 import CourseForm from '../components/CourseForm';
@@ -14,6 +14,7 @@ const CourseEditorPage = () => {
   const location = window.location.pathname;
   const isNewCourse = location.includes('/new');
   const isViewMode = location.includes('/view/');
+  const isEditMode = location.includes('/edit/');
   const languageParam = searchParams.get('language');
 
   const {
@@ -42,6 +43,10 @@ const CourseEditorPage = () => {
     is_published: false,
   });
 
+  const [hasOpenedUnits, setHasOpenedUnits] = useState(false);
+
+  const unitsSectionRef = useRef(null);
+
   const [showUnitModal, setShowUnitModal] = useState(false);
   const [showLessonModal, setShowLessonModal] = useState(false);
   const [editingUnit, setEditingUnit] = useState(null);
@@ -52,7 +57,7 @@ const CourseEditorPage = () => {
     title: '',
     description: '',
     difficulty: 'Beginner',
-    estimated_time: '',
+    estimated_time: 0,
   });
 
   const [lessonFormData, setLessonFormData] = useState({
@@ -64,7 +69,7 @@ const CourseEditorPage = () => {
     vocabulary: {},
     grammar_points: {},
     exercises: {},
-    xp_reward: 0,
+    xp_reward: '',
     transcript: '',
     file_name: null,
     file_size: null,
@@ -72,10 +77,8 @@ const CourseEditorPage = () => {
   });
 
   // Load course details if editing
-  const hasFetchedRef = useRef(false);
   useEffect(() => {
-    if (!isNewCourse && courseId && !hasFetchedRef.current) {
-      hasFetchedRef.current = true;
+    if (!isNewCourse && courseId) {
       fetchCourseDetails(courseId);
     }
   }, [courseId, isNewCourse]);
@@ -92,6 +95,7 @@ const CourseEditorPage = () => {
         estimated_duration: currentCourse.estimated_duration || '',
         is_published: currentCourse.is_published || false,
       });
+      setHasOpenedUnits(true);
     }
   }, [currentCourse, isNewCourse]);
 
@@ -102,19 +106,12 @@ const CourseEditorPage = () => {
       if (isNewCourse) {
         const result = await createCourse(courseData);
         if (result && result.id) {
-          // After creating a new course, go back to listing
-          if (languageParam) {
-            navigate(`/admin/modules/${languageParam}`);
-          } else {
-            navigate(-1);
-          }
+          navigate(`/admin/modules/course/edit/${result.id}`);
         } else {
           console.error('Course created but no ID returned:', result);
         }
       } else {
         await updateCourse(courseId, courseData);
-        // After updating an existing course, go back to the previous page
-        navigate(-1);
       }
     } catch (err) {
       // FIX: Don't throw - let the error state handle it
@@ -130,7 +127,7 @@ const CourseEditorPage = () => {
     setUnitFormData({
       title: '',
       description: '',
-      difficulty: 'Beginner',
+      difficulty: courseData.level || 'Beginner',
       estimated_time: '',
     });
     setShowUnitModal(true);
@@ -141,27 +138,31 @@ const CourseEditorPage = () => {
     setUnitFormData({
       title: unit.title || '',
       description: unit.description || '',
-      difficulty: unit.difficulty || 'Beginner',
-      estimated_time: unit.estimated_time ?? '',
+      difficulty: unit.difficulty || courseData.level || 'Beginner',
+      estimated_time: unit.estimated_time ? String(unit.estimated_time) : '',
     });
     setShowUnitModal(true);
   };
 
   const handleSaveUnit = async () => {
     try {
-      const sanitizedFormData = { ...unitFormData };
-      if (sanitizedFormData.estimated_time === '') {
-        sanitizedFormData.estimated_time = null;
-      }
+      const payload = {
+        ...unitFormData,
+        estimated_time: unitFormData.estimated_time ? parseInt(unitFormData.estimated_time, 10) : 0,
+      };
+
+      let savedUnit;
       if (editingUnit) {
-        await updateUnit(editingUnit.id, sanitizedFormData);
+        savedUnit = await updateUnit(editingUnit.id, payload);
       } else {
-        await createUnit(courseId, unitFormData);
+        savedUnit = await createUnit(courseId, payload);
       }
       setShowUnitModal(false);
       setEditingUnit(null);
+      return savedUnit;
     } catch (err) {
       console.error('Failed to save unit:', err);
+      return null;
     }
   };
 
@@ -179,7 +180,8 @@ const CourseEditorPage = () => {
   const handleAddLesson = (unitId) => {
     setSelectedUnitId(unitId);
     setEditingLesson(null);
-    // Prepare empty lesson form for the selected unit
+    // Find the unit to get lesson count
+    const unit = currentCourse?.units?.find(u => u.id === unitId);
     setLessonFormData({
       title: '',
       content_type: '',
@@ -189,7 +191,7 @@ const CourseEditorPage = () => {
       vocabulary: {},
       grammar_points: {},
       exercises: {},
-      xp_reward: 0,
+      xp_reward: '',
       transcript: '',
       file_name: null,
       file_size: null,
@@ -210,7 +212,7 @@ const CourseEditorPage = () => {
       vocabulary: lesson.vocabulary || {},
       grammar_points: lesson.grammar_points || {},
       exercises: lesson.exercises || {},
-      xp_reward: lesson.xp_reward || 0,
+      xp_reward: lesson.xp_reward ?? '',
       transcript: lesson.transcript || '',
       file_name: lesson.file_name || null,
       file_size: lesson.file_size || null,
@@ -253,15 +255,15 @@ const CourseEditorPage = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-emerald-50/40 min-h-screen -mx-4 px-4 py-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] rounded-full text-white shadow hover:opacity-90 transition-opacity"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft className="w-5 h-5 text-white" />
           </button>
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
@@ -286,16 +288,6 @@ const CourseEditorPage = () => {
               Switch to Edit Mode
             </button>
           )}
-          {!isViewMode && (
-            <button
-              onClick={handleSaveCourse}
-              disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-            >
-              <Save className="w-5 h-5" />
-              {loading ? 'Saving...' : 'Save Course'}
-            </button>
-          )}
         </div>
       </div>
 
@@ -308,18 +300,30 @@ const CourseEditorPage = () => {
       )}
 
       {/* Course Form */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
+      <div className="bg-[#F29A36]/6 border border-gray-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Information</h3>
         <CourseForm
           courseData={courseData}
           onChange={setCourseData}
           disabled={loading || isViewMode}
+          onNext={async () => {
+            await handleSaveCourse();
+            if (!isNewCourse) {
+              // Reveal units section and then scroll to it after it renders
+              setHasOpenedUnits(true);
+              setTimeout(() => {
+                if (unitsSectionRef.current) {
+                  unitsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }, 50);
+            }
+          }}
         />
       </div>
 
       {/* Units and Lessons (only show for existing courses) */}
-      {!isNewCourse && currentCourse && (
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+      {!isNewCourse && currentCourse && hasOpenedUnits && (
+        <div ref={unitsSectionRef} className="bg-[#E3FFE0]/6 border border-gray-200 rounded-lg p-6">
           <UnitList
             units={currentCourse.units || []}
             onAddUnit={handleAddUnit}
@@ -334,8 +338,8 @@ const CourseEditorPage = () => {
 
       {/* Unit Modal */}
       {showUnitModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full">
+        <div className="fixed inset-0 bg-slate-900/10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#F29A36]/6 rounded-lg p-6 max-w-2xl w-full">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               {editingUnit ? 'Edit Unit' : 'Add New Unit'}
             </h3>
@@ -343,6 +347,12 @@ const CourseEditorPage = () => {
               unitData={unitFormData}
               onChange={setUnitFormData}
               onSubmit={handleSaveUnit}
+              onNext={async () => {
+                const savedUnit = await handleSaveUnit();
+                if (savedUnit && savedUnit.id) {
+                  handleAddLesson(savedUnit.id);
+                }
+              }}
               onCancel={() => setShowUnitModal(false)}
               loading={loading}
             />
@@ -352,8 +362,8 @@ const CourseEditorPage = () => {
 
       {/* Lesson Modal */}
       {showLessonModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 max-w-3xl w-full">
+        <div className="fixed inset-0 bg-slate-900/10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#F29A36]/6 rounded-lg p-6 max-w-3xl w-full">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               {editingLesson ? 'Edit Lesson' : 'Add New Lesson'}
             </h3>

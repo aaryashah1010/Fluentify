@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUsers, useSearchUsers } from '../../../../hooks/useUserManagement';
 import { UserCard } from '../components/UserCard';
 import { UserSearchBar } from '../components/UserSearchBar';
-import { Loader2, Users, ChevronLeft, ChevronRight, UserCheck, UserPlus, TrendingUp, Activity } from 'lucide-react';
+import { Loader2, Users, ChevronLeft, ChevronRight, UserCheck, UserPlus } from 'lucide-react';
 
 const UserListPage = () => {
   const navigate = useNavigate();
@@ -29,69 +29,62 @@ const UserListPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">User Management</h1>
-          </div>
-          <p className="text-gray-600 text-lg ml-15">Manage learners and monitor their progress</p>
-        </div>
+    <div className="min-h-screen bg-[#F6FFFB] px-4 py-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-5 sm:space-y-6">
 
         {/* Search Bar */}
-        <UserSearchBar onSearch={handleSearch} />
+        <div className="sticky top-16 z-20 sm:static sm:top-auto bg-[#F6FFFB] pb-3 sm:pb-0">
+          <UserSearchBar onSearch={handleSearch} />
+        </div>
 
         {/* Stats Cards */}
         {!searchQuery && pagination && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
             {/* Total Users */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-blue-100">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-md">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <Activity className="w-5 h-5 text-blue-600" />
+            <div className="min-w-[220px] sm:min-w-0 bg-[#FCECCC] rounded-2xl shadow-lg hover:shadow-xl transition-all px-4 py-3 sm:px-5 sm:py-4 flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white flex items-center justify-center shadow-md flex-shrink-0">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-gray-900" />
               </div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
-              <p className="text-3xl font-bold text-gray-900">{pagination.total}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] sm:text-xs font-semibold text-gray-700 uppercase tracking-wide truncate">Total Users</p>
+                <p className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-snug">{pagination.total}</p>
+              </div>
             </div>
 
             {/* Active Users */}
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-green-100">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-md">
-                  <UserCheck className="w-6 h-6 text-white" />
-                </div>
-                <TrendingUp className="w-5 h-5 text-green-600" />
+            <div className="min-w-[220px] sm:min-w-0 bg-[#FCECCC] rounded-2xl shadow-lg hover:shadow-xl transition-all px-4 py-3 sm:px-5 sm:py-4 flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white flex items-center justify-center shadow-md flex-shrink-0">
+                <UserCheck className="w-5 h-5 sm:w-6 sm:h-6 text-gray-900" />
               </div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Active Users</p>
-              <p className="text-3xl font-bold text-gray-900">{users?.filter(u => u.is_verified).length || 0}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] sm:text-xs font-semibold text-gray-700 mb-0.5 uppercase tracking-wide truncate">Active Users</p>
+                <p className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-snug">{users?.filter(u => u.is_verified).length || 0}</p>
+              </div>
             </div>
 
             {/* Current Page */}
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-purple-100">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center shadow-md">
-                  <ChevronRight className="w-6 h-6 text-white" />
-                </div>
+            <div className="min-w-[220px] sm:min-w-0 bg-[#FCECCC] rounded-2xl shadow-lg hover:shadow-xl transition-all px-4 py-3 sm:px-5 sm:py-4 flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white flex items-center justify-center shadow-md flex-shrink-0">
+                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-900" />
               </div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Current Page</p>
-              <p className="text-3xl font-bold text-gray-900">{pagination.page} <span className="text-lg text-gray-600">of {pagination.pages}</span></p>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] sm:text-xs font-semibold text-gray-700 mb-0.5 uppercase tracking-wide truncate">Current Page</p>
+                <p className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-snug">
+                  {pagination.page}{' '}
+                  <span className="text-sm sm:text-lg font-semibold text-gray-700">{pagination.pages}</span>
+                </p>
+              </div>
             </div>
 
             {/* Showing */}
-            <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-orange-100">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-md">
-                  <UserPlus className="w-6 h-6 text-white" />
-                </div>
+            <div className="min-w-[220px] sm:min-w-0 bg-[#FCECCC] rounded-2xl shadow-lg hover:shadow-xl transition-all px-4 py-3 sm:px-5 sm:py-4 flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white flex items-center justify-center shadow-md flex-shrink-0">
+                <UserPlus className="w-5 h-5 sm:w-6 sm:h-6 text-gray-900" />
               </div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Showing</p>
-              <p className="text-3xl font-bold text-gray-900">{users?.length || 0}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] sm:text-xs font-semibold text-gray-700 mb-0.5 uppercase tracking-wide truncate">Showing</p>
+                <p className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-snug">{users?.length || 0}</p>
+              </div>
             </div>
           </div>
         )}

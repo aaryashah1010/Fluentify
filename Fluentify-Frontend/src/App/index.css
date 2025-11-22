@@ -9,3 +9,14 @@
     background-position: 200% 0;
   }
 }
+
+.xp-input::-webkit-inner-spin-button,
+.xp-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.xp-input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}

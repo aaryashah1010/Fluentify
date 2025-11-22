@@ -19,15 +19,13 @@ const UnitList = ({ units = [], onAddUnit, onEditUnit, onDeleteUnit, onAddLesson
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Units</h3>
-        {units.length > 0 && (
-          <button
-            onClick={onAddUnit}
-            className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Add Unit
-          </button>
-        )}
+        <button
+          onClick={onAddUnit}
+          className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white rounded-full hover:opacity-90 transition-colors text-sm font-medium shadow-sm"
+        >
+          <Plus className="w-4 h-4" />
+          Add Unit
+        </button>
       </div>
 
       {units.length === 0 ? (
@@ -35,7 +33,7 @@ const UnitList = ({ units = [], onAddUnit, onEditUnit, onDeleteUnit, onAddLesson
           <p className="text-gray-600 mb-3">No units yet</p>
           <button
             onClick={onAddUnit}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white rounded-full hover:opacity-90 transition-colors text-sm font-medium shadow-sm"
           >
             <Plus className="w-4 h-4" />
             Add First Unit

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, Edit, Trash2, BookOpen, Video, Headphones, FileText, MessageSquare } from 'lucide-react';
 
-const LessonList = ({ lessons = [], onAddLesson, onEditLesson, onDeleteLesson }) => {
+const LessonList = ({ lessons = [], unitId, onAddLesson, onEditLesson, onDeleteLesson }) => {
   const getContentIcon = (contentType) => {
     switch (contentType) {
       case 'video':
@@ -21,15 +21,13 @@ const LessonList = ({ lessons = [], onAddLesson, onEditLesson, onDeleteLesson })
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-gray-700">Lessons</h4>
-        {lessons.length > 0 && (
-          <button
-            onClick={onAddLesson}
-            className="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Add Lesson
-          </button>
-        )}
+        <button
+          onClick={onAddLesson}
+          className="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white rounded-full hover:opacity-90 transition-colors text-sm font-medium shadow-sm"
+        >
+          <Plus className="w-4 h-4" />
+          Add Lesson
+        </button>
       </div>
 
       {lessons.length === 0 ? (
@@ -37,7 +35,7 @@ const LessonList = ({ lessons = [], onAddLesson, onEditLesson, onDeleteLesson })
           <p className="text-sm text-gray-600 mb-2">No lessons yet</p>
           <button
             onClick={onAddLesson}
-            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white rounded-full hover:opacity-90 transition-colors text-sm font-medium shadow-sm"
           >
             <Plus className="w-4 h-4" />
             Add First Lesson
