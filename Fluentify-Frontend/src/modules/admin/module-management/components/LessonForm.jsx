@@ -19,7 +19,7 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
     const { name, value } = e.target;
     onChange({
       ...lessonData,
-      [name]: value === '' ? '' : Number.parseInt(value, 10) || 0
+      [name]: parseInt(value) || 0
     });
   };
 
@@ -114,7 +114,7 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
           onChange={handleChange}
           required
           disabled={loading}
-          className="w-full px-3 py-2 border border-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
           placeholder="e.g., Pronouncing Vowels"
         />
       </div>
@@ -130,7 +130,7 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
           onChange={handleChange}
           required
           disabled={loading}
-          className="w-full px-3 py-2 border border-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
         >
           <option value="">Select Lesson Type</option>
           <option value="pdf">PDF Document</option>
@@ -154,7 +154,7 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
           onChange={handleChange}
           disabled={loading}
           rows={3}
-          className="w-full px-3 py-2 border border-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
           placeholder="Describe what students will learn..."
         />
       </div>
@@ -283,12 +283,12 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
         <input
           type="number"
           name="xp_reward"
-          value={lessonData.xp_reward ?? ''}
+          value={lessonData.xp_reward || 0}
           onChange={handleNumberChange}
           disabled={loading}
           min="0"
-          className="w-full px-3 py-2 border border-black xp-input rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-          placeholder="0"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+          placeholder="10"
         />
       </div>
 
@@ -304,14 +304,14 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
             onChange={(e) => setKeyPhraseInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addKeyPhrase())}
             disabled={loading}
-            className="flex-1 px-3 py-2 border border-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
             placeholder="Add a key phrase"
           />
           <button
             type="button"
             onClick={addKeyPhrase}
             disabled={loading}
-            className="px-4 py-2 bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white font-semibold rounded-full hover:opacity-90 transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
           >
             Add
           </button>
@@ -347,7 +347,7 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
             value={vocabKey}
             onChange={(e) => setVocabKey(e.target.value)}
             disabled={loading}
-            className="flex-1 px-3 py-2 border border-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
             placeholder="English word"
           />
           <input
@@ -356,14 +356,14 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
             onChange={(e) => setVocabValue(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addVocabulary())}
             disabled={loading}
-            className="flex-1 px-3 py-2 border border-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
             placeholder="Translation"
           />
           <button
             type="button"
             onClick={addVocabulary}
             disabled={loading}
-            className="px-4 py-2 bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white font-semibold rounded-full hover:opacity-90 transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
           >
             Add
           </button>
@@ -391,21 +391,21 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 pt-4 sticky bottom-0 bg-transparent">
+      <div className="flex gap-3 pt-4 sticky bottom-0 bg-white">
         <button
           type="button"
           onClick={onCancel}
           disabled={loading}
-          className="flex-1 px-4 py-2 bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white font-semibold rounded-full hover:opacity-90 transition-colors disabled:opacity-50"
+          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 px-4 py-2 bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white font-semibold rounded-full hover:opacity-90 transition-colors disabled:opacity-50"
+          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
         >
-          {loading ? 'Saving...' : 'Save'}
+          {loading ? 'Saving...' : 'Save Lesson'}
         </button>
       </div>
     </form>

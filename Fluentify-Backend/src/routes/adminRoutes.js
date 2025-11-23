@@ -13,27 +13,18 @@ const router = express.Router();
 router.use(authMiddleware, adminOnly);
 
 // ==================== User Management Routes ====================
-// Get all users with pagination
-router.get('/users', userManagementController.getAllUsers);
+// Get all users with pagination (New Controller)
+router.get('/users', adminUserController.listLearners);
 
-// Search users by name or email
-router.get('/users/search', userManagementController.searchUsers);
+// Get user details and progress (New Controller)
+router.get('/users/:id', adminUserController.getLearnerDetails);
 
-// Get user details and progress
-router.get('/users/:userId', userManagementController.getUserDetails);
+// Update user profile (New Controller)
+router.put('/users/:id', adminUserController.updateLearner);
 
-// Update user profile
-router.put(
-    '/users/:userId',
-    [
-        body('name').optional().trim().isLength({ min: 2 }),
-        body('email').optional().isEmail().normalizeEmail()
-    ],
-    userManagementController.updateUser
-);
-
-// Delete user
+// Delete user (Legacy Controller - kept as AdminUserController doesn't have delete)
 router.delete('/users/:userId', userManagementController.deleteUser);
+
 
 // ==================== Language Routes (Read-only) ====================
 // Get list of unique languages
@@ -89,9 +80,6 @@ router.get('/email-campaign/export-csv', emailCampaignController.exportLearnersC
 // Trigger n8n email campaign webhook
 router.post('/email-campaign/trigger', emailCampaignController.triggerEmailCampaign);
 
-// ==================== Admin User Management ====================
-router.get('/users', adminUserController.listLearners);
-router.get('/users/:id', adminUserController.getLearnerDetails);
-router.put('/users/:id', adminUserController.updateLearner);
+
 
 export default router;

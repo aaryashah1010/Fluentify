@@ -98,78 +98,45 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 text-slate-50 relative overflow-x-hidden">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+      <header className="bg-gradient-to-r from-slate-950/95 via-slate-900/90 to-slate-950/95 border-b border-white/10 shadow-lg backdrop-blur-xl">
+        <div className="max-w-4xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/admin-dashboard')}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm hover:bg-slate-50"
+              className="p-2 hover:bg-white/5 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-4 h-4 text-slate-700" />
+              <ArrowLeft className="w-5 h-5 text-slate-200" />
             </button>
             <div>
-              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400 font-semibold">
-                Account
-              </p>
-              <h1 className="text-lg sm:text-xl font-bold text-slate-900">My Profile</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-50">My Profile</h1>
+              <p className="text-xs md:text-sm text-slate-300 mt-1">Manage your admin identity and account details.</p>
             </div>
           </div>
-
-          <button
-            onClick={logout}
-            className="hidden sm:inline-flex items-center gap-2 rounded-full border border-red-100 bg-white px-3 py-1.5 text-xs font-medium text-red-600 shadow-sm hover:bg-red-50"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8 space-y-5">
-        {/* Gradient strip similar to dashboard */}
-        <section className="rounded-2xl bg-gradient-to-r from-indigo-50 via-sky-50 to-emerald-50 border border-slate-100 px-5 py-4 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-500 font-semibold mb-1">
-              Fluentify Admin
-            </p>
-            <h2 className="text-base sm:text-lg font-semibold text-slate-900">
-              Personal profile & account info
-            </h2>
-            <p className="text-xs text-slate-500 mt-1">
-              Update your display name and review account details.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs">
-            <span className="inline-flex items-center rounded-full bg-white/70 px-3 py-1 border border-slate-100 text-slate-600 shadow-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-2" />
-              Profile active
-            </span>
-          </div>
-        </section>
-
-        <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-7">
+      <main className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 relative z-10">
+        <div className="rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-8">
           {/* Success Message */}
           {successMessage && (
-            <div className="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-700">
-              {successMessage}
+            <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-green-700">{successMessage}</p>
             </div>
           )}
 
           {/* Profile Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-slate-200">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-indigo-500 rounded-full flex items-center justify-center shadow-sm">
-              <User className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+          <div className="flex items-center gap-6 mb-8 pb-8 border-b border-white/10">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-teal-500 via-sky-500 to-orange-400 flex items-center justify-center shadow-[0_0_28px_rgba(56,189,248,0.6)]">
+              <User className="w-12 h-12 text-white" />
             </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 truncate">
+            <div className="flex-1">
+              <h2 className="text-3xl font-bold text-slate-50 mb-2">
                 {user?.name || 'User'}
               </h2>
-              <p className="text-sm text-slate-500">Platform Administrator</p>
-              <p className="mt-1 text-xs text-slate-400 truncate">{user?.email}</p>
+              <p className="text-sm text-slate-300">Platform Administrator</p>
             </div>
           </div>
 
@@ -177,44 +144,43 @@ const UserProfile = () => {
           <div className="space-y-6">
             {/* Name Field */}
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-[0.16em]">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Full Name
               </label>
               {isEditing ? (
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex gap-2">
                   <Input
                     name="name"
                     type="text"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="flex-1"
+                    className="flex-1 bg-slate-950/60 border-white/15 text-slate-50 placeholder-slate-500"
                     error={editError}
                     required
                   />
-                  <div className="flex gap-2 sm:w-auto">
-                    <Button
-                      variant="success"
-                      onClick={handleSave}
-                      loading={updateProfileMutation.isPending}
-                      disabled={updateProfileMutation.isPending}
-                      icon={<Check className="w-4 h-4" />}
-                    >
-                      Save
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={handleCancel}
-                      disabled={updateProfileMutation.isPending}
-                      icon={<X className="w-4 h-4" />}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
+                  <Button
+                    variant="success"
+                    onClick={handleSave}
+                    loading={updateProfileMutation.isPending}
+                    disabled={updateProfileMutation.isPending}
+                    icon={<Check className="w-4 h-4" />}
+                    className="bg-gradient-to-r from-teal-500 to-orange-500 text-white border-none hover:from-teal-600 hover:to-orange-600"
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={handleCancel}
+                    disabled={updateProfileMutation.isPending}
+                    icon={<X className="w-4 h-4" />}
+                  >
+                    Cancel
+                  </Button>
                 </div>
               ) : (
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
-                    <p className="text-slate-900 text-sm">{user?.name || 'Not set'}</p>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 bg-slate-900/80 border border-white/10 rounded-lg px-4 py-3">
+                    <p className="text-slate-50">{user?.name || 'Not set'}</p>
                   </div>
                   <Button
                     variant="ghost"
@@ -229,35 +195,35 @@ const UserProfile = () => {
 
             {/* Email Field */}
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-[0.16em]">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Email Address
               </label>
-              <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
-                <Mail className="w-5 h-5 text-slate-400" />
-                <p className="text-slate-900 text-sm break-all">{user?.email || 'Not set'}</p>
+              <div className="flex items-center gap-3 bg-slate-900/80 border border-white/10 rounded-lg px-4 py-3">
+                <Mail className="w-5 h-5 text-slate-300" />
+                <p className="text-slate-50">{user?.email || 'Not set'}</p>
               </div>
             </div>
 
             {/* Member Since */}
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-[0.16em]">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Member Since
               </label>
-              <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
-                <Calendar className="w-5 h-5 text-slate-400" />
-                <p className="text-slate-900 text-sm">{formatDate(user?.created_at)}</p>
+              <div className="flex items-center gap-3 bg-slate-900/80 border border-white/10 rounded-lg px-4 py-3">
+                <Calendar className="w-5 h-5 text-slate-300" />
+                <p className="text-slate-50">{formatDate(user?.created_at)}</p>
               </div>
             </div>
 
             {/* Email Verification Status */}
             {user?.is_email_verified !== undefined && (
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-[0.16em]">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Email Verification
                 </label>
-                <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+                <div className="flex items-center gap-3 bg-slate-900/80 border border-white/10 rounded-lg px-4 py-3">
                   <div className={`w-2 h-2 rounded-full ${user.is_email_verified ? 'bg-green-500' : 'bg-red-500'}`} />
-                  <p className="text-slate-900 text-sm">
+                  <p className="text-slate-50">
                     {user.is_email_verified ? 'Verified' : 'Not Verified'}
                   </p>
                 </div>
@@ -265,18 +231,18 @@ const UserProfile = () => {
             )}
           </div>
 
-          {/* Logout Button (mobile/extra) */}
-          <div className="mt-8 pt-6 border-t border-slate-200 sm:hidden">
+          {/* Logout Button */}
+          <div className="mt-12 pt-8 border-t border-gray-200">
             <Button
               variant="danger"
               onClick={logout}
-              className="w-full"
+              className="w-full bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white border-none"
               icon={<LogOut className="w-4 h-4" />}
             >
               Log Out
             </Button>
           </div>
-        </section>
+        </div>
       </main>
     </div>
   );

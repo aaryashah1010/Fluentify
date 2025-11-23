@@ -1,6 +1,6 @@
 import React from 'react';
 
-const UnitForm = ({ unitData, onChange, onSubmit, onCancel, onNext, loading = false }) => {
+const UnitForm = ({ unitData, onChange, onSubmit, onCancel, loading = false }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     onChange({
@@ -18,7 +18,7 @@ const UnitForm = ({ unitData, onChange, onSubmit, onCancel, onNext, loading = fa
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Title */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-300 mb-1">
           Unit Title <span className="text-red-500">*</span>
         </label>
         <input
@@ -28,14 +28,14 @@ const UnitForm = ({ unitData, onChange, onSubmit, onCancel, onNext, loading = fa
           onChange={handleChange}
           required
           disabled={loading}
-          className="w-full px-3 py-2 border border-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+          className="w-full px-3 py-2 rounded-xl bg-slate-900/70 border border-white/10 text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-900/40"
           placeholder="e.g., Unit 1: The Absolute Basics"
         />
       </div>
 
       {/* Description */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-300 mb-1">
           Description
         </label>
         <textarea
@@ -44,7 +44,7 @@ const UnitForm = ({ unitData, onChange, onSubmit, onCancel, onNext, loading = fa
           onChange={handleChange}
           disabled={loading}
           rows={3}
-          className="w-full px-3 py-2 border border-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+          className="w-full px-3 py-2 rounded-xl bg-slate-900/70 border border-white/10 text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-900/40"
           placeholder="Describe what this unit covers..."
         />
       </div>
@@ -52,59 +52,57 @@ const UnitForm = ({ unitData, onChange, onSubmit, onCancel, onNext, loading = fa
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Difficulty */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-300 mb-1">
             Difficulty
           </label>
-          <input
-            type="text"
+          <select
             name="difficulty"
             value={unitData.difficulty || 'Beginner'}
-            readOnly
-            className="w-full px-3 py-2 border border-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-          />
+            onChange={handleChange}
+            disabled={loading}
+            className="w-full px-3 py-2 rounded-xl bg-slate-900/70 border border-white/10 text-slate-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-900/40"
+          >
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
         </div>
 
         {/* Estimated Time */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Estimated Time
+          <label className="block text-sm font-medium text-slate-300 mb-1">
+            Estimated Time (minutes)
           </label>
-          <select
+          <input
+            type="number"
             name="estimated_time"
-            value={unitData.estimated_time || ''}
+            value={unitData.estimated_time ?? ''}
             onChange={handleChange}
             disabled={loading}
-            className="w-full px-3 py-2 border border-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-          >
-            <option value="">Select time</option>
-            <option value="5">5 min</option>
-            <option value="10">10 min</option>
-            <option value="15">15 min</option>
-            <option value="20">20 min</option>
-          </select>
+            min="0"
+            className="w-full px-3 py-2 rounded-xl bg-slate-900/70 border border-white/10 text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-900/40"
+            placeholder="30"
+          />
         </div>
       </div>
 
       {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-3 pt-4">
+      <div className="flex gap-3 pt-4">
         <button
           type="button"
           onClick={onCancel}
           disabled={loading}
-          className="sm:flex-1 px-4 py-2 bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white font-semibold rounded-full hover:opacity-90 transition-colors disabled:opacity-50"
+          className="flex-1 px-4 py-2 border border-white/15 text-slate-200 rounded-xl bg-slate-900/70 hover:bg-slate-800 transition-colors disabled:opacity-50"
         >
           Cancel
         </button>
-        {onNext && (
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={loading}
-            className="sm:flex-1 px-4 py-2 bg-gradient-to-r from-[#F29A36] via-[#A8C79B] to-[#56D7C5] text-white font-semibold rounded-full hover:opacity-90 transition-colors disabled:opacity-50 whitespace-nowrap"
-          >
-            {loading ? 'Saving...' : 'Next'}
-          </button>
-        )}
+        <button
+          type="submit"
+          disabled={loading}
+          className="flex-1 px-4 py-2 bg-gradient-to-r from-teal-500 to-orange-500 text-slate-950 rounded-xl hover:from-teal-600 hover:to-orange-600 transition-colors disabled:opacity-50"
+        >
+          {loading ? 'Saving...' : 'Save Unit'}
+        </button>
       </div>
     </form>
   );

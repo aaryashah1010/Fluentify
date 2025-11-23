@@ -8,7 +8,6 @@ import {
 } from '../modules/auth';
 import TermsAndConditions from '../modules/auth/TermsandConditions';
 import PrivacyPolicy from '../modules/auth/privacypolicy';
-import { ThemeProvider } from '../contexts/ThemeContext';
 
 import {
   Dashboard,
@@ -28,9 +27,9 @@ import {
   ModuleManagementLayout,
   UserProfile as AdminProfile,
   UserManagementLayout,
-  CourseEditorPage
+  CourseEditorPage,
+  EmailCampaignPage,
 } from '../modules/admin';
-import EmailCampaignPage from '../modules/admin/EmailCampaignPage';
 
 import {
   ContestListPage,
@@ -110,7 +109,7 @@ function SmartRedirect() {
 
 function App() {
   return (
-    <ThemeProvider>
+    <StreamingProvider>
       <Routes>
         {/* Root redirect */}
         <Route
@@ -123,8 +122,8 @@ function App() {
         {/* Authentication */}
         <Route path="/signup" element={<SignupWithOTP onNavigate={(page) => window.location.href = `/${page}`} />} />
         <Route path="/signup-old" element={<Signup />} />
-        <Route
-          path="/login"
+        <Route 
+          path="/login" 
           element={
             (() => {
               // Clear token if logout query param is present
@@ -133,7 +132,7 @@ function App() {
               }
               return <Login />;
             })()
-          }
+          } 
         />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
@@ -337,6 +336,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/admin/email-campaign"
+          element={
+            <ProtectedRoute role="admin">
+              <EmailCampaignPage />
+            </ProtectedRoute>
+          }
+        />
         {/* Admin Contest Management */}
         <Route
           path="/admin/contests"
@@ -370,23 +377,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/admin/contests/:contestId/leaderboard"
-          element={
-            <ProtectedRoute role="admin">
-              <ContestLeaderboardPage />
-            </ProtectedRoute>
-          }
-        />
-        {/* Email Campaign */}
-        <Route
-          path="/admin/email-campaign"
-          element={
-            <ProtectedRoute role="admin">
-              <EmailCampaignPage />
-            </ProtectedRoute>
-          }
-        />
         {/* Backward-compatible redirects from old paths */}
         <Route path="/admin/dashboard/contest" element={<Navigate to="/admin/contests" replace />} />
         <Route path="/admin/dashboard/contests" element={<Navigate to="/admin/contests" replace />} />
@@ -394,8 +384,9 @@ function App() {
         {/* Fallback */}
         <Route path="*" element={<SmartRedirect />} />
       </Routes>
-    </ThemeProvider>
+    </StreamingProvider>
   );
 }
 
 export default App;
+
