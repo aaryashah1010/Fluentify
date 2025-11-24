@@ -44,6 +44,18 @@ const LessonPage = () => {
   const completeLessonMutation = useCompleteLesson();
   const queryClient = useQueryClient();
 
+  const markLessonCompletedLocally = () => {
+    try {
+      const key = `${courseId}:${unitId}:${lessonId}`;
+      const raw = localStorage.getItem('fluentify_completed_lessons');
+      const parsed = raw ? JSON.parse(raw) : {};
+      parsed[key] = true;
+      localStorage.setItem('fluentify_completed_lessons', JSON.stringify(parsed));
+    } catch (e) {
+      console.error('Failed to persist local lesson completion', e);
+    }
+  };
+
   const lesson = data?.data?.lesson;
   const lessonProgress = data?.data?.progress;
   const exercises = Array.isArray(lesson?.exercises) ? lesson.exercises : [];
@@ -72,7 +84,24 @@ const LessonPage = () => {
   }, [exercises.length, generateExercisesMutation.isPending]);
 
   const isLessonCompleted = () => {
-    return lessonProgress?.is_completed === true;
+    const progress = {
+      ...(lessonProgress || {}),
+      ...(lesson?.progress || {}),
+      ...(lesson?.lesson_progress || {}),
+      ...(lesson?.lessonProgress || {}),
+      ...(lesson?.user_progress || {}),
+    };
+    const rawStatus = progress.status || lesson?.status;
+    const hasXp =
+      typeof progress.xp_earned === "number" && progress.xp_earned > 0;
+
+    return (
+      progress.is_completed === true ||
+      progress.isCompleted === true ||
+      progress.completed === true ||
+      rawStatus === "completed" ||
+      hasXp
+    );
   };
 
   const generateAdditionalExercises = () => {
@@ -121,6 +150,12 @@ const LessonPage = () => {
   };
 
   const markLessonComplete = () => {
+    if (isLessonCompleted() || lessonJustCompleted) {
+      setLessonJustCompleted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     if (!exerciseResults || !exerciseResults.passed) {
       alert(
         'Please complete the exercises with at least 3/5 correct answers first!'
@@ -149,13 +184,43 @@ const LessonPage = () => {
       {
         onSuccess: (data) => {
           console.log('Lesson completed successfully:', data);
-          queryClient.invalidateQueries({ queryKey: ['course', Number(courseId)] });
+          markLessonCompletedLocally();
+          queryClient.invalidateQueries({
+            queryKey: ['course', Number(courseId)],
+          });
           setLessonJustCompleted(true);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         },
         onError: (error) => {
+          const message = error?.message || '';
+          const backendMessage =
+            error?.data?.error?.message?.toLowerCase() || '';
+          const alreadyCompleted =
+            message.toLowerCase().includes('already completed') ||
+            backendMessage.includes('already completed') ||
+            error?.data?.error?.code === 40002;
+
+          if (alreadyCompleted) {
+            // Treat "lesson already completed" as a success state without logging an error
+            markLessonCompletedLocally();
+            queryClient.invalidateQueries({
+              queryKey: ['course', Number(courseId)],
+            });
+            queryClient.invalidateQueries({
+              queryKey: [
+                'lesson',
+                Number(courseId),
+                Number(unitId),
+                Number(lessonId),
+              ],
+            });
+            setLessonJustCompleted(true);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+          }
+
           console.error('Error completing lesson:', error);
-          alert(error.message || 'Failed to complete lesson. Please try again.');
+          alert(message || 'Failed to complete lesson. Please try again.');
         },
       }
     );
@@ -502,7 +567,7 @@ const LessonPage = () => {
           {currentSection === 'exercises' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between mb-4 overflow-visible">
-                <h3 className="text-lg font-semibold">
+                <h3 className="text-lg font-semibold text-slate-100">
                   Exercises (Need 3/5 Correct to Pass)
                 </h3>
 
@@ -591,7 +656,7 @@ const LessonPage = () => {
                           }`}
                         >
                           <div className="flex items-start justify-between mb-3">
-                            <span className="font-medium">
+                            <span className="font-medium text-slate-100">
                               Question {index + 1}
                             </span>
                             {showResults && (
@@ -739,7 +804,7 @@ const LessonPage = () => {
           )}
         </section>
 
-        {!isLessonCompleted() && (
+        {!isLessonCompleted() && !lessonJustCompleted && (
           <div className="bg-slate-950/90 border border-amber-400/60 rounded-2xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h3 className="text-sm font-semibold text-slate-50">
@@ -752,7 +817,9 @@ const LessonPage = () => {
             </div>
             <Button
               onClick={markLessonComplete}
-              disabled={!exerciseResults?.passed}
+              disabled={
+                !exerciseResults?.passed || completeLessonMutation.isPending
+              }
               loading={completeLessonMutation.isPending}
               className="bg-gradient-to-r from-teal-300 to-orange-300 text-white disabled:opacity-60 disabled:cursor-not-allowed"
               icon={<Award className="w-4 h-4" />}
@@ -763,21 +830,7 @@ const LessonPage = () => {
         )}
       </main>
 
-      <div className="fixed bottom-6 right-6 z-50">
-        <div className="flex flex-col items-end">
-          <button
-            onClick={() => {
-              const el = document.querySelector('.floating-chat-widget-toggle');
-              if (el) el.dispatchEvent(new Event('click'));
-            }}
-            className="w-16 h-16 bg-gradient-to-r from-teal-500 to-orange-400 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group hover:scale-110"
-            aria-label="Open chat"
-          >
-            <Play className="text-white" />
-          </button>
-        </div>
-        <FloatingChatWidget />
-      </div>
+      <FloatingChatWidget position="right" />
     </div>
     );
 };
