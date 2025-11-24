@@ -6,7 +6,7 @@ import { Loader2, ArrowLeft, Mail, Calendar, BookOpen, Edit2, Save, X, Trash2 } 
 const UserDetailsPage = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
-  const { data: user, isLoading } = useUserDetails(userId);
+  const { data: userData, isLoading } = useUserDetails(userId);
   const updateUserMutation = useUpdateUser();
   const deleteUserMutation = useDeleteUser();
 
@@ -17,13 +17,13 @@ const UserDetailsPage = () => {
   });
 
   React.useEffect(() => {
-    if (user) {
+    if (userData && userData.user) {
       setEditForm({
-        name: user.name || '',
-        email: user.email || '',
+        name: userData.user.name || '',
+        email: userData.user.email || '',
       });
     }
-  }, [user]);
+  }, [userData]);
 
   const handleSave = async () => {
     try {
@@ -50,48 +50,50 @@ const UserDetailsPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="flex justify-center items-center py-12 text-slate-200">
+        <Loader2 className="w-8 h-8 animate-spin text-teal-400" />
       </div>
     );
   }
 
-  if (!user) {
+  if (!userData || !userData.user) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-600">User not found</p>
+      <div className="text-center py-12 text-slate-200">
+        <p className="text-sm text-slate-300">User not found</p>
       </div>
     );
   }
+
+  const { user, courses = [] } = userData;
 
   return (
     <div className="space-y-6">
       {/* Back Button */}
       <button
         onClick={() => navigate('/admin/users')}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+        className="flex items-center gap-2 text-slate-300 hover:text-slate-100 text-sm"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Users
       </button>
 
       {/* User Info Card */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="rounded-3xl border border-white/10 bg-slate-900/85 p-6 shadow-xl hover:shadow-2xl transition-all">
         <div className="flex justify-between items-start mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">User Details</h2>
+          <h2 className="text-2xl font-bold text-slate-50">User Details</h2>
           <div className="flex gap-2">
             {!isEditing ? (
               <>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100"
+                  className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-900 bg-gradient-to-r from-teal-500 to-orange-500 rounded-xl shadow-md hover:shadow-lg"
                 >
                   <Edit2 className="w-4 h-4" />
                   Edit
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100"
+                  className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-rose-200 bg-rose-900/60 rounded-xl border border-rose-500/50 hover:bg-rose-800/80"
                 >
                   <Trash2 className="w-4 h-4" />
                   Delete
@@ -102,7 +104,7 @@ const UserDetailsPage = () => {
                 <button
                   onClick={handleSave}
                   disabled={updateUserMutation.isPending}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-900 bg-gradient-to-r from-teal-500 to-orange-500 rounded-xl shadow-md hover:shadow-lg disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" />
                   {updateUserMutation.isPending ? 'Saving...' : 'Save'}
@@ -112,7 +114,7 @@ const UserDetailsPage = () => {
                     setIsEditing(false);
                     setEditForm({ name: user.name, email: user.email });
                   }}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-200 bg-slate-800 rounded-xl hover:bg-slate-700"
                 >
                   <X className="w-4 h-4" />
                   Cancel
@@ -125,22 +127,22 @@ const UserDetailsPage = () => {
         <div className="space-y-4">
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Name</label>
             {isEditing ? (
               <input
                 type="text"
                 value={editForm.name}
                 onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-white/15 rounded-lg bg-slate-950/60 text-slate-50 placeholder-slate-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               />
             ) : (
-              <p className="text-gray-900">{user.name}</p>
+              <p className="text-slate-50">{user.name}</p>
             )}
           </div>
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-300 mb-1">
               <Mail className="w-4 h-4 inline mr-1" />
               Email
             </label>
@@ -149,20 +151,20 @@ const UserDetailsPage = () => {
                 type="email"
                 value={editForm.email}
                 onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-white/15 rounded-lg bg-slate-950/60 text-slate-50 placeholder-slate-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               />
             ) : (
-              <p className="text-gray-900">{user.email}</p>
+              <p className="text-slate-50">{user.email}</p>
             )}
           </div>
 
           {/* Created At */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-300 mb-1">
               <Calendar className="w-4 h-4 inline mr-1" />
               Member Since
             </label>
-            <p className="text-gray-900">
+            <p className="text-slate-50">
               {new Date(user.created_at).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
@@ -174,37 +176,39 @@ const UserDetailsPage = () => {
       </div>
 
       {/* Course Progress */}
-      {user.courses && user.courses.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <BookOpen className="w-5 h-5" />
+      {courses && courses.length > 0 && (
+        <div className="rounded-3xl border border-white/10 bg-slate-900/85 p-6 shadow-xl hover:shadow-2xl transition-all">
+          <h3 className="text-xl font-bold text-slate-50 mb-4 flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-teal-300" />
             Course Progress
           </h3>
           <div className="space-y-4">
-            {user.courses.map((course) => (
-              <div key={course.id} className="border border-gray-200 rounded-lg p-4">
+            {courses.map((course) => (
+              <div key={course.id} className="border border-white/10 rounded-2xl p-4 bg-slate-950/60">
                 {/* Header with title and completion status */}
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h4 className="font-semibold text-gray-900">{course.title}</h4>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <h4 className="font-semibold text-slate-50">{course.title}</h4>
+                    <p className="text-xs text-slate-400 mt-1">
                       {course.language} • {course.total_lessons} lessons • {course.total_units} units
                     </p>
                   </div>
-                  <span className={`text-sm font-medium px-2 py-1 rounded ${
-                    course.is_completed 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-blue-100 text-blue-700'
-                  }`}>
+                  <span
+                    className={`text-xs font-medium px-2 py-1 rounded-full ${
+                      course.is_completed
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/60'
+                        : 'bg-sky-500/20 text-sky-200 border border-sky-400/60'
+                    }`}
+                  >
                     {course.is_completed ? 'Completed' : `${course.progress_percentage}%`}
                   </span>
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+                <div className="w-full bg-slate-800 rounded-full h-2 mb-3">
                   <div
                     className={`h-2 rounded-full transition-all ${
-                      course.is_completed ? 'bg-green-600' : 'bg-blue-600'
+                      course.is_completed ? 'bg-emerald-400' : 'bg-sky-400'
                     }`}
                     style={{ width: `${course.progress_percentage}%` }}
                   />
@@ -213,33 +217,33 @@ const UserDetailsPage = () => {
                 {/* Statistics grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                   <div className="text-center">
-                    <p className="text-xs text-gray-500">Lessons</p>
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-xs text-slate-400">Lessons</p>
+                    <p className="text-sm font-semibold text-slate-50">
                       {course.lessons_completed}/{course.total_lessons}
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="text-xs text-gray-500">Units</p>
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-xs text-slate-400">Units</p>
+                    <p className="text-sm font-semibold text-slate-50">
                       {course.units_completed}/{course.total_units}
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="text-xs text-gray-500">XP Earned</p>
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-xs text-slate-400">XP Earned</p>
+                    <p className="text-sm font-semibold text-slate-50">
                       {course.total_xp}
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="text-xs text-gray-500">Streak</p>
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-xs text-slate-400">Streak</p>
+                    <p className="text-sm font-semibold text-slate-50">
                       {course.current_streak} days
                     </p>
                   </div>
                 </div>
 
                 {/* Last activity */}
-                <div className="flex justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
+                <div className="flex justify-between text-xs text-slate-400 pt-2 border-t border-white/10">
                   {course.last_accessed && (
                     <span>
                       Last accessed: {new Date(course.last_accessed).toLocaleDateString()}
@@ -258,10 +262,10 @@ const UserDetailsPage = () => {
       )}
 
       {/* No Courses */}
-      {(!user.courses || user.courses.length === 0) && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 text-center">
-          <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-600">No courses started yet</p>
+      {(!courses || courses.length === 0) && (
+        <div className="rounded-3xl border border-white/10 bg-slate-900/85 p-6 text-center shadow-xl">
+          <BookOpen className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+          <p className="text-sm text-slate-300">No courses started yet</p>
         </div>
       )}
     </div>

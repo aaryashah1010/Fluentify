@@ -29,17 +29,17 @@ const UserListPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-transparent">
+      <div className="w-full space-y-6">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-gradient-to-br from-teal-500 via-sky-500 to-orange-400 rounded-xl flex items-center justify-center shadow-[0_0_22px_rgba(56,189,248,0.6)]">
               <Users className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">User Management</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-50">User Management</h1>
           </div>
-          <p className="text-gray-600 text-lg ml-15">Manage learners and monitor their progress</p>
+          <p className="text-sm md:text-base text-slate-200">Manage learners and monitor their progress.</p>
         </div>
 
         {/* Search Bar */}
@@ -49,49 +49,50 @@ const UserListPage = () => {
         {!searchQuery && pagination && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Total Users */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-blue-100">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-md">
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
+              <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-to-br from-teal-500/25 to-sky-500/25 rounded-full blur-2xl" />
+              <div className="relative flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-teal-400 to-sky-500 rounded-xl flex items-center justify-center shadow-md">
                   <Users className="w-6 h-6 text-white" />
                 </div>
-                <Activity className="w-5 h-5 text-blue-600" />
+                <Activity className="w-5 h-5 text-teal-300" />
               </div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
-              <p className="text-3xl font-bold text-gray-900">{pagination.total}</p>
+              <p className="text-sm font-medium text-slate-300 mb-1">Total Users</p>
+              <p className="text-3xl font-bold text-slate-50">{pagination.total}</p>
             </div>
 
             {/* Active Users */}
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-green-100">
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-md">
                   <UserCheck className="w-6 h-6 text-white" />
                 </div>
                 <TrendingUp className="w-5 h-5 text-green-600" />
               </div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Active Users</p>
-              <p className="text-3xl font-bold text-gray-900">{users?.filter(u => u.is_verified).length || 0}</p>
+              <p className="text-sm font-medium text-slate-300 mb-1">Active Users</p>
+              <p className="text-3xl font-bold text-slate-50">{users?.filter(u => u.is_verified).length || 0}</p>
             </div>
 
             {/* Current Page */}
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-purple-100">
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center shadow-md">
                   <ChevronRight className="w-6 h-6 text-white" />
                 </div>
               </div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Current Page</p>
-              <p className="text-3xl font-bold text-gray-900">{pagination.page} <span className="text-lg text-gray-600">of {pagination.pages}</span></p>
+              <p className="text-sm font-medium text-slate-300 mb-1">Current Page</p>
+              <p className="text-3xl font-bold text-slate-50">{pagination.page} <span className="text-lg text-slate-300">of {pagination.pages}</span></p>
             </div>
 
             {/* Showing */}
-            <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-orange-100">
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-md">
                   <UserPlus className="w-6 h-6 text-white" />
                 </div>
               </div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Showing</p>
-              <p className="text-3xl font-bold text-gray-900">{users?.length || 0}</p>
+              <p className="text-sm font-medium text-slate-300 mb-1">Showing</p>
+              <p className="text-3xl font-bold text-slate-50">{users?.length || 0}</p>
             </div>
           </div>
         )}

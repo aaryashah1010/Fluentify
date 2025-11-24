@@ -98,25 +98,28 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 text-slate-50 relative overflow-x-hidden">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-gradient-to-r from-slate-950/95 via-slate-900/90 to-slate-950/95 border-b border-white/10 shadow-lg backdrop-blur-xl">
         <div className="max-w-4xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/admin-dashboard')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-white/5 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <ArrowLeft className="w-5 h-5 text-slate-200" />
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-50">My Profile</h1>
+              <p className="text-xs md:text-sm text-slate-300 mt-1">Manage your admin identity and account details.</p>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+      <main className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 relative z-10">
+        <div className="rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-8">
           {/* Success Message */}
           {successMessage && (
             <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
@@ -125,15 +128,15 @@ const UserProfile = () => {
           )}
 
           {/* Profile Header */}
-          <div className="flex items-center gap-6 mb-8 pb-8 border-b border-gray-200">
-            <div className="w-24 h-24 bg-indigo-500 rounded-full flex items-center justify-center">
+          <div className="flex items-center gap-6 mb-8 pb-8 border-b border-white/10">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-teal-500 via-sky-500 to-orange-400 flex items-center justify-center shadow-[0_0_28px_rgba(56,189,248,0.6)]">
               <User className="w-12 h-12 text-white" />
             </div>
             <div className="flex-1">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              <h2 className="text-3xl font-bold text-slate-50 mb-2">
                 {user?.name || 'User'}
               </h2>
-              <p className="text-gray-600">Platform Administrator</p>
+              <p className="text-sm text-slate-300">Platform Administrator</p>
             </div>
           </div>
 
@@ -141,7 +144,7 @@ const UserProfile = () => {
           <div className="space-y-6">
             {/* Name Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Full Name
               </label>
               {isEditing ? (
@@ -151,7 +154,7 @@ const UserProfile = () => {
                     type="text"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="flex-1"
+                    className="flex-1 bg-slate-950/60 border-white/15 text-slate-50 placeholder-slate-500"
                     error={editError}
                     required
                   />
@@ -161,6 +164,7 @@ const UserProfile = () => {
                     loading={updateProfileMutation.isPending}
                     disabled={updateProfileMutation.isPending}
                     icon={<Check className="w-4 h-4" />}
+                    className="bg-gradient-to-r from-teal-500 to-orange-500 text-white border-none hover:from-teal-600 hover:to-orange-600"
                   >
                     Save
                   </Button>
@@ -175,8 +179,8 @@ const UserProfile = () => {
                 </div>
               ) : (
                 <div className="flex items-center gap-4">
-                  <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-                    <p className="text-gray-900">{user?.name || 'Not set'}</p>
+                  <div className="flex-1 bg-slate-900/80 border border-white/10 rounded-lg px-4 py-3">
+                    <p className="text-slate-50">{user?.name || 'Not set'}</p>
                   </div>
                   <Button
                     variant="ghost"
@@ -191,35 +195,39 @@ const UserProfile = () => {
 
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Email Address
               </label>
-              <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-                <Mail className="w-5 h-5 text-gray-400" />
-                <p className="text-gray-900">{user?.email || 'Not set'}</p>
+              <div className="flex items-center gap-3 bg-slate-900/80 border border-white/10 rounded-lg px-4 py-3">
+                <Mail className="w-5 h-5 text-slate-300" />
+                <p className="text-slate-50">{user?.email || 'Not set'}</p>
               </div>
             </div>
 
             {/* Member Since */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Member Since
               </label>
-              <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-                <Calendar className="w-5 h-5 text-gray-400" />
-                <p className="text-gray-900">{formatDate(user?.created_at)}</p>
+              <div className="flex items-center gap-3 bg-slate-900/80 border border-white/10 rounded-lg px-4 py-3">
+                <Calendar className="w-5 h-5 text-slate-300" />
+                <p className="text-slate-50">{formatDate(user?.created_at)}</p>
               </div>
             </div>
 
             {/* Email Verification Status */}
             {user?.is_email_verified !== undefined && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Email Verification
                 </label>
-                <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-                  <div className={`w-2 h-2 rounded-full ${user.is_email_verified ? 'bg-green-500' : 'bg-red-500'}`} />
-                  <p className="text-gray-900">
+                <div className="flex items-center gap-3 bg-slate-900/80 border border-white/10 rounded-lg px-4 py-3">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      user.is_email_verified ? 'bg-green-500' : 'bg-red-500'
+                    }`}
+                  />
+                  <p className="text-slate-50">
                     {user.is_email_verified ? 'Verified' : 'Not Verified'}
                   </p>
                 </div>
@@ -232,7 +240,7 @@ const UserProfile = () => {
             <Button
               variant="danger"
               onClick={logout}
-              className="w-full"
+              className="w-full bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white border-none"
               icon={<LogOut className="w-4 h-4" />}
             >
               Log Out
@@ -245,4 +253,3 @@ const UserProfile = () => {
 };
 
 export default UserProfile;
-
