@@ -89,7 +89,7 @@ const ContestBrowsePage = () => {
 											Fluentify Contests
 										</p>
 										<p className="text-sm text-white/90">
-											Compete with learners worldwide, climb the leaderboard, and earn XP &amp; badges.
+											Compete with learners worldwide, climb the leaderboard.
 										</p>
 									</div>
 									<Sparkles className="hidden sm:block h-5 w-5 text-yellow-200 animate-pulse" />

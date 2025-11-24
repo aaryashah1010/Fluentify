@@ -17,15 +17,17 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchCourseDetails } from "../../api/courses";
 
 const StatCard = ({ icon: Icon, label, value }) => (
-  <div className="relative rounded-2xl p-6 bg-gradient-to-br from-teal-50 to-cyan-50 border-2 border-teal-200 shadow-lg overflow-hidden">
-    <div className="absolute top-4 right-4 text-2xl opacity-20">📘</div>
+  <div className="relative rounded-2xl p-6 bg-slate-950/90 border border-white/15 shadow-2xl overflow-hidden">
+    <div className="absolute top-4 right-4 text-2xl text-slate-600 opacity-30">
+      📘
+    </div>
     <div className="flex items-center gap-3 mb-3">
       <div className="w-12 h-12 bg-gradient-to-br from-teal-400 to-cyan-500 shadow-md rounded-xl flex items-center justify-center">
         <Icon className="w-6 h-6 text-white" />
       </div>
       <div>
-        <p className="text-xs text-gray-600">{label}</p>
-        <p className="text-xl font-semibold text-gray-900">{value}</p>
+        <p className="text-xs text-slate-300">{label}</p>
+        <p className="text-xl font-semibold text-slate-50">{value}</p>
       </div>
     </div>
   </div>
@@ -59,29 +61,39 @@ const LessonStatusBadge = ({ status }) => {
 };
 
 const getLessonStatus = (lesson) => {
-  const progress =
-    lesson.progress ||
-    lesson.lesson_progress ||
-    lesson.lessonProgress ||
-    lesson.user_progress ||
-    null;
+  const progress = {
+    ...(lesson.progress || {}),
+    ...(lesson.lesson_progress || {}),
+    ...(lesson.lessonProgress || {}),
+    ...(lesson.user_progress || {}),
+  };
+
+  const rawStatus = lesson.status || progress.status;
+
+  const earnedXp =
+    (typeof progress.xp_earned === "number" ? progress.xp_earned : null) ??
+    (typeof lesson.xpEarned === "number" ? lesson.xpEarned : null);
+
+  const hasXp = typeof earnedXp === "number" && earnedXp > 0;
 
   const isCompleted =
-    lesson.isCompleted ||
-    lesson.is_completed ||
-    progress?.is_completed;
+    lesson.isCompleted === true ||
+    lesson.is_completed === true ||
+    progress.is_completed === true ||
+    progress.isCompleted === true ||
+    progress.completed === true ||
+    rawStatus === "completed" ||
+    hasXp;
 
   const isLocked =
     lesson.isUnlocked === false ||
-    lesson.is_locked ||
-    progress?.is_locked;
-
-  const rawStatus = lesson.status || progress?.status;
+    lesson.is_locked === true ||
+    progress.is_locked === true ||
+    progress.locked === true ||
+    rawStatus === "locked";
 
   if (isCompleted) return "completed";
   if (isLocked) return "locked";
-  if (rawStatus === "completed") return "completed";
-  if (rawStatus === "locked") return "locked";
   if (rawStatus === "in_progress" || rawStatus === "active") return "active";
 
   return "active";
@@ -107,6 +119,18 @@ const CoursePage = () => {
   const { courseId } = useParams();
   const numericCourseId = Number(courseId);
 
+  const getLocalLessonCompleted = (unitId, lessonId) => {
+    try {
+      const raw = localStorage.getItem("fluentify_completed_lessons");
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      const key = `${numericCourseId}:${unitId}:${lessonId}`;
+      return !!parsed[key];
+    } catch {
+      return false;
+    }
+  };
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["course", numericCourseId],
     queryFn: () => fetchCourseDetails(numericCourseId),
@@ -124,10 +148,14 @@ const CoursePage = () => {
     const unitId = unit.id ?? unit.unit_id ?? unit.unitId;
     lessons.forEach((lesson) => {
       const lessonId = lesson.id ?? lesson.lesson_id ?? lesson.lessonId;
+      const baseStatus = getLessonStatus(lesson);
+      const localCompleted = getLocalLessonCompleted(unitId, lessonId);
+      const status = localCompleted ? "completed" : baseStatus;
+
       flatLessons.push({
         unitId,
         lesson: { ...lesson, _routeUnitId: unitId, _routeLessonId: lessonId },
-        status: getLessonStatus(lesson),
+        status,
       });
     });
   });
@@ -136,8 +164,14 @@ const CoursePage = () => {
   const lessonsCompleted = flatLessons.filter((l) => l.status === "completed").length;
   const unitsCompleted = units.filter((u) => {
     const list = u.lessons || u.unit_lessons || [];
+    const unitId = u.id ?? u.unit_id ?? u.unitId;
     if (!list.length) return false;
-    return list.every((l) => getLessonStatus(l) === "completed");
+    return list.every((l) => {
+      const lessonId = l.id ?? l.lesson_id ?? l.lessonId;
+      const baseStatus = getLessonStatus(l);
+      const localCompleted = getLocalLessonCompleted(unitId, lessonId);
+      return baseStatus === "completed" || localCompleted;
+    });
   }).length;
 
   const totalXP = flatLessons.reduce(
@@ -386,10 +420,19 @@ const CoursePage = () => {
                 
                 <div className="px-4 sm:px-6 md:px-8 py-6 md:py-8 grid grid-cols-1 gap-5">
                 {lessonList.map((lesson, index) => {
-                  const status = deriveLessonStatus(lesson, index, lessonList);
-
                   const lessonIdForRoute =
                     lesson.id ?? lesson.lesson_id ?? lesson.lessonId;
+
+                  const baseStatus = deriveLessonStatus(
+                    lesson,
+                    index,
+                    lessonList
+                  );
+                  const localCompleted = getLocalLessonCompleted(
+                    unitId,
+                    lessonIdForRoute
+                  );
+                  const status = localCompleted ? "completed" : baseStatus;
 
                   const xpEarned = lesson.xpEarned ?? null;
                   const xpReward = lesson.xp_reward ?? lesson.xp ?? 0;
