@@ -120,52 +120,45 @@ const LessonPage = () => {
     setShowResults(true);
   };
 
-  const markLessonComplete = async () => {
-    if (!exerciseResults?.passed) {
-      alert('Please complete the exercises with at least 3/5 correct answers first!');
-      return;
-    }
-
-    if (!unitId) {
-      console.error('Unit ID is missing');
-      alert('Error: Unable to determine unit. Please refresh the page and try again.');
-      return;
-    }
-
-    try {
-      const exerciseData = exerciseResults.results.map((result, index) => ({
-        exerciseIndex: index,
-        isCorrect: result.isCorrect,
-        userAnswer: result.userAnswer?.toString() || '',
-      }));
-
-      const score = Math.round(
-        (exerciseResults.correctCount / exerciseResults.totalCount) * 100
+  const markLessonComplete = () => {
+    if (!exerciseResults || !exerciseResults.passed) {
+      alert(
+        'Please complete the exercises with at least 3/5 correct answers first!'
       );
+      return;
+    }
 
-      await completeLessonMutation.mutateAsync({
+    const exerciseData = exerciseResults.results.map((result, index) => ({
+      exerciseIndex: index,
+      isCorrect: result.isCorrect,
+      userAnswer: result.userAnswer?.toString() || '',
+    }));
+
+    const score = Math.round(
+      (exerciseResults.correctCount / exerciseResults.totalCount) * 100
+    );
+
+    completeLessonMutation.mutate(
+      {
         courseId: Number(courseId),
         unitId: Number(unitId),
         lessonId: Number(lessonId),
         score,
         exercises: exerciseData,
-      });
-
-      // Show success message and refresh course data
-      setLessonJustCompleted(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      
-      // Invalidate queries to refresh data
-      await queryClient.invalidateQueries({ 
-        queryKey: ['course', Number(courseId)] 
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['lesson', Number(courseId), Number(unitId), Number(lessonId)]
-      });
-    } catch (error) {
-      console.error('Error completing lesson:', error);
-      alert(error.message || 'Failed to complete lesson. Please try again.');
-    }
+      },
+      {
+        onSuccess: (data) => {
+          console.log('Lesson completed successfully:', data);
+          queryClient.invalidateQueries({ queryKey: ['course', Number(courseId)] });
+          setLessonJustCompleted(true);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+        onError: (error) => {
+          console.error('Error completing lesson:', error);
+          alert(error.message || 'Failed to complete lesson. Please try again.');
+        },
+      }
+    );
   };
 
   if (loading) {
@@ -232,7 +225,7 @@ const LessonPage = () => {
           <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-sm border border-gray-200">
             ←
           </span>
-          <span className="font-medium text-white">Back to Course</span>
+          <span className="font-medium">Back to Course</span>
         </button>
 
         <div className="bg-gradient-to-r from-teal-500 to-orange-400 rounded-3xl p-6 md:p-8 text-white shadow-xl mb-8">
@@ -769,7 +762,6 @@ const LessonPage = () => {
           </div>
         )}
       </main>
-
 
     </div>
     );
