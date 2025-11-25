@@ -502,7 +502,7 @@ const LessonPage = () => {
           {currentSection === 'exercises' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between mb-4 overflow-visible">
-                <h3 className="text-lg font-semibold">
+                <h3 className="text-lg font-semibold text-white">
                   Exercises (Need 3/5 Correct to Pass)
                 </h3>
 
@@ -763,21 +763,6 @@ const LessonPage = () => {
         )}
       </main>
 
-      <div className="fixed bottom-6 right-6 z-50">
-        <div className="flex flex-col items-end">
-          <button
-            onClick={() => {
-              const el = document.querySelector('.floating-chat-widget-toggle');
-              if (el) el.dispatchEvent(new Event('click'));
-            }}
-            className="w-16 h-16 bg-gradient-to-r from-teal-500 to-orange-400 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group hover:scale-110"
-            aria-label="Open chat"
-          >
-            <Play className="text-white" />
-          </button>
-        </div>
-        <FloatingChatWidget />
-      </div>
     </div>
     );
 };

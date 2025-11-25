@@ -42,7 +42,7 @@ router.post('/:courseId/units/:unitId/lessons/:lessonId/exercises/generate', cou
 // Get specific lesson details (backward compatible - without unit ID in URL)
 router.get('/:courseId/lessons/:lessonId', courseController.getLessonDetailsLegacy);
 
-// Mark lesson as complete (backward compatible - without unit ID in URL)
+// Mark lesson as complete (legacy route)
 router.post('/:courseId/lessons/:lessonId/complete', courseController.completeLessonLegacy);
 
 export default router;
