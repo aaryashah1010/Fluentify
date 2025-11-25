@@ -68,6 +68,11 @@ const AnalyticsDashboard = () => {
 
   const { summary, languageDistribution, moduleUsage, aiPerformance, userEngagement, dailyActivity } = data;
 
+  // Derive the most popular language from languageDistribution if summary doesn't have it
+  const mostPopularLanguage = summary?.mostPopularLanguage && summary.mostPopularLanguage !== 'N/A'
+    ? summary.mostPopularLanguage
+    : (languageDistribution && languageDistribution.length > 0 ? languageDistribution[0].language_name : 'N/A');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 text-slate-50 relative overflow-x-hidden">
       {/* Floating background accents */}
@@ -136,7 +141,7 @@ const AnalyticsDashboard = () => {
             <div className="relative flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-slate-300">Popular Language</p>
-                <p className="text-2xl font-bold text-slate-50 mt-1">{summary?.mostPopularLanguage || 'N/A'}</p>
+                <p className="text-2xl font-bold text-slate-50 mt-1">{mostPopularLanguage}</p>
               </div>
               <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500/40 to-pink-500/40 border border-white/15 shadow-md">
                 <TrendingUp className="w-6 h-6 text-purple-100" />

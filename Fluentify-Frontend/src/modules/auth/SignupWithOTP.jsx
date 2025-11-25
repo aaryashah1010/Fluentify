@@ -80,6 +80,7 @@ export default function SignupWithOTP({ onNavigate }) {
     password: "",
     confirmPassword: "",
     role: "learner",
+    adminPassKey: "",
     otp: "",
   });
 
@@ -180,6 +181,17 @@ export default function SignupWithOTP({ onNavigate }) {
     if (form.password !== form.confirmPassword)
       return setError("Passwords do not match"), false;
 
+    if (form.role === "admin") {
+      if (!form.adminPassKey) {
+        setError("Admin pass key is required to sign up as admin");
+        return false;
+      }
+      if (form.adminPassKey !== "12345") {
+        setError("Invalid admin pass key");
+        return false;
+      }
+    }
+
     if (!acceptedTerms)
       return setError("Please accept the Terms and Conditions to continue"), false;
 
@@ -207,6 +219,7 @@ export default function SignupWithOTP({ onNavigate }) {
           name: form.name,
           email: form.email,
           password: form.password,
+          adminPassKey: form.adminPassKey,
         },
         {
           onSuccess: () => {
@@ -265,6 +278,7 @@ export default function SignupWithOTP({ onNavigate }) {
           email: form.email,
           password: form.password,
           otp: form.otp,
+          adminPassKey: form.adminPassKey,
         },
         {
           onSuccess: () => {
@@ -631,6 +645,25 @@ export default function SignupWithOTP({ onNavigate }) {
                       </p>
                     )}
                   </div>
+
+                  {/* ADMIN PASS KEY (only for Admin role) */}
+                  {form.role === "admin" && (
+                    <div>
+                      <label className="block mb-1 text-xs text-gray-700">Admin Pass Key</label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+                        <input
+                          type="password"
+                          name="adminPassKey"
+                          placeholder="Enter admin pass key"
+                          value={form.adminPassKey}
+                          onChange={handleChange}
+                          className={`w-full border rounded-lg px-3 py-2.5 pl-10 text-sm border-gray-300`}
+                        />
+                      </div>
+                    </div>
+                  )}
 
                   {/* PASSWORD SUGGESTIONS */}
                   <button
