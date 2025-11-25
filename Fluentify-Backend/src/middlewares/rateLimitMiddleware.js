@@ -1,5 +1,5 @@
 // Simple in-memory rate limiter for chat requests
-class RateLimiter {
+export class RateLimiter {
   constructor() {
     this.requests = new Map(); // userId -> { count, resetTime }
     this.windowMs = 60 * 1000; // 1 minute window
