@@ -22,7 +22,6 @@ import {
 import fluentifyLogo from "../../assets/fluentify_logo.jpg";
 import { useSignup, useVerifySignupOTP, useResendOTP } from "../../hooks/useAuth";
 
-// Password Strength Checker
 const checkPasswordStrength = (password, email, name) => {
   let strength = 0;
   const feedback = [];
@@ -325,7 +324,7 @@ export default function SignupWithOTP({ onNavigate }) {
   const strengthLabels = ["Very Weak", "Weak", "Fair", "Good", "Strong"];
 
   return (
-    <div className="min-h-screen h-screen flex overflow-hidden bg-gradient-to-br from-teal-900 via-orange-900 to-teal-900">
+    <div className="min-h-screen h-screen flex overflow-x-hidden bg-gradient-to-br from-teal-900 via-orange-900 to-teal-900">
 
       {/* LEFT SIDE */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden">
@@ -669,13 +668,21 @@ export default function SignupWithOTP({ onNavigate }) {
                     />
                     <span className="text-sm text-gray-600">
                       I accept the{" "}
-                      <span className="text-teal-600 underline cursor-pointer">
+                      <button
+                        type="button"
+                        onClick={() => window.open("/terms-and-conditions", "_blank")}
+                        className="text-teal-600 underline cursor-pointer hover:text-teal-700"
+                      >
                         Terms and Conditions
-                      </span>{" "}
+                      </button>{" "}
                       and{" "}
-                      <span className="text-teal-600 underline cursor-pointer">
+                      <button
+                        type="button"
+                        onClick={() => window.open("/privacy-policy", "_blank")}
+                        className="text-teal-600 underline cursor-pointer hover:text-teal-700"
+                      >
                         Privacy Policy
-                      </span>
+                      </button>
                     </span>
                   </div>
 

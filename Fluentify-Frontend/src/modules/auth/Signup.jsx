@@ -192,7 +192,7 @@ const Signup = () => {
   const confirmPasswordError = getFieldError('confirmPassword');
 
   return (
-    <div className="min-h-screen flex overflow-hidden bg-gradient-to-br from-teal-900 via-orange-900 to-teal-900">
+    <div className="min-h-screen flex overflow-x-hidden bg-gradient-to-br from-teal-900 via-orange-900 to-teal-900">
       
       {/* Left Side - Hero Section */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden">

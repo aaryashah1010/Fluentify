@@ -3,12 +3,12 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 
 export function CTASection({ onNavigate }) {
   return (
-    <section className="py-24 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 relative overflow-hidden">
+    <section className="py-24 bg-gradient-to-br from-slate-950 via-teal-900 to-orange-900 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-teal-200/30 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-teal-500/25 rounded-full blur-3xl animate-pulse" />
         <div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-orange-200/30 rounded-full blur-3xl animate-pulse"
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-orange-500/25 rounded-full blur-3xl animate-pulse"
           style={{ animationDelay: '1s' }}
         />
       </div>
@@ -16,7 +16,7 @@ export function CTASection({ onNavigate }) {
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
 
-          <h2 className="text-gray-900 text-4xl md:text-6xl mb-6">
+          <h2 className="text-slate-50 text-4xl md:text-6xl mb-6">
             Ready to Start Your
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-teal-500">
@@ -24,7 +24,7 @@ export function CTASection({ onNavigate }) {
             </span>
           </h2>
 
-          <p className="text-gray-700 text-xl mb-12 max-w-2xl mx-auto">
+          <p className="text-slate-300 text-xl mb-12 max-w-2xl mx-auto">
             Create your account today and take the first step towards fluency.
           </p>
 

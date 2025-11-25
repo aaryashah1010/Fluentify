@@ -130,7 +130,7 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
           onChange={handleChange}
           required
           disabled={loading}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+          className="w-full px-3 py-2 rounded-xl bg-slate-900/70 border border-white/10 text-slate-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-900/40"
         >
           <option value="">Select Lesson Type</option>
           <option value="pdf">PDF Document</option>
@@ -347,7 +347,7 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
             value={vocabKey}
             onChange={(e) => setVocabKey(e.target.value)}
             disabled={loading}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            className="flex-1 px-3 py-2 rounded-xl bg-slate-900/70 border border-white/10 text-slate-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-900/40"
             placeholder="English word"
           />
           <input
@@ -356,7 +356,7 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
             onChange={(e) => setVocabValue(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addVocabulary())}
             disabled={loading}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            className="flex-1 px-3 py-2 rounded-xl bg-slate-900/70 border border-white/10 text-slate-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-900/40"
             placeholder="Translation"
           />
           <button
@@ -372,7 +372,7 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
           {Object.entries(lessonData.vocabulary || {}).map(([key, value]) => (
             <div
               key={key}
-              className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg"
+              className="flex items-center justify-between px-3 py-2 bg-slate-900/80 border border-white/10 rounded-xl text-slate-100"
             >
               <span className="text-sm">
                 <strong>{key}:</strong> {value}

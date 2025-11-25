@@ -46,7 +46,7 @@ const PublishedLanguageList = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+      <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <button
@@ -56,48 +56,46 @@ const PublishedLanguageList = () => {
             <ArrowLeft className="w-5 h-5 text-orange-600" />
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              Language
-              <span className="ml-2 bg-gradient-to-r from-orange-400 to-teal-400 bg-clip-text text-transparent">
-                Modules
-              </span>
-            </h2>
-            <p className="text-gray-600 mt-1 text-sm sm:text-base">
-              Select a language to explore available courses.
+            <h1 className="text-3xl font-bold text-gray-900 mb-1">Language Modules</h1>
+            <p className="text-gray-600 text-sm sm:text-base">
+              Curated learning modules created by expert instructors. Select a language to explore available courses.
             </p>
           </div>
         </div>
 
         {/* Languages Grid */}
         {languages.length === 0 ? (
-          <div className="bg-white/80 border border-orange-100 rounded-2xl p-10 text-center shadow-sm">
+          <div className="bg-white rounded-2xl p-10 text-center shadow-md">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-teal-100 flex items-center justify-center mx-auto mb-4">
               <Globe className="w-8 h-8 text-teal-500" />
             </div>
-            <p className="text-gray-700 font-medium mb-1">No published courses available yet.</p>
+            <p className="text-gray-700 font-medium mb-1">No language modules available yet</p>
             <p className="text-sm text-gray-500">Check back soon for new instructor-led modules.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {languages.map((lang) => (
               <button
                 key={lang.language}
                 onClick={() => navigate(`/learner/modules/${lang.language}`)}
-                className="bg-white/90 border border-orange-100 rounded-2xl p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-teal-300 transition-all text-left group flex flex-col"
+                className="p-6 bg-white rounded-2xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all text-left group flex flex-col"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-teal-400 flex items-center justify-center text-white">
-                      <Globe className="w-5 h-5" />
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-400 to-teal-400 flex items-center justify-center text-white">
+                      <Globe className="w-7 h-7" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 text-lg">{lang.language}</h3>
+                    <div className="flex-1">
+                      <h3 className="text-gray-900 mb-1">{lang.language}</h3>
                       <p className="text-sm text-gray-600">
-                        {lang.course_count} {lang.course_count === 1 ? 'course' : 'courses'}
+                        {lang.course_count} {lang.course_count === 1 ? 'course' : 'courses'} available
                       </p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-teal-500 transition-colors" />
+                  <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-teal-500 transition-colors" />
+                </div>
+                <div className="mt-3 text-xs text-gray-500">
+                  Tap to view all courses in this language.
                 </div>
               </button>
             ))}

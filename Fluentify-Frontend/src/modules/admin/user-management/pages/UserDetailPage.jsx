@@ -188,7 +188,13 @@ const UserDetailPage = () => {
                     {c.language || c.course_data?.language || '-'}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-700">
-                    <span className={`px-2 py-1 rounded text-xs ${c.course_type === 'ai' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                    <span
+                      className={`px-2 py-1 rounded text-xs ${
+                        c.course_type === 'ai'
+                          ? 'bg-purple-100 text-purple-700'
+                          : 'bg-blue-100 text-blue-700'
+                      }`}
+                    >
                       {c.course_type === 'ai' ? 'AI' : 'Admin'}
                     </span>
                   </td>
@@ -216,5 +222,3 @@ const UserDetailPage = () => {
 };
 
 export default UserDetailPage;
-
-

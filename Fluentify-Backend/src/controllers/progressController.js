@@ -188,7 +188,7 @@ const markLessonComplete = async (req, res, next) => {
       unitCompleted = true;
     }
 
-    // Update user stats (only streak tracking now)
+    /// Update user stats (only streak tracking now)
     const today = new Date().toISOString().split('T')[0];
     const stats = await progressRepository.findUserStats(userId, courseId);
 
@@ -211,7 +211,6 @@ const markLessonComplete = async (req, res, next) => {
 
       await progressRepository.updateUserStreak(userId, courseId, newStreak, today);
     }
-
     res.json(successResponse({
       xpEarned,
       unitCompleted

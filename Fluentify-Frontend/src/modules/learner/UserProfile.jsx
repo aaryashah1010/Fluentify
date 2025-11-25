@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Calendar, LogOut, Edit2, Check, X, ArrowLeft, RefreshCw } from 'lucide-react';
+import { User, Mail, Calendar, LogOut, Edit2, Check, X, ArrowLeft, BookOpen, CheckCircle, Globe } from 'lucide-react';
 import { useUserProfile, useUpdateProfile, useLogout } from '../../hooks/useAuth';
+import { useCourses } from '../../hooks/useCourses';
 import { Button, Input, ErrorMessage, LoadingSpinner } from '../../components';
 
 const UserProfile = () => {
@@ -9,20 +10,56 @@ const UserProfile = () => {
   const logout = useLogout();
   const { data: profileData, isLoading, error, refetch } = useUserProfile();
   const updateProfileMutation = useUpdateProfile();
+  const { data: courses = [] } = useCourses();
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ name: '', contest_name: '' });
   const [editError, setEditError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  React.useEffect(() => {
-    if (profileData?.data?.user) {
-      setFormData({ 
-        name: profileData.data.user.name,
-        contest_name: profileData.data.user.contest_name || ''
+  const totalCourses = courses.length;
+  const totalLessonsCompleted = courses.reduce(
+    (acc, course) => acc + Number(course.progress?.lessonsCompleted || 0),
+    0
+  );
+
+  const formatLessonsCompleted = (value) => {
+    if (!value) return '0';
+    if (value < 10) return value.toString().padStart(2, '0');
+    return value.toString();
+  };
+
+  const LANGUAGE_FLAGS = {
+    spanish: '🇪🇸',
+    french: '🇫🇷',
+    german: '🇩🇪',
+    japanese: '🇯🇵',
+    hindi: '🇮🇳',
+    italian: '🇮🇹',
+    english: '🇬🇧',
+  };
+
+  const getLanguageFlag = (languageName) => {
+    if (!languageName || typeof languageName !== 'string') return '🌐';
+    const key = languageName.toLowerCase();
+    return LANGUAGE_FLAGS[key] || '🌐';
+  };
+
+  const user =
+    profileData?.data?.user ||
+    profileData?.user ||
+    profileData?.data ||
+    profileData ||
+    null;
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        contest_name: user.contest_name || '',
       });
     }
-  }, [profileData]);
+  }, [user]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,8 +67,7 @@ const UserProfile = () => {
     setSuccessMessage('');
   };
 
-  const handleSave = async (e) => {
-    e.preventDefault();
+  const handleSave = async () => {
     setEditError('');
     setSuccessMessage('');
 
@@ -51,28 +87,26 @@ const UserProfile = () => {
     }
 
     try {
-      const updates = { 
+      const updates = {
         name: formData.name.trim(),
-        contest_name: formData.contest_name.trim() || null
+        contest_name: formData.contest_name.trim() || null,
       };
-      
-      await updateProfileMutation.mutateAsync(updates, {
-        onSuccess: () => {
-          setIsEditing(false);
-          setSuccessMessage('Profile updated successfully!');
-          setTimeout(() => setSuccessMessage(''), 3000);
-        },
-      });
+
+      await updateProfileMutation.mutateAsync(updates);
+      setIsEditing(false);
+      setSuccessMessage('Profile updated successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      refetch();
     } catch (err) {
-      setEditError(err.message || 'Failed to update profile');
+      setEditError(err?.message || 'Failed to update profile');
     }
   };
 
   const handleCancel = () => {
-    if (profileData?.data?.user) {
-      setFormData({ 
-        name: profileData.data.user.name,
-        contest_name: profileData.data.user.contest_name || ''
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        contest_name: user.contest_name || '',
       });
     }
     setIsEditing(false);
@@ -80,108 +114,109 @@ const UserProfile = () => {
     setSuccessMessage('');
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Not available';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
     );
   }
 
-  if (error) {
+  if (error || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center p-4">
         <ErrorMessage message="Failed to load profile. Please try again." />
       </div>
     );
   }
 
-  const user = profileData?.data?.user;
-
-  // Format date
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Not available';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
+    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950">
+
+      <header className="bg-gradient-to-r from-slate-950/95 via-slate-900/90 to-slate-950/95 border-b border-white/10 sticky top-0 z-40 shadow-lg">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/dashboard')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-2 text-slate-200 hover:text-orange-300 hover:bg-white/5 p-2 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <ArrowLeft className="w-5 h-5" />
+              <span className="font-medium">Back to Dashboard</span>
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
           </div>
-          
-          {/* Refresh Button */}
-          <button
-            onClick={() => refetch()}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors disabled:opacity-50"
-            title="Refresh profile data"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh</span>
-          </button>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-3xl shadow-lg p-8">
-          {/* Success Message */}
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+        <div className="bg-slate-900/90 rounded-3xl shadow-2xl border border-white/10 p-8">
           {successMessage && (
-            <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-700">{successMessage}</p>
+            <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 text-green-700 font-medium">
+              <p>{successMessage}</p>
             </div>
           )}
 
-          {/* Profile Header */}
-          <div className="flex items-center gap-6 mb-8 pb-8 border-b border-gray-200">
-            <div className="w-24 h-24 rounded-full flex items-center justify-center bg-gradient-to-r from-orange-400 to-teal-400">
-              <User className="w-12 h-12 text-white" />
+          <div className="flex items-center gap-6 mb-8 pb-8 border-b border-white/10">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center bg-gradient-to-r from-orange-400 to-teal-400">
+              <User className="w-10 h-10 text-white" />
             </div>
-            <div className="flex-1">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                {user?.name || 'User'}
-              </h2>
-              <p className="text-gray-600">Learner</p>
+            <div>
+              <h2 className="text-3xl font-bold text-slate-50 mb-1">{user.name || 'User'}</h2>
+              <p className="text-slate-300">Account Management</p>
             </div>
           </div>
 
-          {/* Profile Information */}
-          <div className="space-y-6">
-            {/* Name Field */}
+          <section className="mb-10">
+            <h3 className="text-lg font-semibold text-slate-50 mb-4 flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-teal-600" />
+              Statistics
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-slate-900/85 border border-teal-500/50 rounded-2xl px-5 py-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-teal-500 flex items-center justify-center text-white">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-300">Courses</p>
+                  <p className="text-2xl font-bold text-slate-50">{totalCourses}</p>
+                </div>
+              </div>
+              <div className="bg-slate-900/85 border border-emerald-500/50 rounded-2xl px-5 py-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-300">Lessons Completed</p>
+                  <p className="text-2xl font-bold text-slate-50">{formatLessonsCompleted(totalLessonsCompleted)}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div className="space-y-8">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Full Name
-              </label>
+              <label className="block text-sm font-medium text-slate-200 mb-2">Full Name</label>
               {isEditing ? (
                 <Input
                   name="name"
                   type="text"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full"
-                  error={editError}
+                  error={editError && editError.includes('Name') ? editError : ''}
                   required
                 />
               ) : (
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-                    <p className="text-gray-900">{user?.name || 'Not set'}</p>
-                  </div>
+                <div className="bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3 flex justify-between items-center">
+                  <p className="text-slate-50 font-medium">{user.name || 'Not set'}</p>
                   <Button
                     variant="ghost"
                     onClick={() => setIsEditing(true)}
@@ -193,11 +228,10 @@ const UserProfile = () => {
               )}
             </div>
 
-            {/* Contest Name Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-200 mb-2">
                 Contest Display Name
-                <span className="text-gray-500 text-xs ml-2">(Optional - used in leaderboards)</span>
+                <span className="text-slate-300 text-xs ml-2">(Optional - used in leaderboards)</span>
               </label>
               {isEditing ? (
                 <Input
@@ -206,93 +240,135 @@ const UserProfile = () => {
                   value={formData.contest_name}
                   onChange={handleInputChange}
                   placeholder="Leave empty to use your full name"
-                  className="w-full"
                   maxLength={50}
                 />
               ) : (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-                  <p className="text-gray-900">
-                    {user?.contest_name || <span className="text-gray-500">Using full name ({user?.name})</span>}
+                <div className="bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3">
+                  <p className="text-slate-50">
+                    {user.contest_name || (
+                      <span className="text-slate-300">Using full name ({user.name})</span>
+                    )}
                   </p>
                 </div>
               )}
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-slate-300 mt-1">
                 This name will be displayed on contest leaderboards. Leave empty to use your full name.
               </p>
             </div>
 
+            {courses.length > 0 && (
+              <section className="mt-10 pt-8 border-t border-white/10">
+                <h3 className="text-lg font-semibold text-slate-50 mb-4 flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-teal-600" />
+                  Languages Learning
+                </h3>
+                <div className="space-y-4">
+                  {courses.map((course) => {
+                    const pct = course.progress?.progressPercentage || 0;
+                    return (
+                      <div
+                        key={course.id}
+                        className="p-4 rounded-2xl bg-slate-900/80 border border-white/10 flex flex-col gap-3"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-2xl bg-slate-800 flex items-center justify-center text-2xl">
+                            {getLanguageFlag(course.language)}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-slate-50">
+                              {course.language || 'Language'}
+                            </p>
+                            <p className="text-xs text-slate-300 truncate">
+                              {course.title || 'AI generated course'}
+                            </p>
+                          </div>
+                          <p className="text-sm font-semibold text-teal-600">{pct}%</p>
+                        </div>
+                        <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
             {isEditing && (
-              <div className="flex gap-2 pt-2">
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  variant="secondary"
+                  onClick={handleCancel}
+                  disabled={updateProfileMutation.isPending}
+                  icon={<X className="w-4 h-4" />}
+                >
+                  Cancel
+                </Button>
                 <Button
                   variant="success"
                   onClick={handleSave}
                   loading={updateProfileMutation.isPending}
                   disabled={updateProfileMutation.isPending}
                   icon={<Check className="w-4 h-4" />}
-                  className="flex-1"
                 >
                   Save Changes
                 </Button>
-                <Button
-                  variant="secondary"
-                  onClick={handleCancel}
-                  disabled={updateProfileMutation.isPending}
-                  icon={<X className="w-4 h-4" />}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
               </div>
             )}
 
-            {/* Email Field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-                <Mail className="w-5 h-5 text-gray-400" />
-                <p className="text-gray-900">{user?.email || 'Not set'}</p>
-              </div>
-            </div>
+            {editError && !editError.includes('Name') && (
+              <ErrorMessage message={editError} />
+            )}
 
-            {/* Member Since */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Member Since
-              </label>
-              <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-                <Calendar className="w-5 h-5 text-gray-400" />
-                <p className="text-gray-900">{formatDate(user?.created_at)}</p>
-              </div>
-            </div>
-
-            {/* Email Verification Status */}
-            {user?.is_email_verified !== undefined && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/10">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Verification
-                </label>
-                <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-                  <div className={`w-2 h-2 rounded-full ${user.is_email_verified ? 'bg-green-500' : 'bg-red-500'}`} />
-                  <p className="text-gray-900">
-                    {user.is_email_verified ? 'Verified' : 'Not Verified'}
-                  </p>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Email Address</label>
+                <div className="flex items-center gap-3 bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3">
+                  <Mail className="w-5 h-5 text-slate-300" />
+                  <p className="text-slate-50">{user.email || 'Not set'}</p>
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Logout Button */}
-          <div className="mt-12 pt-8 border-t border-gray-200">
-            <Button
-              variant="danger"
-              onClick={logout}
-              className="w-full"
-              icon={<LogOut className="w-4 h-4" />}
-            >
-              Log Out
-            </Button>
+              <div>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Member Since</label>
+                <div className="flex items-center gap-3 bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3">
+                  <Calendar className="w-5 h-5 text-slate-300" />
+                  <p className="text-slate-50">{formatDate(user.created_at)}</p>
+                </div>
+              </div>
+
+              {user.is_email_verified !== undefined && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-200 mb-2">
+                    Email Verification
+                  </label>
+                  <div className="flex items-center gap-3 bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3">
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        user.is_email_verified ? 'bg-green-500' : 'bg-red-500'
+                      }`}
+                    />
+                    <p className="text-slate-50 font-medium">
+                      {user.is_email_verified ? 'Verified' : 'Not Verified'}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-12 pt-8 border-t border-white/10">
+              <Button
+                variant="danger"
+                onClick={logout}
+                className="w-full"
+                icon={<LogOut className="w-4 h-4" />}
+              >
+                Log Out
+              </Button>
+            </div>
           </div>
         </div>
       </main>
@@ -301,4 +377,3 @@ const UserProfile = () => {
 };
 
 export default UserProfile;
-
