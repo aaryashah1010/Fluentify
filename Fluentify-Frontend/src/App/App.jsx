@@ -29,6 +29,7 @@ import {
   UserManagementLayout,
   CourseEditorPage
 } from '../modules/admin';
+import EmailCampaignPage from '../modules/admin/EmailCampaignPage';
 
 import {
   ContestListPage,
@@ -292,6 +293,14 @@ function App() {
           element={
             <ProtectedRoute role="admin">
               <AnalyticsDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/email-campaign"
+          element={
+            <ProtectedRoute role="admin">
+              <EmailCampaignPage />
             </ProtectedRoute>
           }
         />

@@ -161,10 +161,16 @@ class AuthController {
    */
   async signupAdmin(req, res, next) {
     try {
-      const { name, email, password } = req.body;
+      const { name, email, password, adminPassKey } = req.body;
 
-      if (!name || !email || !password) {
+      if (!name || !email || !password || !adminPassKey) {
         throw ERRORS.MISSING_REQUIRED_FIELDS;
+      }
+
+      // Validate admin pass key (server-side). Allow env override.
+      const configuredKey = process.env.ADMIN_SIGNUP_KEY || '12345';
+      if (adminPassKey !== configuredKey) {
+        return res.status(403).json({ success: false, message: 'Invalid admin pass key' });
       }
 
       // Validate name
@@ -223,10 +229,16 @@ class AuthController {
    */
   async verifySignupAdmin(req, res, next) {
     try {
-      const { name, email, password, otp } = req.body;
+      const { name, email, password, otp, adminPassKey } = req.body;
 
-      if (!name || !email || !password || !otp) {
+      if (!name || !email || !password || !otp || !adminPassKey) {
         throw ERRORS.MISSING_REQUIRED_FIELDS;
+      }
+
+      // Validate admin pass key again during verification to be safe
+      const configuredKey = process.env.ADMIN_SIGNUP_KEY || '12345';
+      if (adminPassKey !== configuredKey) {
+        return res.status(403).json({ success: false, message: 'Invalid admin pass key' });
       }
 
       // Validate OTP format
