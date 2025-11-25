@@ -120,45 +120,52 @@ const LessonPage = () => {
     setShowResults(true);
   };
 
-  const markLessonComplete = () => {
-    if (!exerciseResults || !exerciseResults.passed) {
-      alert(
-        'Please complete the exercises with at least 3/5 correct answers first!'
-      );
+  const markLessonComplete = async () => {
+    if (!exerciseResults?.passed) {
+      alert('Please complete the exercises with at least 3/5 correct answers first!');
       return;
     }
 
-    const exerciseData = exerciseResults.results.map((result, index) => ({
-      exerciseIndex: index,
-      isCorrect: result.isCorrect,
-      userAnswer: result.userAnswer?.toString() || '',
-    }));
+    if (!unitId) {
+      console.error('Unit ID is missing');
+      alert('Error: Unable to determine unit. Please refresh the page and try again.');
+      return;
+    }
 
-    const score = Math.round(
-      (exerciseResults.correctCount / exerciseResults.totalCount) * 100
-    );
+    try {
+      const exerciseData = exerciseResults.results.map((result, index) => ({
+        exerciseIndex: index,
+        isCorrect: result.isCorrect,
+        userAnswer: result.userAnswer?.toString() || '',
+      }));
 
-    completeLessonMutation.mutate(
-      {
+      const score = Math.round(
+        (exerciseResults.correctCount / exerciseResults.totalCount) * 100
+      );
+
+      await completeLessonMutation.mutateAsync({
         courseId: Number(courseId),
         unitId: Number(unitId),
         lessonId: Number(lessonId),
         score,
         exercises: exerciseData,
-      },
-      {
-        onSuccess: (data) => {
-          console.log('Lesson completed successfully:', data);
-          queryClient.invalidateQueries({ queryKey: ['course', Number(courseId)] });
-          setLessonJustCompleted(true);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        },
-        onError: (error) => {
-          console.error('Error completing lesson:', error);
-          alert(error.message || 'Failed to complete lesson. Please try again.');
-        },
-      }
-    );
+      });
+
+      // Show success message and refresh course data
+      setLessonJustCompleted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({ 
+        queryKey: ['course', Number(courseId)] 
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['lesson', Number(courseId), Number(unitId), Number(lessonId)]
+      });
+    } catch (error) {
+      console.error('Error completing lesson:', error);
+      alert(error.message || 'Failed to complete lesson. Please try again.');
+    }
   };
 
   if (loading) {
@@ -225,7 +232,7 @@ const LessonPage = () => {
           <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-sm border border-gray-200">
             ←
           </span>
-          <span className="font-medium">Back to Course</span>
+          <span className="font-medium text-white">Back to Course</span>
         </button>
 
         <div className="bg-gradient-to-r from-teal-500 to-orange-400 rounded-3xl p-6 md:p-8 text-white shadow-xl mb-8">
@@ -502,7 +509,7 @@ const LessonPage = () => {
           {currentSection === 'exercises' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between mb-4 overflow-visible">
-                <h3 className="text-lg font-semibold">
+                <h3 className="text-lg font-semibold text-white">
                   Exercises (Need 3/5 Correct to Pass)
                 </h3>
 
@@ -763,21 +770,7 @@ const LessonPage = () => {
         )}
       </main>
 
-      <div className="fixed bottom-6 right-6 z-50">
-        <div className="flex flex-col items-end">
-          <button
-            onClick={() => {
-              const el = document.querySelector('.floating-chat-widget-toggle');
-              if (el) el.dispatchEvent(new Event('click'));
-            }}
-            className="w-16 h-16 bg-gradient-to-r from-teal-500 to-orange-400 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group hover:scale-110"
-            aria-label="Open chat"
-          >
-            <Play className="text-white" />
-          </button>
-        </div>
-        <FloatingChatWidget />
-      </div>
+
     </div>
     );
 };
