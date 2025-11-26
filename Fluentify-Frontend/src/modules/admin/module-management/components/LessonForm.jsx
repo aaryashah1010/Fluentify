@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
-import { Upload, FileText, Video, Headphones, X } from 'lucide-react';
+import { Upload, FileText, Video, Headphones, X, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { uploadLessonMedia } from '../../../../api/admin';
 
-const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false }) => {
+const LessonForm = ({ 
+  lessonData, 
+  onChange, 
+  onSubmit, 
+  onCancel, 
+  loading = false,
+  // Upload context - passed from parent
+  uploadContext = null // { language, courseNumber, unitNumber, lessonNumber }
+}) => {
   const [keyPhraseInput, setKeyPhraseInput] = useState('');
   const [vocabKey, setVocabKey] = useState('');
   const [vocabValue, setVocabValue] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadStatus, setUploadStatus] = useState({ uploading: false, success: false, error: null });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,7 +34,7 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
   };
 
   // File Upload Handler
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
@@ -35,11 +45,60 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
         file_size: file.size,
         file_type: file.type
       });
+
+      // If we have upload context, upload immediately
+      if (uploadContext) {
+        await handleUpload(file);
+      }
+    }
+  };
+
+  // Upload file to server
+  const handleUpload = async (file) => {
+    if (!uploadContext) {
+      setUploadStatus({ uploading: false, success: false, error: 'Upload context not available. Save the lesson first.' });
+      return;
+    }
+
+    setUploadStatus({ uploading: true, success: false, error: null });
+
+    try {
+      const contentType = lessonData.content_type === 'audio' ? 'audio' : 
+                          lessonData.content_type === 'video' ? 'video' : 'pdf';
+
+      const result = await uploadLessonMedia(file, {
+        language: uploadContext.language,
+        courseNumber: uploadContext.courseNumber,
+        unitNumber: uploadContext.unitNumber,
+        lessonNumber: uploadContext.lessonNumber,
+        contentType
+      });
+
+      if (result.success) {
+        // Update lessonData with the media URL
+        onChange({
+          ...lessonData,
+          media_url: result.data.url,
+          file_name: result.data.filename
+        });
+        setUploadStatus({ 
+          uploading: false, 
+          success: true, 
+          error: null,
+          manualUpload: result.data.manualUploadRequired 
+        });
+      } else {
+        throw new Error(result.message || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploadStatus({ uploading: false, success: false, error: error.message });
     }
   };
 
   const removeFile = () => {
     setSelectedFile(null);
+    setUploadStatus({ uploading: false, success: false, error: null });
     onChange({
       ...lessonData,
       file_name: null,
@@ -272,6 +331,60 @@ const LessonForm = ({ lessonData, onChange, onSubmit, onCancel, loading = false 
           <p className="text-sm text-gray-600 mb-3">
             Use the exercises section below to create quiz questions (Multiple Choice, Fill in the Blanks, Matching Pairs)
           </p>
+        </div>
+      )}
+
+      {/* Upload Status */}
+      {(uploadStatus.uploading || uploadStatus.success || uploadStatus.error) && (
+        <div className={`rounded-lg p-3 flex items-center gap-2 ${
+          uploadStatus.uploading ? 'bg-blue-50 border border-blue-200' :
+          uploadStatus.success ? 'bg-green-50 border border-green-200' :
+          'bg-red-50 border border-red-200'
+        }`}>
+          {uploadStatus.uploading && (
+            <>
+              <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+              <span className="text-sm text-blue-700">Uploading file...</span>
+            </>
+          )}
+          {uploadStatus.success && (
+            <>
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span className="text-sm text-green-700">
+                {uploadStatus.manualUpload 
+                  ? 'URL generated! Please upload the file manually to the server.' 
+                  : 'File uploaded successfully!'}
+              </span>
+            </>
+          )}
+          {uploadStatus.error && (
+            <>
+              <AlertCircle className="w-4 h-4 text-red-600" />
+              <span className="text-sm text-red-700">{uploadStatus.error}</span>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Media URL Display */}
+      {lessonData.media_url && (
+        <div className="bg-slate-800 rounded-lg p-3">
+          <label className="block text-xs text-slate-400 mb-1">Media URL</label>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={lessonData.media_url}
+              readOnly
+              className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-200"
+            />
+            <button
+              type="button"
+              onClick={() => navigator.clipboard.writeText(lessonData.media_url)}
+              className="px-3 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700"
+            >
+              Copy
+            </button>
+          </div>
         </div>
       )}
 

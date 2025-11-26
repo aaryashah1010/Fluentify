@@ -1,6 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import db, { connectToDatabase, gracefulShutdown } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
@@ -13,6 +15,10 @@ import learnerModulesRoutes from './routes/learnerModulesRoutes.js';
 import tutorRoutes from './routes/tutor.js';
 import contestRoutes from './routes/contest.js';
 import { errorHandler, notFoundHandler } from './middlewares/errorMiddleware.js';
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -33,6 +39,10 @@ app.use(cors({
   exposedHeaders: ['Content-Length', 'Content-Type']
 }));
 app.use(express.json());
+
+// Serve uploaded files statically
+// Files will be accessible at: http://localhost:5000/uploads/{Language}{CourseNum}/Unit{X}/L{Y}/filename.pdf
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Root check
 app.get("/", (req, res) => {

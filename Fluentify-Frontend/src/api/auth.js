@@ -32,11 +32,15 @@ export const loginUser = async ({ role, email, password }) => {
  * @param {string} credentials.password
  * @returns {Promise<{success: boolean, data: {email: string, message: string}}>}
  */
-export const signupUser = async ({ role, name, email, password }) => {
+export const signupUser = async ({ role, name, email, password, adminPassKey }) => {
+  // Include adminPassKey when signing up as admin (optional for learner)
+  const body = { name, email, password };
+  if (role === 'admin') body.adminPassKey = adminPassKey;
+
   const response = await fetch(`${API_BASE_URL}/api/auth/signup/${role}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify(body),
   });
   
   return handleResponse(response);
@@ -52,11 +56,14 @@ export const signupUser = async ({ role, name, email, password }) => {
  * @param {string} credentials.otp
  * @returns {Promise<{success: boolean, data: {token: string, user: object}}>}
  */
-export const verifySignupOTP = async ({ role, name, email, password, otp }) => {
+export const verifySignupOTP = async ({ role, name, email, password, otp, adminPassKey }) => {
+  const body = { name, email, password, otp };
+  if (role === 'admin') body.adminPassKey = adminPassKey;
+
   const response = await fetch(`${API_BASE_URL}/api/auth/signup/${role}/verify`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, password, otp }),
+    body: JSON.stringify(body),
   });
   
   return handleResponse(response);

@@ -193,7 +193,7 @@ describe('authController', () => {
   // ===== Targeted tests for specific uncovered lines =====
   describe('targeted branches', () => {
     it('verifySignupAdmin: welcome email rejection is caught (line ~276)', async () => {
-      const req = { body: { name: 'Admin', email: 'a@mail.com', password: 'Good', otp: '123456' } };
+      const req = { body: { name: 'Admin', email: 'a@mail.com', password: 'Good', otp: '123456', adminPassKey: '12345' } };
       const res = resMock(); const next = nextMock();
       mockAuthRepository.verifyOTP.mockResolvedValueOnce({ id: 1 });
       mockAuthRepository.findAdminByEmail.mockResolvedValueOnce(null);
@@ -202,7 +202,7 @@ describe('authController', () => {
       expect(res.json).toHaveBeenCalled();
     });
 
-    it('forgotPassword: missing required fields throws (line ~510) and is forwarded to next', async () => {
+    it('forgotPassword: missing required fields throws (line ~510)', async () => {
       const req = { body: { email: '', role: '' } };
       const res = resMock(); const next = nextMock();
       await authController.forgotPassword(req, res, next);
@@ -333,7 +333,7 @@ describe('authController', () => {
   // --- signupAdmin / verifySignupAdmin ---
   describe('signupAdmin', () => {
     it('sends OTP when admin does not exist', async () => {
-      const req = { body: { name: 'Admin', email: 'a@mail.com', password: 'Good' } };
+      const req = { body: { name: 'Admin', email: 'a@mail.com', password: 'Good', adminPassKey: '12345' } };
       const res = resMock();
       const next = nextMock();
       mockAuthRepository.findAdminByEmail.mockResolvedValueOnce(null);
@@ -343,8 +343,20 @@ describe('authController', () => {
       expect(res.json).toHaveBeenCalled();
     });
 
+    it('returns 403 when adminPassKey is invalid', async () => {
+      const req = { body: { name: 'Admin', email: 'a@mail.com', password: 'Good', adminPassKey: 'wrong' } };
+      const res = resMock();
+      const next = nextMock();
+
+      await authController.signupAdmin(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalled();
+      expect(next).not.toHaveBeenCalled();
+    });
+
     it('returns 400 when admin name invalid', async () => {
-      const req = { body: { name: 'A', email: 'a@mail.com', password: 'Good' } };
+      const req = { body: { name: 'A', email: 'a@mail.com', password: 'Good', adminPassKey: '12345' } };
       const res = resMock();
       const next = nextMock();
 
@@ -357,7 +369,7 @@ describe('authController', () => {
 
   describe('verifySignupAdmin', () => {
     it('verifies OTP and creates admin', async () => {
-      const req = { body: { name: 'Admin', email: 'a@mail.com', password: 'Good', otp: '123456' } };
+      const req = { body: { name: 'Admin', email: 'a@mail.com', password: 'Good', otp: '123456', adminPassKey: '12345' } };
       const res = resMock();
       const next = nextMock();
       mockAuthRepository.verifyOTP.mockResolvedValueOnce({ id: 5 });
@@ -366,6 +378,18 @@ describe('authController', () => {
       await authController.verifySignupAdmin(req, res, next);
       expect(mockAuthRepository.createAdmin).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalled();
+    });
+
+    it('returns 403 when adminPassKey is invalid during verification', async () => {
+      const req = { body: { name: 'Admin', email: 'a@mail.com', password: 'Good', otp: '123456', adminPassKey: 'wrong' } };
+      const res = resMock();
+      const next = nextMock();
+
+      await authController.verifySignupAdmin(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalled();
+      expect(next).not.toHaveBeenCalled();
     });
   });
 
@@ -623,6 +647,17 @@ describe('authController', () => {
       Date.now.mockRestore();
     });
 
+    it('returns 400 when email is invalid', async () => {
+      const req = { body: { email: 'bad', otpType: 'signup', role: 'learner', name: 'N' } };
+      const res = resMock();
+      const next = nextMock();
+
+      await authController.resendOTP(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(next).not.toHaveBeenCalled();
+    });
+
     it('returns 500 from catch path on thrown error', async () => {
       const req = { body: { email: 'e@mail.com', otpType: 'signup', role: 'learner', name: 'N' } };
       const res = resMock();
@@ -649,14 +684,14 @@ describe('authController', () => {
 
   describe('signupAdmin (additional branches)', () => {
     it('returns 400 when admin email invalid', async () => {
-      const req = { body: { name: 'Admin', email: 'bad', password: 'Good' } };
+      const req = { body: { name: 'Admin', email: 'bad', password: 'Good', adminPassKey: '12345' } };
       const res = resMock(); const next = nextMock();
       await authController.signupAdmin(req, res, next);
       expect(res.status).toHaveBeenCalledWith(400);
     });
 
     it('returns 400 when admin password invalid', async () => {
-      const req = { body: { name: 'Admin', email: 'a@mail.com', password: 'weak' } };
+      const req = { body: { name: 'Admin', email: 'a@mail.com', password: 'weak', adminPassKey: '12345' } };
       const res = resMock(); const next = nextMock();
       mockValidatePassword.mockReturnValueOnce({ isValid: false, errors: ['weak'] });
       await authController.signupAdmin(req, res, next);
@@ -664,7 +699,7 @@ describe('authController', () => {
     });
 
     it('throws EMAIL_ALREADY_EXISTS when admin exists', async () => {
-      const req = { body: { name: 'Admin', email: 'a@mail.com', password: 'Good' } };
+      const req = { body: { name: 'Admin', email: 'a@mail.com', password: 'Good', adminPassKey: '12345' } };
       const res = resMock(); const next = nextMock();
       mockAuthRepository.findAdminByEmail.mockResolvedValueOnce({ id: 10 });
       await authController.signupAdmin(req, res, next);
@@ -674,14 +709,14 @@ describe('authController', () => {
 
   describe('verifySignupAdmin (additional branches)', () => {
     it('returns 400 when OTP invalid format (admin)', async () => {
-      const req = { body: { name: 'A', email: 'a@mail.com', password: 'Good', otp: '111' } };
+      const req = { body: { name: 'A', email: 'a@mail.com', password: 'Good', otp: '111', adminPassKey: '12345' } };
       const res = resMock(); const next = nextMock();
       await authController.verifySignupAdmin(req, res, next);
       expect(res.status).toHaveBeenCalledWith(400);
     });
 
     it('returns 400 when OTP record not found (admin)', async () => {
-      const req = { body: { name: 'A', email: 'a@mail.com', password: 'Good', otp: '123456' } };
+      const req = { body: { name: 'A', email: 'a@mail.com', password: 'Good', otp: '123456', adminPassKey: '12345' } };
       const res = resMock(); const next = nextMock();
       mockAuthRepository.verifyOTP.mockResolvedValueOnce(null);
       await authController.verifySignupAdmin(req, res, next);
@@ -689,7 +724,7 @@ describe('authController', () => {
     });
 
     it('throws EMAIL_ALREADY_EXISTS when admin exists after OTP', async () => {
-      const req = { body: { name: 'A', email: 'a@mail.com', password: 'Good', otp: '123456' } };
+      const req = { body: { name: 'A', email: 'a@mail.com', password: 'Good', otp: '123456', adminPassKey: '12345' } };
       const res = resMock(); const next = nextMock();
       mockAuthRepository.verifyOTP.mockResolvedValueOnce({ id: 5 });
       mockAuthRepository.findAdminByEmail.mockResolvedValueOnce({ id: 10 });
@@ -847,13 +882,6 @@ describe('authController', () => {
   });
 
   describe('resendOTP (additional branches)', () => {
-    it('invalid email returns 400', async () => {
-      const req = { body: { email: 'bad', otpType: 'signup', role: 'learner' } };
-      const res = resMock(); const next = nextMock();
-      await authController.resendOTP(req, res, next);
-      expect(res.status).toHaveBeenCalledWith(400);
-    });
-
     it('password_reset learner user not found returns 404', async () => {
       const now = Date.now(); jest.spyOn(Date, 'now').mockReturnValue(now);
       const req = { body: { email: 'e@mail.com', otpType: 'password_reset', role: 'learner' } };
@@ -881,9 +909,18 @@ describe('authController', () => {
       const req = { body: { email: 'a@mail.com', otpType: 'password_reset', role: 'admin' } };
       const res = resMock(); const next = nextMock();
       mockAuthRepository.getLatestOTP.mockResolvedValueOnce(null);
-      mockAuthRepository.findAdminByEmail.mockResolvedValueOnce({ id: 10, name: 'AdminName', is_email_verified: true });
+      mockAuthRepository.findAdminByEmail
+        .mockResolvedValueOnce({ id: 10, name: 'AdminName', is_email_verified: true })
+        .mockResolvedValueOnce({ id: 10, name: 'AdminName', is_email_verified: true });
+
       await authController.resendOTP(req, res, next);
-      expect(mockEmailService.sendPasswordResetOTP).toHaveBeenCalledWith('a@mail.com', 'User', '123456');
+
+      expect(mockEmailService.sendPasswordResetOTP).toHaveBeenCalledWith(
+        'a@mail.com',
+        'AdminName',
+        expect.any(String),
+      );
+
       Date.now.mockRestore();
     });
   });

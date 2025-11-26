@@ -370,6 +370,12 @@ const CourseEditorPage = () => {
               onSubmit={handleSaveLesson}
               onCancel={() => setShowLessonModal(false)}
               loading={loading}
+              uploadContext={currentCourse ? {
+                language: currentCourse.language,
+                courseNumber: 1, // Will be determined by backend based on existing courses
+                unitNumber: selectedUnitId ? (currentCourse.units?.findIndex(u => u.id === selectedUnitId) + 1) || 1 : 1,
+                lessonNumber: selectedUnitId ? (currentCourse.units?.find(u => u.id === selectedUnitId)?.lessons?.length || 0) + 1 : 1
+              } : null}
             />
           </div>
         </div>

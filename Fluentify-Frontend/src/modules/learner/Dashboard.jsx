@@ -136,6 +136,10 @@ const LearnerDashboard = () => {
     (acc, course) => acc + (course.progress?.lessonsCompleted || 0),
     0
   );
+  const totalLessonsAvailable = courses.reduce(
+    (acc, course) => acc + (course.totalLessons || 0),
+    0
+  );
   const totalCourses = courses.length;
   const maxStreak = courses.reduce(
     (max, course) => Math.max(max, course.progress?.currentStreak || 0),
@@ -149,7 +153,7 @@ const LearnerDashboard = () => {
   );
   const hasPolyglotAchievement = completedLanguageSet.size >= 3;
   const progressSummary = progressData?.summary || {};
-  const totalLessonsOverall =
+  const lessonsCompletedOverall =
     typeof progressSummary.lessons_completed === "number"
       ? progressSummary.lessons_completed
       : totalLessonsCompleted;
@@ -161,22 +165,19 @@ const LearnerDashboard = () => {
       : maxStreak;
 
   let overallProgressPercent = 0;
-  if (typeof progressSummary.overall_progress_percent === "number") {
-    overallProgressPercent = Math.round(progressSummary.overall_progress_percent);
-  } else if (courses.length > 0) {
-    const totalPct = courses.reduce(
-      (acc, course) => acc + (course.progress?.progressPercentage || 0),
-      0
+  if (totalLessonsAvailable > 0) {
+    overallProgressPercent = Math.round(
+      (lessonsCompletedOverall / totalLessonsAvailable) * 100
     );
-    overallProgressPercent = Math.round(totalPct / courses.length);
   }
 
+  overallProgressPercent = Math.min(100, Math.max(0, overallProgressPercent));
+
   useEffect(() => {
-    if (pendingGeneratedCourse && streamState.courseId) {
+    if (pendingGeneratedCourse && streamState.isComplete) {
       setPendingGeneratedCourse(false);
-      navigate(`/course/${streamState.courseId}`);
     }
-  }, [pendingGeneratedCourse, streamState.courseId, navigate]);
+  }, [pendingGeneratedCourse, streamState.isComplete]);
 
   const handleGenerateCourse = async () => {
     if (!form.language || !form.expectedDuration || !form.expertise) {
@@ -380,7 +381,7 @@ const LearnerDashboard = () => {
                       <div className="text-xs text-slate-200">Total XP</div>
                     </div>
                     <div className="bg-slate-900/80 rounded-xl p-3 border border-slate-700 shadow-sm">
-                      <div className="text-2xl text-purple-300">{totalLessonsOverall}</div>
+                      <div className="text-2xl text-purple-300">{lessonsCompletedOverall}</div>
                       <div className="text-xs text-slate-200">Lessons</div>
                     </div>
                 </div>
@@ -468,19 +469,6 @@ const LearnerDashboard = () => {
             </button>
           </div>
 
-          {pendingGeneratedCourse && streamState && streamState.units && (
-            <div className="mb-4">
-              <GeneratingCourseCard
-                state={streamState}
-                onClick={() => {
-                  if (streamState.courseId) {
-                    navigate(`/course/${streamState.courseId}`);
-                  }
-                }}
-              />
-            </div>
-          )}
-
           {courses.length === 0 && !pendingGeneratedCourse ? (
             <div className="p-6 text-center bg-slate-900/80 rounded-2xl border border-dashed border-slate-600">
               <BookOpen className="w-10 h-10 text-slate-300 mx-auto mb-3" />
@@ -496,9 +484,19 @@ const LearnerDashboard = () => {
                 Create course
               </button>
             </div>
-          ) : courses.length > 0 ? (
+          ) : (
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {pendingGeneratedCourse && streamState && streamState.units && (
+                  <GeneratingCourseCard
+                    state={streamState}
+                    onClick={() => {
+                      if (streamState.courseId) {
+                        navigate(`/course/${streamState.courseId}`);
+                      }
+                    }}
+                  />
+                )}
                 {visibleCourses.map((course) => (
                   <CourseCard
                     key={course.id}
@@ -522,7 +520,7 @@ const LearnerDashboard = () => {
                 </div>
               )}
             </div>
-          ) : null}
+          )}
         </section>
       </main>
 

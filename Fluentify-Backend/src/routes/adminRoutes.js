@@ -6,6 +6,8 @@ import userManagementController from '../controllers/userManagementController.js
 import analyticsRoutes from './analytics.js';
 import adminUserController from '../controllers/adminUserController.js';
 import emailCampaignController from '../controllers/emailCampaignController.js';
+import fileUploadController from '../controllers/fileUploadController.js';
+import { uploadSingle, handleUploadError } from '../middlewares/uploadMiddleware.js';
 
 const router = express.Router();
 
@@ -93,5 +95,15 @@ router.post('/email-campaign/trigger', emailCampaignController.triggerEmailCampa
 router.get('/users', adminUserController.listLearners);
 router.get('/users/:id', adminUserController.getLearnerDetails);
 router.put('/users/:id', adminUserController.updateLearner);
+
+// ==================== File Upload Routes ====================
+// Upload lesson media (PDF, Audio, Video)
+router.post('/upload/lesson-media', uploadSingle, handleUploadError, fileUploadController.uploadLessonMedia);
+
+// Upload media and update lesson in one request
+router.post('/lessons/:lessonId/upload-media', uploadSingle, handleUploadError, fileUploadController.uploadAndUpdateLesson);
+
+// Get course count for language (to determine course number)
+router.get('/languages/:lang/course-count', fileUploadController.getCourseCountForLanguage);
 
 export default router;

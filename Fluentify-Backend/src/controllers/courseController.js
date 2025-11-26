@@ -392,22 +392,39 @@ class CourseController {
   }
 
   /**
-   * Get specific lesson details
+   * Get specific lesson details (supports both AI and Admin courses)
    */
   async getLessonDetails(req, res, next) {
     try {
       const { courseId, unitId, lessonId } = req.params;
       const userId = req.user.id;
-      // Get course data
-      const courseResult = await courseRepository.findCourseDataById(courseId, userId);
+      
+      let courseData;
 
-      if (!courseResult) {
-        throw ERRORS.COURSE_NOT_FOUND;
+      // 1. Try to find AI-generated course first
+      const aiCourseResult = await courseRepository.findCourseDataById(courseId, userId);
+
+      if (aiCourseResult) {
+        courseData = aiCourseResult.course_data.course;
+      } else {
+        // 2. If not found, try to find Published (Admin) course
+        const publishedCourse = await courseRepository.getPublishedCourseDetails(courseId);
+        
+        if (publishedCourse) {
+          courseData = publishedCourse;
+        } else {
+          throw ERRORS.COURSE_NOT_FOUND;
+        }
       }
 
-      const courseData = courseResult.course_data;
-      const unit = courseData.course.units.find(u => u.id === parseInt(unitId));
-      const lesson = unit?.lessons.find(l => l.id === parseInt(lessonId));
+      // Find unit and lesson
+      const unit = courseData.units.find(u => u.id === parseInt(unitId));
+      
+      if (!unit) {
+        throw new Error('Unit not found');
+      }
+
+      const lesson = unit.lessons?.find(l => l.id === parseInt(lessonId));
 
       if (!lesson) {
         throw ERRORS.LESSON_NOT_FOUND;
@@ -434,7 +451,7 @@ class CourseController {
     try {
       const { courseId, lessonId } = req.params;
       const userId = req.user.id;
-      // Get course data
+      
       const courseResult = await courseRepository.findCourseDataById(courseId, userId);
 
       if (!courseResult) {
@@ -443,7 +460,6 @@ class CourseController {
 
       const courseData = courseResult.course_data;
       
-      // Search through all units to find the lesson
       let foundLesson = null;
       let foundUnitId = null;
 
@@ -460,7 +476,6 @@ class CourseController {
         throw ERRORS.LESSON_NOT_FOUND;
       }
 
-      // Get lesson progress
       const progress = await progressRepository.findSpecificLessonProgress(userId, courseId, foundUnitId, lessonId);
 
       res.json(successResponse({

@@ -231,7 +231,7 @@ const CoursePage = () => {
 
             {/* RIGHT */}
             <div className="mt-4 md:mt-0 text-left md:text-right">
-              <div className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-2">{progressPercent.toFixed(0)}%</div>
+              <div className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-2">{progressPercent.toFixed(1)}%</div>
               <p className="text-white/80 text-sm">Complete</p>
             </div>
           </div>
@@ -287,7 +287,7 @@ const CoursePage = () => {
             </div>
 
             <span className="text-3xl font-semibold text-teal-300">
-              {progressPercent.toFixed(1)}%
+              { progressPercent.toFixed(1)}%
             </span>
           </div>
 
