@@ -180,6 +180,7 @@ const ModuleCourseDetailsPage = () => {
                                             unit.lessons.map((lesson, lessonIndex) => (
                                                 <div 
                                                     key={lesson.id}
+                                                    onClick={() => navigate(`/lesson/${courseId}/${unit.id}/${lesson.id}`)}
                                                     className="group bg-slate-900/90 p-4 rounded-xl border border-white/10 shadow-md hover:shadow-xl hover:border-teal-400/70 transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center gap-4"
                                                 >
                                                     <div className="w-12 h-12 rounded-full bg-orange-500/20 text-orange-200 flex items-center justify-center flex-shrink-0 group-hover:bg-gradient-to-br group-hover:from-teal-400 group-hover:to-cyan-500 group-hover:text-white transition-all duration-300">

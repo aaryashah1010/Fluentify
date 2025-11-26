@@ -15,6 +15,7 @@ export { default as ContestCard } from './ContestCard';
 export { default as LeaderboardTable } from './LeaderboardTable';
 export { default as McqQuestion } from './McqQuestion';
 export { default as ContestTimer } from './ContestTimer';
+export { default as MediaViewer } from './MediaViewer';
 export { 
   Skeleton, 
   SkeletonText, 
