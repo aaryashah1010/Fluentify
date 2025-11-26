@@ -11,7 +11,8 @@ const Signup = () => {
     email: '', 
     password: '', 
     confirmPassword: '',
-    role: 'learner' 
+    role: 'learner',
+    adminPassKey: ''
   });
   const [error, setError] = useState('');
   const [touched, setTouched] = useState({ 
@@ -72,6 +73,11 @@ const Signup = () => {
       case 'confirmPassword':
         if (!form.confirmPassword) return 'Please confirm your password';
         if (form.password !== form.confirmPassword) return 'Passwords do not match';
+        return '';
+        if (form.role === 'admin') {
+          if (!form.adminPassKey) return 'Admin pass key is required for admin signup';
+          if (form.adminPassKey !== '12345') return 'Invalid admin pass key';
+        }
         return '';
       default:
         return '';
@@ -448,6 +454,8 @@ const Signup = () => {
                   </p>
                 )}
               </div>
+
+      
 
               {/* Global Error */}
               {error && (

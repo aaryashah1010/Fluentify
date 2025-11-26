@@ -75,25 +75,25 @@ export const generateExercises = async ({ courseId, unitId, lessonId }) => {
 };
 
 /**
- * Mark lesson as complete (uses backend's legacy completion route)
- * Backend route: POST /api/courses/:courseId/lessons/:lessonId/complete
- * It derives the unit internally and updates lesson/unit progress + stats.
+ * Mark lesson as complete
+ * Backend route: POST /api/progress/courses/:courseId/units/:unitId/lessons/:lessonId/complete
+ * Uses the proper progress endpoint with unitId to correctly identify the lesson.
  *
  * @param {number} courseId - Course ID
- * @param {number} unitId   - Unit ID (accepted for compatibility, not used in URL)
- * @param {number} lessonId - Lesson ID (course lesson number)
+ * @param {number} unitId   - Unit ID (required to correctly identify the lesson)
+ * @param {number} lessonId - Lesson ID (lesson number within the unit)
  * @param {Object} progressData - Progress data (score, exercises)
  * @returns {Promise<{success: boolean, data: Object}>}
  */
 export const completeLesson = async ({
   courseId,
-  unitId, // kept for callers, but backend derives unit itself
+  unitId,
   lessonId,
   score = 100,
   exercises = [],
 }) => {
   const response = await fetch(
-    `${API_BASE_URL}/api/courses/${courseId}/lessons/${lessonId}/complete`,
+    `${API_BASE_URL}/api/progress/courses/${courseId}/units/${unitId}/lessons/${lessonId}/complete`,
     {
       method: 'POST',
       headers: getAuthHeader(),

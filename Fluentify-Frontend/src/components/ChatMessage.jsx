@@ -35,7 +35,7 @@ const ChatMessage = ({ message, isStreaming = false }) => {
                 return (
                   <code 
                     key={partIndex} 
-                    className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono"
+                    className="bg-slate-800 text-teal-200 px-2 py-0.5 rounded text-sm font-mono border border-teal-500/30"
                   >
                     {part.slice(1, -1)}
                   </code>
