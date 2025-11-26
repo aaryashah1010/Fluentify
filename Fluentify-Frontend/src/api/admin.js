@@ -328,3 +328,77 @@ export const exportLearnersCSV = async () => {
   
   return response.blob();
 };
+
+// ==================== File Upload Operations ====================
+
+/**
+ * Get course count for a language (to determine course number: 1 or 2)
+ * @param {string} language - Language name
+ * @returns {Promise<{success: boolean, data: {language: string, existingCourses: number, nextCourseNumber: number}}>}
+ */
+export const getCourseCountForLanguage = async (language) => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/languages/${language}/course-count`, {
+    headers: getAuthHeader(),
+  });
+  return handleResponse(response);
+};
+
+/**
+ * Upload lesson media file (PDF, Audio, Video)
+ * @param {File} file - File to upload
+ * @param {Object} pathInfo - Path information
+ * @param {string} pathInfo.language - Course language
+ * @param {number} pathInfo.courseNumber - Course number (1 or 2)
+ * @param {number} pathInfo.unitNumber - Unit number
+ * @param {number} pathInfo.lessonNumber - Lesson number
+ * @param {string} pathInfo.contentType - Content type (pdf, audio, video)
+ * @returns {Promise<{success: boolean, data: {url: string, filename: string}}>}
+ */
+export const uploadLessonMedia = async (file, pathInfo) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('language', pathInfo.language);
+  formData.append('courseNumber', String(pathInfo.courseNumber));
+  formData.append('unitNumber', String(pathInfo.unitNumber));
+  formData.append('lessonNumber', String(pathInfo.lessonNumber));
+  formData.append('contentType', pathInfo.contentType || 'pdf');
+
+  // Get auth token (stored as 'jwt') - don't include Content-Type for FormData
+  const token = localStorage.getItem('jwt');
+  const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+  const response = await fetch(`${API_BASE_URL}/api/admin/upload/lesson-media`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+  return handleResponse(response);
+};
+
+/**
+ * Upload media and update lesson in one request
+ * @param {number} lessonId - Lesson ID to update
+ * @param {File} file - File to upload
+ * @param {Object} pathInfo - Path information
+ * @returns {Promise<{success: boolean, data: {lesson: Object, media: Object}}>}
+ */
+export const uploadAndUpdateLesson = async (lessonId, file, pathInfo) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('language', pathInfo.language);
+  formData.append('courseNumber', String(pathInfo.courseNumber));
+  formData.append('unitNumber', String(pathInfo.unitNumber));
+  formData.append('lessonNumber', String(pathInfo.lessonNumber));
+  formData.append('contentType', pathInfo.contentType || 'pdf');
+
+  // Get auth token (stored as 'jwt') - don't include Content-Type for FormData
+  const token = localStorage.getItem('jwt');
+  const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+  const response = await fetch(`${API_BASE_URL}/api/admin/lessons/${lessonId}/upload-media`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+  return handleResponse(response);
+};
