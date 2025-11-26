@@ -295,6 +295,44 @@ describe('courseController', () => {
       const payload = res.body;
       expect(payload.data.progress).toBeNull();
     });
+
+    it('falls back to published course and throws when unit not found', async () => {
+      const req = { params: { courseId: 10, unitId: 99, lessonId: 1 }, user: { id: 5 } };
+      const res = resMock(); const next = nextMock();
+
+      // No AI course data
+      mockCourseRepo.findCourseDataById.mockResolvedValueOnce(null);
+      // Published course exists but has different units
+      mockCourseRepo.getPublishedCourseDetails.mockResolvedValueOnce({
+        units: [ { id: 1, lessons: [ { id: 1 } ] } ],
+      });
+
+      await controller.getLessonDetails(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+    });
+
+    it('uses published course data when AI course not found (success path)', async () => {
+      const req = { params: { courseId: 10, unitId: 2, lessonId: 3 }, user: { id: 5 } };
+      const res = resMock(); const next = nextMock();
+
+      // No AI course data
+      mockCourseRepo.findCourseDataById.mockResolvedValueOnce(null);
+      // Published course has requested unit and lesson
+      mockCourseRepo.getPublishedCourseDetails.mockResolvedValueOnce({
+        units: [
+          { id: 2, lessons: [ { id: 3, title: 'Published L3' } ] },
+        ],
+      });
+      mockProgressRepo.findSpecificLessonProgress.mockResolvedValueOnce({ is_completed: false });
+
+      await controller.getLessonDetails(req, res, next);
+
+      expect(res.json).toHaveBeenCalled();
+      const payload = res.body;
+      expect(payload.data.lesson.id).toBe(3);
+      expect(next).not.toHaveBeenCalled();
+    });
   });
 
   describe('getLessonDetailsLegacy', () => {

@@ -48,17 +48,7 @@
       "<rootDir>/src/test/**/*.test.js"
     ],
     "collectCoverageFrom": [
-      "src/controllers/adminUserController.js",
-      "src/controllers/analyticsController.js",
-      "src/controllers/authController.js",
-      "src/controllers/courseController.js",
-      "src/controllers/contestController.js",
-      "src/controllers/moduleAdminController.js",
-      "src/controllers/preferencesController.js",
-      "src/controllers/progressController.js",
-      "src/controllers/retellController.js",
-      "src/controllers/tutorController.js",
-      "src/controllers/userManagementController.js",
+      "src/controllers/*.js",
       "src/utils/*.js",
       "src/services/*.js",
       "src/repositories/*.js",
