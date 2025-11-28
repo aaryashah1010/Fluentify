@@ -140,10 +140,6 @@ const CourseCard = ({ course, onClick }) => {
       
       <div className="flex items-center justify-between text-sm text-slate-300 mb-4">
         <div className="flex items-center gap-1">
-          <Flame className="w-4 h-4 text-orange-500" />
-          <span>{progress.currentStreak || 0} day streak</span>
-        </div>
-        <div className="flex items-center gap-1">
           <CheckCircle className="w-4 h-4 text-emerald-400" />
           <span>{progress.unitsCompleted || 0} units done</span>
         </div>

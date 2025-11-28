@@ -105,7 +105,7 @@ const ContestBrowsePage = () => {
 								<div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
 									<Users className="h-5 w-5 text-purple-200 mb-1" />
 									<div className="text-2xl font-semibold">{totalParticipants}</div>
-									<div className="text-xs text-white/70">Total Participants</div>
+									<div className="text-xs text-white/70">Contests Participated</div>
 								</div>
 							</div>
 						</div>

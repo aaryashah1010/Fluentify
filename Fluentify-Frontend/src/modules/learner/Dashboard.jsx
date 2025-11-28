@@ -159,10 +159,11 @@ const LearnerDashboard = () => {
       : totalLessonsCompleted;
   const totalXPOverall = progressSummary.total_xp || 0;
 
-  const effectiveStreakDays =
+  const effectiveStreakDays = Math.max(1,
     typeof progressSummary.current_streak === "number"
       ? progressSummary.current_streak
-      : maxStreak;
+      : maxStreak
+  );
 
   let overallProgressPercent = 0;
   if (totalLessonsAvailable > 0) {

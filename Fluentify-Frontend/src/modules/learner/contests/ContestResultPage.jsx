@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useUserContestResult } from '../../../hooks/useContest';
+import { useUserContestResult, useContestDetails } from '../../../hooks/useContest';
 import { Button } from '../../../components';
 import { CheckCircle, XCircle, Trophy, Clock, Award } from 'lucide-react';
 
@@ -8,6 +8,7 @@ const ContestResultPage = () => {
   const navigate = useNavigate();
   const { contestId } = useParams();
   const { data, isLoading, isError } = useUserContestResult(contestId);
+  const { data: contestDetails, isLoading: detailsLoading } = useContestDetails(contestId);
 
   if (isLoading) {
     return (
@@ -38,6 +39,39 @@ const ContestResultPage = () => {
   }
 
   const { contest, result, submissions } = data;
+
+  // Prefer contest details from the contest endpoint when available
+  const contestInfo = contestDetails?.contest || contest || null;
+
+  // While contest details are loading, show loading state (if result loaded) or keep current loading
+  if (detailsLoading && !data) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-slate-200">Loading contest details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Determine if contest has ended: check if end_time has passed
+  const now = Date.now();
+  const endTimeMs = contestInfo?.end_time ? new Date(contestInfo.end_time).getTime() : null;
+  const contestEnded = endTimeMs ? now >= endTimeMs : false;
+
+  // If contest hasn't ended, hide results
+  if (!contestEnded && endTimeMs) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center">
+        <div className="bg-slate-900/80 rounded-2xl shadow-xl border border-white/10 p-6 max-w-md w-full text-center text-slate-100">
+          <h2 className="text-xl font-semibold mb-2">Results Hidden</h2>
+          <p className="text-sm text-slate-300 mb-4">Results are not available while the contest is still active. Please check back after the contest ends.</p>
+          <Button onClick={() => navigate('/contests')} className="mt-2">Back to Contests</Button>
+        </div>
+      </div>
+    );
+  }
   const totalQuestions = submissions?.length || 0;
   const correctAnswers = submissions?.filter(s => s.is_correct).length || 0;
   const percentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;

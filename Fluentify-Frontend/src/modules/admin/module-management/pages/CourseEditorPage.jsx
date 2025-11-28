@@ -100,6 +100,11 @@ const CourseEditorPage = () => {
   // FIX: Handle course save with better error handling
   // Prevents logout on API errors
   const handleSaveCourse = async () => {
+    // Validate required fields
+    if (!courseData.estimated_duration || courseData.estimated_duration === '') {
+      alert('Estimated Duration is required. Please select a value.');
+      return;
+    }
     try {
       if (isNewCourse) {
         const result = await createCourse(courseData);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, TrendingUp, Users, BookOpen, Brain, Activity, Calendar } from 'lucide-react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, ResponsiveContainer } from 'recharts';
 import { getAnalytics } from '../../api/admin';
 
 // Neon-inspired palette (teal / orange / purple + supporting tones)
@@ -166,16 +166,16 @@ const AnalyticsDashboard = () => {
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Language Distribution */}
-          <div className="rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
+          {/* Language Distribution (span two columns on large screens) */}
+          <div className="rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6 lg:col-span-2">
             <h3 className="text-lg font-semibold text-slate-50 mb-4 flex items-center gap-2">
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-purple-500/30">
                 <TrendingUp className="w-4 h-4 text-purple-200" />
               </span>
               Popular Languages
             </h3>
-            {languageDistribution && languageDistribution.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
+              {languageDistribution && languageDistribution.length > 0 ? (
+              <ResponsiveContainer width="100%" height={420}>
                 <PieChart>
                   <Pie
                     data={languageDistribution}
@@ -205,34 +205,7 @@ const AnalyticsDashboard = () => {
             )}
           </div>
 
-          {/* Module Usage */}
-          <div className="rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
-            <h3 className="text-lg font-semibold text-slate-50 mb-4 flex items-center gap-2">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-teal-500/30">
-                <BookOpen className="w-4 h-4 text-teal-200" />
-              </span>
-              Module Usage (Admin vs AI)
-            </h3>
-            {moduleUsage && moduleUsage.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={moduleUsage}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
-                  <XAxis dataKey="module_type" />
-                  <YAxis stroke="#CBD5F5" />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="count" fill="#F97316" />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-64 text-gray-500">
-                <div className="text-center">
-                  <BarChart className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>No module usage data available</p>
-                </div>
-              </div>
-            )}
-          </div>
+
 
           {/* AI Performance */}
           <div className="rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">

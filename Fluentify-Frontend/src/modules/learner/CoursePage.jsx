@@ -17,15 +17,15 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchCourseDetails } from "../../api/courses";
 
 const StatCard = ({ icon: Icon, label, value }) => (
-  <div className="relative rounded-2xl p-6 bg-gradient-to-br from-teal-50 to-cyan-50 border-2 border-teal-200 shadow-lg overflow-hidden">
-    <div className="absolute top-4 right-4 text-2xl opacity-20">📘</div>
-    <div className="flex items-center gap-3 mb-3">
-      <div className="w-12 h-12 bg-gradient-to-br from-teal-400 to-cyan-500 shadow-md rounded-xl flex items-center justify-center">
-        <Icon className="w-6 h-6 text-white" />
+  <div className="relative rounded-2xl p-8 bg-gradient-to-br from-teal-50 to-cyan-50 border-2 border-teal-200 shadow-lg overflow-hidden flex-1">
+    <div className="absolute top-4 right-4 text-3xl opacity-20">📘</div>
+    <div className="flex items-center gap-4 mb-3">
+      <div className="w-16 h-16 bg-gradient-to-br from-teal-400 to-cyan-500 shadow-md rounded-xl flex items-center justify-center flex-shrink-0">
+        <Icon className="w-8 h-8 text-white" />
       </div>
       <div>
-        <p className="text-xs text-gray-600">{label}</p>
-        <p className="text-xl font-semibold text-gray-900">{value}</p>
+        <p className="text-sm text-gray-600 font-medium">{label}</p>
+        <p className="text-2xl font-bold text-gray-900">{value}</p>
       </div>
     </div>
   </div>
@@ -248,7 +248,7 @@ const CoursePage = () => {
         </div>
 
   
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="flex items-center justify-between gap-3 mb-12">
 
           <StatCard
             icon={BookOpen}
@@ -267,13 +267,6 @@ const CoursePage = () => {
             label="Total XP"
             value={totalXP}
           />
-
-          <StatCard
-            icon={Flame}
-            label="Streak"
-            value={`${streakDays} days`}
-          />
-
         </div>
 
         <div className="bg-slate-950/90 backdrop-blur-sm rounded-3xl border border-white/15 shadow-2xl p-8 mb-8">

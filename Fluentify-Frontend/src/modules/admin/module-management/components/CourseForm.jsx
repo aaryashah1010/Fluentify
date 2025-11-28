@@ -85,36 +85,26 @@ const CourseForm = ({ courseData, onChange, disabled = false, lockLanguage = fal
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Thumbnail URL */}
+        {/* Estimated Duration (required dropdown) */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Thumbnail URL
+            Estimated Duration <span className="text-red-500">*</span>
           </label>
-          <input
-            type="url"
-            name="thumbnail_url"
-            value={courseData.thumbnail_url || ''}
-            onChange={handleChange}
-            disabled={disabled}
-            className="w-full px-3 py-2 rounded-xl bg-slate-900/70 border border-white/10 text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-900/40"
-            placeholder="https://example.com/image.jpg"
-          />
-        </div>
-
-        {/* Estimated Duration */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Estimated Duration
-          </label>
-          <input
-            type="text"
+          <select
             name="estimated_duration"
             value={courseData.estimated_duration || ''}
             onChange={handleChange}
             disabled={disabled}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-            placeholder="e.g., 3 months, 6 weeks"
-          />
+            required
+            className="w-full px-3 py-2 rounded-xl bg-slate-900/70 border border-white/10 text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-900/40"
+          >
+            <option value="">Select duration</option>
+            <option value="1 month">1 month</option>
+            <option value="3 months">3 months</option>
+            <option value="6 months">6 months</option>
+            <option value="1 year">1 year</option>
+            <option value="2 years">2 years</option>
+          </select>
         </div>
       </div>
 
