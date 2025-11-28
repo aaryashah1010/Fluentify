@@ -160,12 +160,13 @@ class ProgressRepository {
       [userId, courseId]
     );
 
-    // Initialize user stats
+    // Initialize user stats with streak = 1 for new users
+    const today = new Date().toISOString().split('T')[0];
     await db.query(
-      `INSERT INTO user_stats (learner_id, course_id, total_xp, lessons_completed, units_completed, current_streak, longest_streak)
-       VALUES ($1, $2, 0, 0, 0, 0, 0)
+      `INSERT INTO user_stats (learner_id, course_id, total_xp, lessons_completed, units_completed, current_streak, longest_streak, last_activity_date)
+       VALUES ($1, $2, 0, 0, 0, 1, 1, $3)
        ON CONFLICT (learner_id, course_id) DO NOTHING`,
-      [userId, courseId]
+      [userId, courseId, today]
     );
   }
 
@@ -179,13 +180,13 @@ class ProgressRepository {
     
     const result = await db.query(
       `SELECT 
-        COALESCE(SUM(xp_earned), 0)::INTEGER as total_xp,
-        COUNT(DISTINCT CASE WHEN is_completed THEN lesson_id END)::INTEGER as lessons_completed,
-        COALESCE(SUM(vocabulary_mastered), 0)::INTEGER as total_vocabulary,
-        (SELECT COALESCE(MAX(current_streak), 0) FROM user_stats WHERE learner_id = $1 ${courseId ? `AND course_id = ${parseInt(courseId)}` : ''})::INTEGER as current_streak,
+        COALESCE(SUM(lp.xp_earned), 0)::INTEGER as total_xp,
+        COUNT(DISTINCT CASE WHEN lp.is_completed THEN lp.lesson_id END)::INTEGER as lessons_completed,
+        COALESCE(SUM(lp.vocabulary_mastered), 0)::INTEGER as total_vocabulary,
+        (SELECT COALESCE(MAX(current_streak), 1) FROM user_stats WHERE learner_id = $1 ${courseId ? `AND course_id = ${parseInt(courseId)}` : ''})::INTEGER as current_streak,
         (SELECT COALESCE(MAX(longest_streak), 0) FROM user_stats WHERE learner_id = $1 ${courseId ? `AND course_id = ${parseInt(courseId)}` : ''})::INTEGER as longest_streak
-      FROM lesson_progress
-      WHERE learner_id = $1 ${dateFilter} ${courseFilter}`,
+      FROM lesson_progress lp
+      WHERE lp.learner_id = $1 ${dateFilter} ${courseFilter}`,
       [userId]
     );
     
@@ -193,7 +194,7 @@ class ProgressRepository {
       total_xp: 0,
       lessons_completed: 0,
       total_vocabulary: 0,
-      current_streak: 0,
+      current_streak: 1,
       longest_streak: 0
     };
   }

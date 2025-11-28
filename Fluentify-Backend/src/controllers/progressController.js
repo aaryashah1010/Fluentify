@@ -188,24 +188,45 @@ const markLessonComplete = async (req, res, next) => {
       unitCompleted = true;
     }
 
-    /// Update user stats (only streak tracking now)
+    // Update the streak logic in progressController.js
     const today = new Date().toISOString().split('T')[0];
     const stats = await progressRepository.findUserStats(userId, courseId);
 
     if (!stats) {
-      // Create new stats (only for streak tracking)
+  // First time login - set streak to 1
       await progressRepository.createUserStats(userId, courseId, 0, 0, today);
-    } else {
-      // Update only streak information
+    } 
+    else 
+    {
       const lastDate = stats.last_activity_date ? new Date(stats.last_activity_date).toISOString().split('T')[0] : null;
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
+  
+      // If no last activity date (shouldn't happen, but just in case)
+      if (!lastDate) {
+        await progressRepository.updateUserStreak(userId, courseId, 1, today);
+        return;
+      }
 
-      let newStreak = 1;
-      if (lastDate === yesterdayStr) {
+      // If already logged in today, keep the same streak
+      if (lastDate === today) {
+        await progressRepository.updateUserStreak(userId, courseId, stats.current_streak, today);
+        return;
+      }
+
+      // Calculate days difference
+      const lastActivity = new Date(lastDate);
+      const todayDate = new Date(today);
+      const timeDiff = todayDate - lastActivity;
+      const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+      let newStreak;
+      if (daysDiff === 1) {
+        // Consecutive day login - increment streak
         newStreak = stats.current_streak + 1;
-      } else if (lastDate === today) {
+      } else if (daysDiff > 1) {
+        // Gap of more than one day - reset streak to 1
+        newStreak = 1;
+      } else {
+        // Same day or invalid date (shouldn't happen due to previous check)
         newStreak = stats.current_streak;
       }
 
