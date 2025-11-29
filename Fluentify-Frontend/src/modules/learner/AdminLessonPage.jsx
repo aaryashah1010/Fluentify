@@ -118,9 +118,6 @@ const AdminLessonPage = () => {
         <div className="bg-gradient-to-r from-teal-500 to-orange-400 rounded-3xl p-6 md:p-8 text-white shadow-xl mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
             <div>
-              <p className="text-xs uppercase tracking-wide text-white/80 mb-1">
-                Lesson {lessonId}
-              </p>
               <h1 className="text-2xl md:text-3xl font-semibold">
                 {lesson.title}
               </h1>

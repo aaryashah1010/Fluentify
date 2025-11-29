@@ -256,21 +256,6 @@ const ProgressPage = () => {
               {summary.lessons_completed || 0}
             </p>
           </div>
-
-          <div className="relative p-8 bg-slate-900/90 border border-pink-400/60 rounded-2xl shadow-xl overflow-hidden">
-            <div className="absolute top-4 right-4 text-2xl opacity-10">🔥</div>
-            <div className="flex items-center justify-between mb-5">
-              <div className="w-14 h-14 bg-gradient-to-br from-pink-400 to-red-500 rounded-2xl flex items-center justify-center shadow-md">
-                <Flame className="w-7 h-7 text-white" />
-              </div>
-              <Flame className="w-6 h-6 text-pink-400 opacity-70" />
-            </div>
-            <p className="text-sm text-slate-300 mb-2">Current Streak</p>
-            <p className="text-4xl font-semibold text-slate-50 mb-1">
-              {currentStreak}{' '}
-              <span className="text-xl text-slate-300">days</span>
-            </p>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
