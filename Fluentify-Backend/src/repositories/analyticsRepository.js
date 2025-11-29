@@ -237,17 +237,13 @@ class AnalyticsRepository {
    */
   async getRealTimeStats() {
     try {
-      const query = `
+      // Run the main stats query first (avoid referencing optional columns that may not exist)
+      const mainQuery = `
         SELECT 
-          -- Total lessons completed across all users
           (SELECT COUNT(*) FROM lesson_progress WHERE is_completed = true)::int as total_lessons,
-          
-          -- Active users (users who completed at least one lesson)
           (SELECT COUNT(DISTINCT learner_id) FROM lesson_progress WHERE is_completed = true)::int as active_users,
-          
-          -- Most popular language
           (
-            SELECT c.language 
+            SELECT c.language
             FROM lesson_progress lp
             INNER JOIN courses c ON lp.course_id = c.id
             WHERE lp.is_completed = true
@@ -255,23 +251,49 @@ class AnalyticsRepository {
             ORDER BY COUNT(*) DESC
             LIMIT 1
           ) as popular_language,
-          
-          -- AI generation stats
-          (SELECT COUNT(*) FROM courses WHERE generation_duration_seconds IS NOT NULL)::int as ai_courses_generated,
-          (SELECT AVG(generation_duration_seconds) FROM courses WHERE generation_duration_seconds IS NOT NULL)::int as avg_generation_time,
-          
-          -- Total XP earned
           (SELECT COALESCE(SUM(xp_earned), 0) FROM lesson_progress WHERE is_completed = true)::int as total_xp_earned;
       `;
-      
-      const result = await db.query(query);
-      return result.rows[0] || {
+
+      const mainResult = await db.query(mainQuery);
+      const stats = mainResult.rows[0] || {
         total_lessons: 0,
         active_users: 0,
-        popular_language: 'N/A',
-        ai_courses_generated: 0,
-        avg_generation_time: 0,
+        popular_language: null,
         total_xp_earned: 0
+      };
+
+      // Attempt to fetch AI generation metrics only if the column exists
+      let ai_courses_generated = 0;
+      let avg_generation_time = 0;
+
+      try {
+        const colCheck = await db.query(
+          `SELECT 1 FROM information_schema.columns WHERE table_name = 'courses' AND column_name = 'generation_duration_seconds' LIMIT 1`
+        );
+
+        if (colCheck.rows.length > 0) {
+          const aiQuery = `
+            SELECT 
+              COALESCE((SELECT COUNT(*) FROM courses WHERE generation_duration_seconds IS NOT NULL), 0)::int as ai_courses_generated,
+              COALESCE((SELECT AVG(generation_duration_seconds) FROM courses WHERE generation_duration_seconds IS NOT NULL), 0)::int as avg_generation_time
+          `;
+          const aiResult = await db.query(aiQuery);
+          const aiRow = aiResult.rows[0] || {};
+          ai_courses_generated = aiRow.ai_courses_generated || 0;
+          avg_generation_time = aiRow.avg_generation_time || 0;
+        }
+      } catch (err) {
+        // If anything goes wrong here, fall back to zeros for AI metrics
+        console.warn('Warning: could not fetch AI generation metrics:', err?.message || err);
+      }
+
+      return {
+        total_lessons: stats.total_lessons || 0,
+        active_users: stats.active_users || 0,
+        popular_language: stats.popular_language || 'N/A',
+        ai_courses_generated,
+        avg_generation_time,
+        total_xp_earned: stats.total_xp_earned || 0
       };
     } catch (error) {
       console.error('Error getting real-time stats:', error);
