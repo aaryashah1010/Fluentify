@@ -1,6 +1,8 @@
 import React from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { LanguageListPage, CourseListPage, CourseEditorPage } from './index';
+import LanguageListPage from './LanguageListPage';
+import CourseListPage from './CourseListPage';
+import CourseEditorPage from './CourseEditorPage';
 import { ArrowLeft } from 'lucide-react';
 
 const ModuleManagementLayout = () => {

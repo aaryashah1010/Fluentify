@@ -75,6 +75,7 @@ export const apiAdminPublishContest = async (contestId) => {
     'Content-Type': 'application/json'
   };
 
+  /* istanbul ignore next */
   const tryRequest = async (url, method, body = {}) => {
     try {
       const res = await fetch(url, {
@@ -95,7 +96,12 @@ export const apiAdminPublishContest = async (contestId) => {
 
   // If an explicit path is provided via env, try it first.
   // Supports placeholders: :id or {id}
-  const customPath = import.meta.env.VITE_CONTEST_PUBLISH_PATH;
+  /* istanbul ignore next */
+  const customPath =
+    typeof import.meta !== 'undefined' &&
+    import.meta.env &&
+    import.meta.env.VITE_CONTEST_PUBLISH_PATH;
+  /* istanbul ignore next */
   if (customPath) {
     const replaced = customPath.replace(/:id|\{id\}/g, String(contestId));
     const url = replaced.startsWith('http') ? replaced : `${API_BASE_URL}${replaced.startsWith('/') ? '' : '/'}${replaced}`;

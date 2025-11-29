@@ -10,6 +10,22 @@ import {
 } from '../../../../hooks/useContest';
 import { Button } from '../../../../components';
 
+export const toInputLocal = (isoString) => {
+  try {
+    const d = new Date(isoString);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } catch {
+    return '';
+  }
+};
+
+export const toISTOffsetIso = (localDateTimeStr) => {
+  if (!localDateTimeStr) return '';
+  const [datePart, timePart] = localDateTimeStr.split('T');
+  return `${datePart}T${timePart}:00+05:30`;
+};
+
 const ContestEditorPage = () => {
   const navigate = useNavigate();
   const { contestId } = useParams();
@@ -40,24 +56,6 @@ const ContestEditorPage = () => {
 
   const [errors, setErrors] = useState({});
   const [createdContestId, setCreatedContestId] = useState(null);
-
-  // Helpers: time and formatting
-  const toInputLocal = (isoString) => {
-    try {
-      const d = new Date(isoString);
-      const pad = (n) => String(n).padStart(2, '0');
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    } catch {
-      return '';
-    }
-  };
-
-  // Build IST (+05:30) offset ISO string from a datetime-local input value (YYYY-MM-DDTHH:mm)
-  const toISTOffsetIso = (localDateTimeStr) => {
-    if (!localDateTimeStr) return '';
-    const [datePart, timePart] = localDateTimeStr.split('T');
-    return `${datePart}T${timePart}:00+05:30`;
-  };
 
   // Load contest data in edit mode
   useEffect(() => {
@@ -344,9 +342,8 @@ const ContestEditorPage = () => {
                     value={contest.title}
                     onChange={(e) => handleContestChange('title', e.target.value)}
                     placeholder="e.g., Weekly Spanish Challenge"
-                    className={`w-full px-4 py-2 rounded-xl border bg-slate-950/70 text-slate-50 placeholder-slate-500 focus:ring-2 focus:ring-amber-400 focus:border-transparent ${
-                      errors.title ? 'border-rose-500/70' : 'border-white/15'
-                    }`}
+                    className={`w-full px-4 py-2 rounded-xl border bg-slate-950/70 text-slate-50 placeholder-slate-500 focus:ring-2 focus:ring-amber-400 focus:border-transparent ${errors.title ? 'border-rose-500/70' : 'border-white/15'
+                      }`}
                   />
                   {errors.title && <p className="text-rose-400 text-xs mt-1">{errors.title}</p>}
                 </div>
@@ -371,9 +368,8 @@ const ContestEditorPage = () => {
                       type="datetime-local"
                       value={contest.start_time}
                       onChange={(e) => handleContestChange('start_time', e.target.value)}
-                      className={`w-full px-4 py-2 border rounded-lg text-slate-950/80 bg-slate-50 datetime-on-dark focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
-                        errors.start_time ? 'border-red-500' : 'border-white/20'
-                      }`}
+                      className={`w-full px-4 py-2 border rounded-lg text-slate-950/80 bg-slate-50 datetime-on-dark focus:ring-2 focus:ring-orange-500 focus:border-transparent ${errors.start_time ? 'border-red-500' : 'border-white/20'
+                        }`}
                     />
                     {errors.start_time && <p className="text-red-500 text-sm mt-1">{errors.start_time}</p>}
                   </div>
@@ -383,9 +379,8 @@ const ContestEditorPage = () => {
                       type="datetime-local"
                       value={contest.end_time}
                       onChange={(e) => handleContestChange('end_time', e.target.value)}
-                      className={`w-full px-4 py-2 border rounded-lg text-slate-950/80 bg-slate-50 datetime-on-dark focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
-                        errors.end_time ? 'border-red-500' : 'border-white/20'
-                      }`}
+                      className={`w-full px-4 py-2 border rounded-lg text-slate-950/80 bg-slate-50 datetime-on-dark focus:ring-2 focus:ring-orange-500 focus:border-transparent ${errors.end_time ? 'border-red-500' : 'border-white/20'
+                        }`}
                     />
                     {errors.end_time && <p className="text-red-500 text-sm mt-1">{errors.end_time}</p>}
                   </div>
@@ -437,6 +432,7 @@ const ContestEditorPage = () => {
                           <button
                             onClick={() => removeQuestion(index)}
                             className="text-rose-300 hover:text-rose-200"
+                            aria-label={`Remove question ${index + 1}`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -445,11 +441,10 @@ const ContestEditorPage = () => {
                           {(Array.isArray(q.options) ? q.options : []).map((opt, optIndex) => (
                             <div
                               key={optIndex}
-                              className={`px-3 py-2 rounded-xl border ${
-                                optIndex === q.correct_option_id
-                                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-400/60'
-                                  : 'bg-slate-900/80 text-slate-200 border-white/10'
-                              }`}
+                              className={`px-3 py-2 rounded-xl border ${optIndex === q.correct_option_id
+                                ? 'bg-emerald-500/10 text-emerald-300 border-emerald-400/60'
+                                : 'bg-slate-900/80 text-slate-200 border-white/10'
+                                }`}
                             >
                               {String.fromCharCode(65 + optIndex)}.{' '}
                               {typeof opt === 'string' ? opt : opt?.text ?? ''}

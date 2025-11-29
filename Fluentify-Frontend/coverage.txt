@@ -1,0 +1,159 @@
+
+> frontend@0.0.0 test
+> cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage --coverageReporters=text
+
+PASS src/test/components/ChatMessage.test.jsx
+PASS src/test/components/ContestTimer.test.jsx
+  ● Console
+
+    console.error
+      An update to ContestTimer inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      35 |     // Update every second
+      36 |     const timer = setInterval(() => {
+    > 37 |       setTimeLeft(calculateTimeLeft());
+         |       ^
+      38 |     }, 1000);
+      39 |
+      40 |     return () => clearInterval(timer);
+
+      at node_modules/react-dom/cjs/react-dom-client.development.js:16023:19
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:1522:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom-client.development.js:16022:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom-client.development.js:14396:11)
+      at dispatchSetStateInternal (node_modules/react-dom/cjs/react-dom-client.development.js:6969:13)
+      at dispatchSetState (node_modules/react-dom/cjs/react-dom-client.development.js:6927:7)
+      at setTimeLeft (src/components/ContestTimer.jsx:37:7)
+      at callTimer (node_modules/@jest/environment-jsdom-abstract/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:806:24)
+      at doTickInner (node_modules/@jest/environment-jsdom-abstract/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1413:29)
+      at doTick (node_modules/@jest/environment-jsdom-abstract/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1494:20)
+      at Object.tick (node_modules/@jest/environment-jsdom-abstract/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1502:20)
+      at FakeTimers.advanceTimersByTime (node_modules/@jest/environment-jsdom-abstract/node_modules/@jest/fake-timers/build/index.js:576:19)
+      at Object.advanceTimersByTime (src/test/components/ContestTimer.test.jsx:125:10)
+
+PASS src/test/components/LeaderboardTable.test.jsx
+PASS src/test/modules/Landingpage/HowItWorks.test.jsx
+PASS src/test/components/OTPInput.test.jsx
+PASS src/test/modules/admin/module-management/components/CourseForm.test.jsx
+PASS src/test/components/ContestCard.test.jsx
+PASS src/test/components/ChatInput.test.jsx
+PASS src/test/components/ErrorMessage.test.jsx
+PASS src/test/modules/Landingpage/LanguageGrid.test.jsx
+PASS src/test/components/FloatingChatWidget.test.jsx
+PASS src/test/components/PasswordStrengthIndicator.test.jsx
+PASS src/test/modules/Landingpage/Features.test.jsx
+PASS src/test/modules/Landingpage/Hero.test.jsx
+PASS src/test/modules/Landingpage/LandingPage.test.jsx
+PASS src/test/modules/Landingpage/Header.test.jsx
+PASS src/test/components/LoadingSpinner.test.jsx
+PASS src/test/components/Skeleton.test.jsx
+PASS src/test/modules/Landingpage/CTASection.test.jsx
+PASS src/test/components/Input.test.jsx
+PASS src/test/components/McqQuestion.test.jsx
+PASS src/test/components/TypingIndicator.test.jsx
+(node:2565) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS src/test/components/Button.test.js
+(node:2564) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS src/test/api/admin.test.js
+PASS src/test/contexts/StreamingContext.test.jsx
+PASS src/test/components/PageHeader.test.jsx
+(node:2563) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS src/test/hooks/usePreferences.test.js
+PASS src/test/hooks/useCourses.test.js
+(node:2562) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS src/test/api/tutor.test.js
+(node:2566) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS src/test/hooks/useChat.test.js
+PASS src/test/api/apiHelpers.test.js
+(node:2567) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS src/test/hooks/useAuth.test.js
+(node:2568) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS src/test/api/courses.test.js
+PASS src/test/hooks/usePublishedModules.test.js
+PASS src/test/api/retell.test.js
+PASS src/test/components/VoiceAiModal.test.jsx
+PASS src/test/api/auth.test.js
+PASS src/test/hooks/useModuleManagement.test.js
+PASS src/test/hooks/useUserManagement.test.js
+PASS src/test/api/preferences.test.js
+PASS src/test/hooks/useProgress.test.js
+PASS src/test/api/contest.test.js
+PASS src/test/api/progress.test.js
+PASS src/test/components/Button.test.jsx
+PASS src/test/components/CourseForm.test.jsx
+PASS src/test/modules/ContestEditorPage.test.jsx
+--------------------------------------------|---------|----------|---------|---------|----------------------------------------------------------------------------------
+File                                        | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                
+--------------------------------------------|---------|----------|---------|---------|----------------------------------------------------------------------------------
+All files                                   |   66.53 |    75.77 |   58.92 |   66.66 |                                                                                  
+ api                                        |   89.32 |    90.38 |   85.33 |    89.6 |                                                                                  
+  admin.js                                  |     100 |      100 |     100 |     100 |                                                                                  
+  apiHelpers.js                             |     100 |      100 |     100 |     100 |                                                                                  
+  auth.js                                   |     100 |      100 |     100 |     100 |                                                                                  
+  contest.js                                |   36.95 |        0 |   15.38 |   37.77 | 22-28,38-44,57-63,72-130,138-143,152-157,166-171,197-202,229-234,242-247,256-261 
+  courses.js                                |     100 |      100 |     100 |     100 |                                                                                  
+  preferences.js                            |     100 |      100 |     100 |     100 |                                                                                  
+  progress.js                               |   83.33 |       75 |     100 |   83.33 | 17                                                                               
+  retell.js                                 |     100 |      100 |     100 |     100 |                                                                                  
+  tutor.js                                  |     100 |      100 |     100 |     100 |                                                                                  
+ components                                 |    98.9 |    96.25 |     100 |   99.41 |                                                                                  
+  Button.jsx                                |     100 |      100 |     100 |     100 |                                                                                  
+  ChatInput.jsx                             |     100 |     87.5 |     100 |     100 | 14-22,71                                                                         
+  ChatMessage.jsx                           |      90 |    91.17 |     100 |     100 | 7-21                                                                             
+  ContestCard.jsx                           |     100 |    95.12 |     100 |     100 | 9,53                                                                             
+  ContestTimer.jsx                          |     100 |      100 |     100 |     100 |                                                                                  
+  ErrorMessage.jsx                          |     100 |      100 |     100 |     100 |                                                                                  
+  FloatingChatWidget.jsx                    |      90 |    96.42 |     100 |      90 | 16-17                                                                            
+  Input.jsx                                 |     100 |      100 |     100 |     100 |                                                                                  
+  LeaderboardTable.jsx                      |     100 |      100 |     100 |     100 |                                                                                  
+  LoadingSpinner.jsx                        |     100 |      100 |     100 |     100 |                                                                                  
+  McqQuestion.jsx                           |     100 |      100 |     100 |     100 |                                                                                  
+  OTPInput.jsx                              |     100 |    92.15 |     100 |     100 | 3-10,43,67                                                                       
+  PageHeader.jsx                            |     100 |      100 |     100 |     100 |                                                                                  
+  PasswordStrengthIndicator.jsx             |     100 |      100 |     100 |     100 |                                                                                  
+  Skeleton.jsx                              |     100 |      100 |     100 |     100 |                                                                                  
+  TypingIndicator.jsx                       |     100 |      100 |     100 |     100 |                                                                                  
+ contexts                                   |     100 |      100 |     100 |     100 |                                                                                  
+  StreamingContext.jsx                      |     100 |      100 |     100 |     100 |                                                                                  
+ hooks                                      |   10.66 |        0 |       0 |   10.97 |                                                                                  
+  useAuth.js                                |   22.64 |        0 |       0 |   23.07 | 22-34,44,54-65,75-79,93-99,108-119,128,138,148,158,168,181-188                   
+  useChat.js                                |    6.34 |        0 |       0 |    6.34 | 14-83,91-190                                                                     
+  useCourses.js                             |   26.47 |        0 |       0 |   26.47 | 18-21,29-35,45-47,60-62,71-77,88-100,113-116,125-129,138-142                     
+  useModuleManagement.js                    |    0.67 |        0 |       0 |    0.71 | 9-292                                                                            
+  usePreferences.js                         |   33.33 |      100 |       0 |   33.33 | 8,19-25                                                                          
+  useProgress.js                            |      25 |        0 |       0 |      25 | 10-14                                                                            
+  usePublishedModules.js                    |   16.66 |        0 |       0 |   16.66 | 8-19,30-34,45-49                                                                 
+  useUserManagement.js                      |      25 |        0 |       0 |      25 | 8-10,19-21,31-33,43-51,60-66                                                     
+ modules/Landingpage                        |     100 |      100 |     100 |     100 |                                                                                  
+  CTASection.jsx                            |     100 |      100 |     100 |     100 |                                                                                  
+  HowItWorks.jsx                            |     100 |      100 |     100 |     100 |                                                                                  
+  LanguageGrid.jsx                          |     100 |      100 |     100 |     100 |                                                                                  
+  features.jsx                              |     100 |      100 |     100 |     100 |                                                                                  
+  header.jsx                                |     100 |      100 |     100 |     100 |                                                                                  
+  hero.jsx                                  |     100 |      100 |     100 |     100 |                                                                                  
+  landingpage.jsx                           |     100 |      100 |     100 |     100 |                                                                                  
+ modules/admin/module-management/components |     100 |      100 |     100 |     100 |                                                                                  
+  CourseForm.jsx                            |     100 |      100 |     100 |     100 |                                                                                  
+--------------------------------------------|---------|----------|---------|---------|----------------------------------------------------------------------------------
+
+Test Suites: 46 passed, 46 total
+Tests:       253 passed, 253 total
+Snapshots:   0 total
+Time:        3.705 s
+Ran all test suites.

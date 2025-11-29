@@ -4,7 +4,14 @@
  */
 
 // Base API configuration
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+/* istanbul ignore next */
+const resolvedBaseUrl =
+  (typeof import.meta !== 'undefined' &&
+    import.meta.env &&
+    import.meta.env.VITE_API_URL) ||
+  'http://localhost:5000';
+
+export const API_BASE_URL = resolvedBaseUrl;
 
 /**
  * FIX: Handle API response with improved error handling

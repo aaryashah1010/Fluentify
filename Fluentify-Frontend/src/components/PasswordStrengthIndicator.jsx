@@ -43,7 +43,7 @@ const PasswordStrengthIndicator = ({ password, email = '', name = '' }) => {
             {getStrengthLabel()}
           </span>
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 h-2">
           <div
             className={`h-2 rounded-full transition-all duration-300 ${getStrengthColor()}`}
             style={{ width: `${(strength / requirements.length) * 100}%` }}

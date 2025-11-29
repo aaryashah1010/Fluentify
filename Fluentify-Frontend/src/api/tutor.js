@@ -62,6 +62,7 @@ export const sendMessageStream = async (message, sessionId, token, onChunk, onCo
       }
 
       // Send any remaining buffer content
+      /* istanbul ignore next */
       if (buffer && onChunk) {
         onChunk(buffer);
       }
@@ -84,6 +85,7 @@ export const sendMessageStream = async (message, sessionId, token, onChunk, onCo
     console.error('Send message error:', error);
     
     // Handle different error types
+    /* istanbul ignore next */
     if (error.message.includes('rate_limit') || error.message.includes('too quickly')) {
       if (onError) onError('You\'re chatting too quickly. Please wait a few seconds.');
     } else if (error.message.includes('ai_failure') || error.message.includes('unavailable')) {

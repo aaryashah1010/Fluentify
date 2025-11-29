@@ -46,12 +46,12 @@ const LessonPage = () => {
 
   const lesson = data?.data?.lesson;
   const lessonProgress = data?.data?.progress;
-  const exercises = Array.isArray(lesson?.exercises) ? lesson.exercises : [];
+  const exercises = React.useMemo(() => Array.isArray(lesson?.exercises) ? lesson.exercises : [], [lesson?.exercises]);
   const grammarPoints = Array.isArray(lesson?.grammarPoints)
     ? lesson.grammarPoints
     : Array.isArray(lesson?.grammar_points)
-    ? lesson.grammar_points
-    : [];
+      ? lesson.grammar_points
+      : [];
   const vocabulary = Array.isArray(lesson?.vocabulary) ? lesson.vocabulary : [];
   const error = queryError?.message;
 
@@ -215,7 +215,7 @@ const LessonPage = () => {
     );
   }
 
-    return (
+  return (
     <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 relative">
       <main className="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <button
@@ -398,17 +398,15 @@ const LessonPage = () => {
                   key={section.key}
                   type="button"
                   onClick={() => setCurrentSection(section.key)}
-                  className={`w-full flex items-center justify-between rounded-2xl bg-slate-900/80 px-5 py-4 shadow-md border transition-all hover:shadow-lg ${
-                    isActive ? 'border-teal-400' : 'border-white/10'
-                  }`}
+                  className={`w-full flex items-center justify-between rounded-2xl bg-slate-900/80 px-5 py-4 shadow-md border transition-all hover:shadow-lg ${isActive ? 'border-teal-400' : 'border-white/10'
+                    }`}
                 >
                   <div className="flex items-center gap-4">
                     <div
-                      className={`flex items-center justify-center w-9 h-9 rounded-full text-sm font-semibold ${
-                        isCompleted
+                      className={`flex items-center justify-center w-9 h-9 rounded-full text-sm font-semibold ${isCompleted
                           ? 'bg-emerald-500/25 text-emerald-100'
                           : 'bg-slate-800 text-teal-200'
-                      }`}
+                        }`}
                     >
                       {isCompleted ? <CheckCircle className="w-4 h-4" /> : index + 1}
                     </div>
@@ -418,11 +416,10 @@ const LessonPage = () => {
                     </div>
                   </div>
                   <span
-                    className={`inline-flex items-center gap-1 text-sm font-medium px-4 py-1 rounded-full ${
-                      isCompleted
+                    className={`inline-flex items-center gap-1 text-sm font-medium px-4 py-1 rounded-full ${isCompleted
                         ? 'bg-slate-800 text-slate-100'
                         : 'bg-gradient-to-r from-teal-500 to-orange-400 text-white'
-                    }`}
+                      }`}
                   >
                     {statusLabel} →
                   </span>
@@ -535,11 +532,10 @@ const LessonPage = () => {
 
               {showResults && exerciseResults && (
                 <div
-                  className={`p-4 rounded-2xl border-2 ${
-                    exerciseResults.passed
+                  className={`p-4 rounded-2xl border-2 ${exerciseResults.passed
                       ? 'bg-emerald-900/40 border-emerald-400'
                       : 'bg-red-900/40 border-red-500'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
                     {exerciseResults.passed ? (
@@ -548,11 +544,10 @@ const LessonPage = () => {
                       <XCircle className="w-6 h-6 text-red-600" />
                     )}
                     <span
-                      className={`font-bold text-lg ${
-                        exerciseResults.passed
+                      className={`font-bold text-lg ${exerciseResults.passed
                           ? 'text-emerald-100'
                           : 'text-red-100'
-                      }`}
+                        }`}
                     >
                       {exerciseResults.passed ? 'Passed!' : 'Failed'} - Score:{' '}
                       {exerciseResults.correctCount}/{exerciseResults.totalCount}
@@ -582,13 +577,12 @@ const LessonPage = () => {
                       return (
                         <div
                           key={index}
-                          className={`border-2 rounded-2xl p-4 transition-all ${
-                            showResults
+                          className={`border-2 rounded-2xl p-4 transition-all ${showResults
                               ? result?.isCorrect
                                 ? 'bg-emerald-900/40 border-2 border-emerald-400'
                                 : 'bg-red-900/40 border-2 border-red-500'
                               : 'bg-slate-900 border border-slate-700'
-                          }`}
+                            }`}
                         >
                           <div className="flex items-start justify-between mb-3">
                             <span className="font-medium">
@@ -596,11 +590,10 @@ const LessonPage = () => {
                             </span>
                             {showResults && (
                               <span
-                                className={`flex items-center gap-1 text-sm font-medium ${
-                                  result?.isCorrect
+                                className={`flex items-center gap-1 text-sm font-medium ${result?.isCorrect
                                     ? 'text-green-700'
                                     : 'text-red-700'
-                                }`}
+                                  }`}
                               >
                                 {result?.isCorrect ? (
                                   <>
@@ -632,17 +625,16 @@ const LessonPage = () => {
                                 return (
                                   <label
                                     key={idx}
-                                    className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors border ${
-                                      showResults
+                                    className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors border ${showResults
                                         ? isCorrectAnswer
                                           ? 'bg-emerald-900/40 border-2 border-emerald-400'
                                           : isWrongSelection
-                                          ? 'bg-red-900/40 border-2 border-red-500'
-                                          : 'bg-slate-900 border border-slate-700'
+                                            ? 'bg-red-900/40 border-2 border-red-500'
+                                            : 'bg-slate-900 border border-slate-700'
                                         : isSelected
-                                        ? 'bg-sky-900/50 border-2 border-sky-500'
-                                        : 'bg-slate-900 border border-slate-700 hover:bg-slate-800'
-                                    }`}
+                                          ? 'bg-sky-900/50 border-2 border-sky-500'
+                                          : 'bg-slate-900 border border-slate-700 hover:bg-slate-800'
+                                      }`}
                                   >
                                     <input
                                       type="radio"
@@ -779,7 +771,7 @@ const LessonPage = () => {
         <FloatingChatWidget />
       </div>
     </div>
-    );
+  );
 };
 
 export default LessonPage;

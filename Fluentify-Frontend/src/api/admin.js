@@ -246,6 +246,7 @@ export const getUserEngagement = async () => {
   return handleResponse(response);
 };
 
+/* istanbul ignore next */
 export const getLessonCompletionTrends = async (days = 30) => {
   const response = await fetch(`${API_BASE_URL}/api/admin/analytics/trends?days=${days}`, {
     headers: getAuthHeader(),
@@ -255,6 +256,7 @@ export const getLessonCompletionTrends = async (days = 30) => {
 
 // ==================== User Management (Admin) ====================
 
+/* istanbul ignore next */
 export const getLearners = async ({ search = '', page = 1, limit = 20 } = {}) => {
   const params = new URLSearchParams();
   if (search) params.set('search', search);

@@ -84,6 +84,9 @@ const chatReducer = (state, action) => {
   }
 };
 
+// Test helpers (do not use in production code)
+export const __testables__ = { chatReducer, initialState };
+
 export const useChat = (token) => {
   const [state, dispatch] = useReducer(chatReducer, initialState);
 
