@@ -48,50 +48,25 @@ const LessonPage = () => {
   const lesson = data?.data?.lesson;
   const lessonProgress = data?.data?.progress;
 
-  // Detect if this is an admin-published course (has media_url and content_type like pdf/audio/video)
-  const isAdminCourse = useMemo(() => {
-    if (!lesson) return false;
-    // Admin courses have content_type like 'pdf', 'audio', 'video' and typically have media_url
-    const adminContentTypes = ['pdf', 'audio', 'video'];
-    return adminContentTypes.includes(lesson.content_type?.toLowerCase()) && lesson.media_url;
-  }, [lesson]);
-
-  // Parse media URLs - support both single URL and array of URLs
-  const mediaUrls = useMemo(() => {
-    if (!lesson?.media_url) return [];
-    // If it's already an array, use it directly
-    if (Array.isArray(lesson.media_url)) return lesson.media_url;
-    // Try parsing as JSON array
-    try {
-      const parsed = JSON.parse(lesson.media_url);
-      if (Array.isArray(parsed)) return parsed;
-    } catch (e) {
-      // Not JSON, treat as single URL
-    }
-    // Single URL - wrap in array
-    return [lesson.media_url];
-  }, [lesson?.media_url]);
-
-  // Use useMemo to ensure stable reference for arrays (only for AI courses)
+  // Use useMemo to ensure stable reference for arrays
   const exercises = useMemo(() => 
-    isAdminCourse ? [] : (Array.isArray(lesson?.exercises) ? lesson.exercises : []), 
-    [lesson?.exercises, isAdminCourse]
+    Array.isArray(lesson?.exercises) ? lesson.exercises : [], 
+    [lesson?.exercises]
   );
   
-  const grammarPoints = useMemo(() => 
-    isAdminCourse ? [] : (
-      Array.isArray(lesson?.grammarPoints)
-      ? lesson.grammarPoints
-      : Array.isArray(lesson?.grammar_points)
-      ? lesson.grammar_points
-      : []
-    ),
-    [lesson?.grammarPoints, lesson?.grammar_points, isAdminCourse]
+  const grammarPoints = useMemo(() => (
+    Array.isArray(lesson?.grammarPoints)
+    ? lesson.grammarPoints
+    : Array.isArray(lesson?.grammar_points)
+    ? lesson.grammar_points
+    : []
+  ),
+  [lesson?.grammarPoints, lesson?.grammar_points]
   );
 
   const vocabulary = useMemo(() => 
-    isAdminCourse ? [] : (Array.isArray(lesson?.vocabulary) ? lesson.vocabulary : []), 
-    [lesson?.vocabulary, isAdminCourse]
+    Array.isArray(lesson?.vocabulary) ? lesson.vocabulary : [], 
+    [lesson?.vocabulary]
   );
   const error = queryError?.message;
 
@@ -255,17 +230,17 @@ const LessonPage = () => {
     );
   }
 
-    return (
+  return (
     <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 relative">
       <main className="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <button
-          onClick={() => navigate(isAdminCourse ? `/module-course/${courseId}` : `/course/${courseId}`)}
+          onClick={() => navigate(`/course/${courseId}`)}
           className="mb-4 inline-flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900"
         >
           <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-sm border border-gray-200">
             ←
           </span>
-          <span className="font-medium">Back to Course</span>
+          <span className="font-medium text-white">Back to Course</span>
         </button>
 
         <div className="bg-gradient-to-r from-teal-500 to-orange-400 rounded-3xl p-6 md:p-8 text-white shadow-xl mb-8">
@@ -305,36 +280,24 @@ const LessonPage = () => {
               </div>
             )}
           </div>
-          {/* Show stats only for AI courses, show file count for admin courses */}
-          {isAdminCourse ? (
-            <div className="flex flex-wrap items-center gap-3 text-xs md:text-sm text-white/90">
-              {mediaUrls.length > 0 && (
-                <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
-                  <BookOpen className="w-4 h-4" />
-                  <span>{mediaUrls.length} {mediaUrls.length === 1 ? 'file' : 'files'}</span>
-                </div>
-              )}
+          <div className="flex flex-wrap items-center gap-3 text-xs md:text-sm text-white/90">
+            <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
+              <BookOpen className="w-4 h-4" />
+              <span>{vocabulary.length} vocabulary items</span>
             </div>
-          ) : (
-            <div className="flex flex-wrap items-center gap-3 text-xs md:text-sm text-white/90">
-              <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
-                <BookOpen className="w-4 h-4" />
-                <span>{vocabulary.length} vocabulary items</span>
-              </div>
-              <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
-                <Target className="w-4 h-4" />
-                <span>{grammarPoints.length} grammar points</span>
-              </div>
-              <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
-                <Play className="w-4 h-4" />
-                <span>{exercises.length} exercises</span>
-              </div>
-              <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
-                <Award className="w-4 h-4" />
-                <span>{lesson.xpReward || 0} XP</span>
-              </div>
+            <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
+              <Target className="w-4 h-4" />
+              <span>{grammarPoints.length} grammar points</span>
             </div>
-          )}
+            <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
+              <Play className="w-4 h-4" />
+              <span>{exercises.length} exercises</span>
+            </div>
+            <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
+              <Award className="w-4 h-4" />
+              <span>{lesson.xpReward || 0} XP</span>
+            </div>
+          </div>
         </div>
         {lessonJustCompleted && (
           <div className="bg-slate-950/90 border border-green-500/60 rounded-2xl p-6 mb-6 shadow-xl">
@@ -358,7 +321,7 @@ const LessonPage = () => {
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <Button
-                    onClick={() => navigate(isAdminCourse ? `/module-course/${courseId}` : `/course/${courseId}`)}
+                    onClick={() => navigate(`/course/${courseId}`)}
                     className="bg-slate-900/90 border border-white/15 text-slate-50"
                     variant="primary"
                     icon={<BookOpen className="w-4 h-4" />}
@@ -409,7 +372,7 @@ const LessonPage = () => {
             </div>
           )}
 
-        {!isAdminCourse && !isLessonCompleted() &&
+        {!isLessonCompleted() &&
           !lessonJustCompleted &&
           exercises.length === 0 && (
             <div className="bg-slate-950/90 border border-amber-400/60 rounded-2xl p-4 mb-6">
@@ -428,28 +391,7 @@ const LessonPage = () => {
             </div>
           )}
 
-        {/* Media Content Section (PDF, Audio, Video) */}
-        {mediaUrls.length > 0 && (
-          <section className="mb-8">
-            <h2 className="text-sm font-semibold text-slate-100 mb-3">
-              Lesson Content {mediaUrls.length > 1 && `(${mediaUrls.length} files)`}
-            </h2>
-            <div className="space-y-4">
-              {mediaUrls.map((url, index) => (
-                <MediaViewer 
-                  key={index}
-                  mediaUrl={url}
-                  mediaType={lesson.content_type || lesson.type || lesson.lessonType}
-                  title={mediaUrls.length > 1 ? `${lesson.title} - File ${index + 1}` : lesson.title}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Show Lesson Units only for AI-generated courses */}
-        {!isAdminCourse && (
-        <>
+        {/* Lesson Units for AI-generated courses */}
         <section className="mb-8">
           <h2 className="text-sm font-semibold text-slate-100 mb-3">
             Lesson Units
@@ -612,8 +554,8 @@ const LessonPage = () => {
                 <div
                   className={`p-4 rounded-2xl border-2 ${
                     exerciseResults.passed
-                      ? 'bg-emerald-900/40 border-emerald-400'
-                      : 'bg-red-900/40 border-red-500'
+                      ? 'bg-emerald-900/40 border-2 border-emerald-400'
+                      : 'bg-red-900/40 border-2 border-red-500'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
@@ -813,36 +755,33 @@ const LessonPage = () => {
             </div>
           )}
         </section>
-        </>
-      )}
 
-      {/* Show Complete Lesson section only for AI courses */}
-      {!isAdminCourse && !isLessonCompleted() && (
-        <div className="bg-slate-950/90 border border-amber-400/60 rounded-2xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h3 className="text-sm font-semibold text-slate-50">
-              Complete this lesson
-            </h3>
-            <p className="text-xs text-slate-300 mt-1">
-              Finish all units and pass the exercises to earn XP for this
-              lesson.
-            </p>
+        {/* Complete Lesson section */}
+        {!isLessonCompleted() && (
+          <div className="bg-slate-950/90 border border-amber-400/60 rounded-2xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-50">
+                Complete this lesson
+              </h3>
+              <p className="text-xs text-slate-300 mt-1">
+                Finish all units and pass the exercises to earn XP for this
+                lesson.
+              </p>
+            </div>
+            <Button
+              onClick={markLessonComplete}
+              disabled={!exerciseResults?.passed}
+              loading={completeLessonMutation.isPending}
+              className="bg-gradient-to-r from-teal-300 to-orange-300 text-white disabled:opacity-60 disabled:cursor-not-allowed"
+              icon={<Award className="w-4 h-4" />}
+            >
+              Finish Lesson
+            </Button>
           </div>
-          <Button
-            onClick={markLessonComplete}
-            disabled={!exerciseResults?.passed}
-            loading={completeLessonMutation.isPending}
-            className="bg-gradient-to-r from-teal-300 to-orange-300 text-white disabled:opacity-60 disabled:cursor-not-allowed"
-            icon={<Award className="w-4 h-4" />}
-          >
-            Finish Lesson
-          </Button>
-        </div>
-      )}
+        )}
       </main>
-
     </div>
-    );
+  );
 };
 
 export default LessonPage;

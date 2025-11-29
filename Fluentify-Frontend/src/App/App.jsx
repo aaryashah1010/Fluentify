@@ -13,6 +13,7 @@ import {
   Dashboard,
   CoursePage,
   LessonPage,
+  AdminLessonPage,
   TutorChatPage,
   LanguageModulesPage,
   ModuleCoursesPage,
@@ -168,6 +169,14 @@ function App() {
           element={
             <ProtectedRoute role="learner">
               <LessonPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/module-lesson/:courseId/:unitId/:lessonId"
+          element={
+            <ProtectedRoute role="learner">
+              <AdminLessonPage />
             </ProtectedRoute>
           }
         />

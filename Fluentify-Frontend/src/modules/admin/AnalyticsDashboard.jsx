@@ -106,7 +106,7 @@ const AnalyticsDashboard = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 relative z-10">
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* Total Lessons */}
           <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
             <div className="absolute -top-10 -right-10 w-24 h-24 bg-gradient-to-br from-orange-500/20 to-teal-400/20 rounded-full blur-2xl" />
@@ -117,20 +117,6 @@ const AnalyticsDashboard = () => {
               </div>
               <div className="p-3 rounded-2xl bg-gradient-to-br from-orange-500/40 to-purple-500/40 border border-white/15 shadow-md">
                 <BookOpen className="w-6 h-6 text-orange-200" />
-              </div>
-            </div>
-          </div>
-
-          {/* Active Users */}
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
-            <div className="absolute -top-10 -right-10 w-24 h-24 bg-gradient-to-br from-emerald-500/25 to-teal-400/25 rounded-full blur-2xl" />
-            <div className="relative flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-slate-300">Active Users</p>
-                <p className="text-2xl font-bold text-slate-50 mt-1">{summary?.totalActiveUsers || 0}</p>
-              </div>
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-emerald-500/40 to-teal-500/40 border border-white/15 shadow-md">
-                <Users className="w-6 h-6 text-emerald-100" />
               </div>
             </div>
           </div>
@@ -205,35 +191,6 @@ const AnalyticsDashboard = () => {
             )}
           </div>
 
-          {/* Module Usage */}
-          <div className="rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
-            <h3 className="text-lg font-semibold text-slate-50 mb-4 flex items-center gap-2">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-teal-500/30">
-                <BookOpen className="w-4 h-4 text-teal-200" />
-              </span>
-              Module Usage (Admin vs AI)
-            </h3>
-            {moduleUsage && moduleUsage.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={moduleUsage}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
-                  <XAxis dataKey="module_type" />
-                  <YAxis stroke="#CBD5F5" />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="count" fill="#F97316" />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-64 text-gray-500">
-                <div className="text-center">
-                  <BarChart className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>No module usage data available</p>
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* AI Performance */}
           <div className="rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
             <h3 className="text-lg font-semibold text-slate-50 mb-4 flex items-center gap-2">
@@ -271,30 +228,6 @@ const AnalyticsDashboard = () => {
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* User Engagement */}
-          <div className="rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
-            <h3 className="text-lg font-semibold text-slate-50 mb-4 flex items-center gap-2">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-teal-500/30">
-                <Users className="w-4 h-4 text-teal-200" />
-              </span>
-              User Engagement
-            </h3>
-            <div className="space-y-4 text-sm">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-300">Active Users (30 days)</span>
-                <span className="font-semibold text-slate-50">{userEngagement?.total_active_users || 0}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-300">Avg. Lessons per User</span>
-                <span className="font-semibold text-emerald-300">{userEngagement?.avg_lessons_per_user || '0.0'}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-300">Most Active User Lessons</span>
-                <span className="font-semibold text-orange-300">{userEngagement?.max_lessons_per_user || 0} lessons</span>
-              </div>
             </div>
           </div>
         </div>
