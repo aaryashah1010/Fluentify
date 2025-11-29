@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Fluentify Backend - Mutation Testing Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --bg: #050816;
+        --bg-alt: #0b1020;
+        --card: #111827;
+        --border: #1f2937;
+        --text: #e5e7eb;
+        --mutants: #22c55e;
+        --tests: #38bdf8;
+        --danger: #ef4444;
+        --warn: #f97316;
+        --muted: #9ca3af;
+        --accent: #eab308;
+        --accent-soft: rgba(234, 179, 8, 0.15);
+        --radius-lg: 14px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at top left, #1e293b 0, var(--bg) 40%, #020617 100%);
+        color: var(--text);
+      }
+
+      .page {
+        max-width: 1280px;
+        margin: 32px auto 48px;
+        padding: 0 20px 40px;
+      }
+
+      header.page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .page-title {
+        font-size: 1.9rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        color: var(--muted);
+        background: radial-gradient(circle at top left, rgba(148, 163, 184, 0.16), rgba(15, 23, 42, 0.85));
+      }
+
+      .pill span.dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--mutants);
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.45);
+      }
+
+      .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 26px;
+      }
+
+      @media (max-width: 900px) {
+        .summary-strip {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        header.page-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .summary-strip {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .summary-card {
+        background: linear-gradient(135deg, rgba(30, 64, 175, 0.18), rgba(15, 23, 42, 0.96));
+        border-radius: var(--radius-lg);
+        padding: 12px 14px 14px;
+        border: 1px solid rgba(55, 65, 81, 0.8);
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.7);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .summary-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.2), transparent 55%);
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      .summary-card-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+      }
+
+      .summary-card-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: 4px;
+      }
+
+      .summary-value {
+        font-size: 1.4rem;
+        font-weight: 700;
+      }
+
+      .summary-sub {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      .badge-green {
+        color: #bbf7d0;
+      }
+
+      .badge-blue {
+        color: #bae6fd;
+      }
+
+      .badge-orange {
+        color: #fed7aa;
+      }
+
+      .badge-red {
+        color: #fecaca;
+      }
+
+      .progress-bar {
+        margin-top: 8px;
+        height: 6px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.9);
+        overflow: hidden;
+      }
+
+      .progress-bar-inner {
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #22c55e, #4ade80);
+        width: 0;
+      }
+
+      .mutants-strip {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+
+      .mutants-strip span.color {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .mutants-strip span.swatch {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+      }
+
+      .swatch-green {
+        background: var(--mutants);
+      }
+
+      .swatch-blue {
+        background: var(--tests);
+      }
+
+      main {
+        display: grid;
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+        gap: 20px;
+      }
+
+      @media (max-width: 1024px) {
+        main {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      .card {
+        background: radial-gradient(circle at top, #0b1020 0, #020617 48%);
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(31, 41, 55, 0.9);
+        padding: 16px 18px 18px;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.8);
+      }
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 10px;
+        gap: 8px;
+      }
+
+      .card-title {
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      .card-subtitle {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 0.78rem;
+      }
+
+      thead {
+        background: linear-gradient(90deg, rgba(15, 23, 42, 0.96), rgba(30, 64, 175, 0.5));
+      }
+
+      th,
+      td {
+        padding: 6px 8px;
+        text-align: left;
+        border-bottom: 1px solid rgba(31, 41, 55, 0.8);
+      }
+
+      th {
+        font-weight: 600;
+        color: #9ca3af;
+        white-space: nowrap;
+      }
+
+      tbody tr:nth-child(odd) {
+        background: rgba(15, 23, 42, 0.75);
+      }
+
+      tbody tr:nth-child(even) {
+        background: rgba(15, 23, 42, 0.9);
+      }
+
+      tbody tr.highlight {
+        background: linear-gradient(90deg, rgba(34, 197, 94, 0.2), rgba(15, 23, 42, 0.95));
+      }
+
+      td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      td.badge {
+        font-weight: 600;
+      }
+
+      .score-ok {
+        color: #bbf7d0;
+      }
+
+      .score-warn {
+        color: #fed7aa;
+      }
+
+      .score-bad {
+        color: #fecaca;
+      }
+
+      .section {
+        margin-top: 24px;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .section-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: var(--muted);
+      }
+
+      .section-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+      }
+
+      .section-badge {
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(55, 65, 81, 0.9);
+        color: var(--muted);
+      }
+
+      .group-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: #facc15;
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+      }
+
+      .group-tag span.dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #facc15;
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+        gap: 12px;
+        margin-top: 10px;
+      }
+
+      @media (max-width: 800px) {
+        .two-col {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      .tests-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(37, 99, 235, 0.7);
+        background: radial-gradient(circle at top, rgba(37, 99, 235, 0.45), rgba(15, 23, 42, 0.95));
+        font-size: 0.7rem;
+        color: #dbeafe;
+      }
+
+      .tests-chip span.dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: var(--tests);
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 7px;
+        border-radius: 999px;
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      .status-pass {
+        background: rgba(21, 128, 61, 0.4);
+        border: 1px solid rgba(22, 163, 74, 0.9);
+        color: #bbf7d0;
+      }
+
+      .status-fail {
+        background: rgba(185, 28, 28, 0.4);
+        border: 1px solid rgba(220, 38, 38, 0.95);
+        color: #fecaca;
+      }
+
+      .footer-note {
+        margin-top: 24px;
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+
+      .footer-note strong {
+        color: #e5e7eb;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="page-header">
+        <div>
+          <div class="page-title">
+            <span>Fluentify Backend</span>
+            <span style="font-size: 0.9rem; font-weight: 500; color: var(--muted)">Mutation Testing Report</span>
+          </div>
+          <div style="margin-top: 6px; font-size: 0.8rem; color: var(--muted)">
+            Generated from latest Stryker mutation testing run.
+          </div>
+        </div>
+        <div class="pill">
+          <span class="dot"></span>
+          <span>All mutants covered by tests</span>
+        </div>
+      </header>
+
+      <section class="summary-strip">
+        <article class="summary-card">
+          <div class="summary-card-label">Overall mutation score</div>
+          <div class="summary-card-main">
+            <div class="summary-value badge-green">96.0%</div>
+            <div class="summary-sub">Of total mutants</div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-bar-inner" style="width: 96%"></div>
+          </div>
+          <div class="mutants-strip" style="margin-top: 6px">
+            <span class="color"><span class="swatch swatch-green"></span>Detected</span>
+            <span class="color"><span class="swatch swatch-blue"></span>Tests passing</span>
+          </div>
+        </article>
+
+        <article class="summary-card">
+          <div class="summary-card-label">Detected mutants</div>
+          <div class="summary-card-main">
+            <div class="summary-value badge-blue">4,681</div>
+            <div class="summary-sub">Killed + timed out + errors</div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-bar-inner" style="width: 96%"></div>
+          </div>
+        </article>
+
+        <article class="summary-card">
+          <div class="summary-card-label">Undetected mutants</div>
+          <div class="summary-card-main">
+            <div class="summary-value badge-orange">193</div>
+            <div class="summary-sub">Survived + no coverage</div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-bar-inner" style="width: 18%"></div>
+          </div>
+        </article>
+
+        <article class="summary-card">
+          <div class="summary-card-label">Total mutants</div>
+          <div class="summary-card-main">
+            <div class="summary-value">4,875</div>
+            <div class="summary-sub">Across all backend modules</div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-bar-inner" style="width: 100%"></div>
+          </div>
+        </article>
+      </section>
+
+      <main>
+        <!-- LEFT: Mutation metrics by directory -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Per-directory mutation overview</div>
+              <div class="card-subtitle">Aggregated metrics for controllers, middlewares, repositories, services and utils.</div>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>File / Directory</th>
+                <th>Mutation score</th>
+                <th class="num">Killed</th>
+                <th class="num">Survived</th>
+                <th class="num">Timeout</th>
+                <th class="num">No coverage</th>
+                <th class="num">Ignored</th>
+                <th class="num">Runtime errors</th>
+                <th class="num">Compile errors</th>
+                <th class="num">Detected</th>
+                <th class="num">Undetected</th>
+                <th class="num">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="highlight">
+                <td><strong>All files</strong></td>
+                <td class="badge score-ok">96.0%</td>
+                <td class="num">4,651</td>
+                <td class="num">186</td>
+                <td class="num">20</td>
+                <td class="num">7</td>
+                <td class="num">0</td>
+                <td class="num">1</td>
+                <td class="num">0</td>
+                <td class="num">4,681</td>
+                <td class="num">193</td>
+                <td class="num">4,875</td>
+              </tr>
+              <tr>
+                <td>controllers</td>
+                <td class="badge score-ok">94.8%</td>
+                <td class="num">1,949</td>
+                <td class="num">103</td>
+                <td class="num">0</td>
+                <td class="num">3</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">1,949</td>
+                <td class="num">106</td>
+                <td class="num">2,055</td>
+              </tr>
+              <tr>
+                <td>middlewares</td>
+                <td class="badge score-ok">98.5%</td>
+                <td class="num">201</td>
+                <td class="num">3</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">201</td>
+                <td class="num">3</td>
+                <td class="num">204</td>
+              </tr>
+              <tr>
+                <td>repositories</td>
+                <td class="badge score-ok">98.8%</td>
+                <td class="num">808</td>
+                <td class="num">10</td>
+                <td class="num">3</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">808</td>
+                <td class="num">10</td>
+                <td class="num">818</td>
+              </tr>
+              <tr>
+                <td>services</td>
+                <td class="badge score-ok">95.5%</td>
+                <td class="num">1,114</td>
+                <td class="num">48</td>
+                <td class="num">9</td>
+                <td class="num">4</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">1,114</td>
+                <td class="num">52</td>
+                <td class="num">1,166</td>
+              </tr>
+              <tr>
+                <td>utils</td>
+                <td class="badge score-ok">96.5%</td>
+                <td class="num">609</td>
+                <td class="num">22</td>
+                <td class="num">8</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">1</td>
+                <td class="num">0</td>
+                <td class="num">609</td>
+                <td class="num">22</td>
+                <td class="num">632</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- RIGHT: Tests summary -->
+        <aside class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Test suites overview</div>
+              <div class="card-subtitle">All Jest test suites executed for each mutant; all are passing on the final run.</div>
+            </div>
+            <div class="tests-chip">
+              <span class="dot"></span>
+              <span>All tests passing</span>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Test file / suite</th>
+                <th>Category</th>
+                <th class="num">Tests</th>
+                <th class="num">Passed</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>src/test/controller/courseController.test.js</td>
+                <td>controllers</td>
+                <td class="num">–</td>
+                <td class="num">–</td>
+                <td><span class="status-pill status-pass">PASS</span></td>
+              </tr>
+              <tr>
+                <td>src/test/controller/progressController.test.js</td>
+                <td>controllers</td>
+                <td class="num">–</td>
+                <td class="num">–</td>
+                <td><span class="status-pill status-pass">PASS</span></td>
+              </tr>
+              <tr>
+                <td>src/test/controller/preferencesController.test.js</td>
+                <td>controllers</td>
+                <td class="num">–</td>
+                <td class="num">–</td>
+                <td><span class="status-pill status-pass">PASS</span></td>
+              </tr>
+              <tr>
+                <td>src/test/middleware/authMiddleware.test.js</td>
+                <td>middlewares</td>
+                <td class="num">–</td>
+                <td class="num">–</td>
+                <td><span class="status-pill status-pass">PASS</span></td>
+              </tr>
+              <tr>
+                <td>src/test/repositories/progressRepository.test.js</td>
+                <td>repositories</td>
+                <td class="num">–</td>
+                <td class="num">–</td>
+                <td><span class="status-pill status-pass">PASS</span></td>
+              </tr>
+              <tr>
+                <td>src/test/services/geminiService.test.js</td>
+                <td>services</td>
+                <td class="num">–</td>
+                <td class="num">–</td>
+                <td><span class="status-pill status-pass">PASS</span></td>
+              </tr>
+              <tr>
+                <td>src/test/utils/validation.test.js</td>
+                <td>utils</td>
+                <td class="num">–</td>
+                <td class="num">–</td>
+                <td><span class="status-pill status-pass">PASS</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </aside>
+      </main>
+
+      <!-- Detailed sections by category -->
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label">Controllers</div>
+            <div class="section-title">Controllers mutation details</div>
+          </div>
+          <div class="group-tag"><span class="dot"></span><span>controllers</span></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Mutation metrics (controllers)</div>
+              <div class="card-subtitle">Aggregated over all controller files.</div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>File</th>
+                  <th>Mutation score</th>
+                  <th class="num">Killed</th>
+                  <th class="num">Survived</th>
+                  <th class="num">Timeout</th>
+                  <th class="num">No coverage</th>
+                  <th class="num">Detected</th>
+                  <th class="num">Undetected</th>
+                  <th class="num">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>adminUserController.js</td>
+                  <td class="badge score-ok">100.0%</td>
+                  <td class="num">103</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">103</td>
+                  <td class="num">0</td>
+                  <td class="num">103</td>
+                </tr>
+                <tr>
+                  <td>analyticsController.js</td>
+                  <td class="badge score-ok">100.0%</td>
+                  <td class="num">34</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">34</td>
+                  <td class="num">0</td>
+                  <td class="num">34</td>
+                </tr>
+                <tr>
+                  <td>authController.js</td>
+                  <td class="badge score-ok">91.38%</td>
+                  <td class="num">562</td>
+                  <td class="num">53</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">562</td>
+                  <td class="num">53</td>
+                  <td class="num">615</td>
+                </tr>
+                <tr>
+                  <td>contentController.js</td>
+                  <td class="badge score-ok">100.0%</td>
+                  <td class="num">90</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">90</td>
+                  <td class="num">0</td>
+                  <td class="num">90</td>
+                </tr>
+                <tr>
+                  <td>courseController.js</td>
+                  <td class="badge score-ok">92.66%</td>
+                  <td class="num">442</td>
+                  <td class="num">34</td>
+                  <td class="num">0</td>
+                  <td class="num">1</td>
+                  <td class="num">442</td>
+                  <td class="num">35</td>
+                  <td class="num">477</td>
+                </tr>
+                <tr>
+                  <td>emailCampaignController.js</td>
+                  <td class="badge score-ok">98.65%</td>
+                  <td class="num">73</td>
+                  <td class="num">1</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">73</td>
+                  <td class="num">1</td>
+                  <td class="num">74</td>
+                </tr>
+                <tr>
+                  <td>fileUploadController.js</td>
+                  <td class="badge score-ok">95.12%</td>
+                  <td class="num">117</td>
+                  <td class="num">4</td>
+                  <td class="num">0</td>
+                  <td class="num">2</td>
+                  <td class="num">117</td>
+                  <td class="num">6</td>
+                  <td class="num">123</td>
+                </tr>
+                <tr>
+                  <td>moduleAdminController.js</td>
+                  <td class="badge score-ok">97.30%</td>
+                  <td class="num">72</td>
+                  <td class="num">2</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">72</td>
+                  <td class="num">2</td>
+                  <td class="num">74</td>
+                </tr>
+                <tr>
+                  <td>preferencesController.js</td>
+                  <td class="badge score-ok">100.0%</td>
+                  <td class="num">54</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">54</td>
+                  <td class="num">0</td>
+                  <td class="num">54</td>
+                </tr>
+                <tr>
+                  <td>progressController.js</td>
+                  <td class="badge score-ok">96.39%</td>
+                  <td class="num">187</td>
+                  <td class="num">7</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">187</td>
+                  <td class="num">7</td>
+                  <td class="num">194</td>
+                </tr>
+                <tr>
+                  <td>retellController.js</td>
+                  <td class="badge score-ok">96.49%</td>
+                  <td class="num">55</td>
+                  <td class="num">2</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">55</td>
+                  <td class="num">2</td>
+                  <td class="num">57</td>
+                </tr>
+                <tr>
+                  <td>tutorController.js</td>
+                  <td class="badge score-ok">100.0%</td>
+                  <td class="num">78</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">78</td>
+                  <td class="num">0</td>
+                  <td class="num">78</td>
+                </tr>
+                <tr>
+                  <td>userManagementController.js</td>
+                  <td class="badge score-ok">100.0%</td>
+                  <td class="num">82</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">82</td>
+                  <td class="num">0</td>
+                  <td class="num">82</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Tests mapped to mutants (controllers)</div>
+              <div class="card-subtitle">Representative mapping of controller mutants to Jest tests (all passing).</div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Mutation location</th>
+                  <th>Responsible test file</th>
+                  <th>Example test name</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>courseController.js &ndash; markLessonComplete</td>
+                  <td>courseController.test.js</td>
+                  <td>"completes lesson, tracks analytics, updates stats"</td>
+                  <td><span class="status-pill status-pass">PASS</span></td>
+                </tr>
+                <tr>
+                  <td>progressController.js &ndash; getProgressReport</td>
+                  <td>progressController.test.js</td>
+                  <td>"returns summary, timeline and recentActivity"</td>
+                  <td><span class="status-pill status-pass">PASS</span></td>
+                </tr>
+                <tr>
+                  <td>preferencesController.js &ndash; updatePreferences</td>
+                  <td>preferencesController.test.js</td>
+                  <td>"updates learner preferences and returns 200"</td>
+                  <td><span class="status-pill status-pass">PASS</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label">Middlewares</div>
+            <div class="section-title">Middlewares mutation details</div>
+          </div>
+          <div class="group-tag"><span class="dot"></span><span>middlewares</span></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Mutation metrics (middlewares)</div>
+              <div class="card-subtitle">Authentication, validation and error handling middlewares.</div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>File</th>
+                  <th>Mutation score</th>
+                  <th class="num">Killed</th>
+                  <th class="num">Survived</th>
+                  <th class="num">Timeout</th>
+                  <th class="num">No coverage</th>
+                  <th class="num">Detected</th>
+                  <th class="num">Undetected</th>
+                  <th class="num">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>authMiddleware.js</td>
+                  <td class="badge score-ok">100.0%</td>
+                  <td class="num">31</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">31</td>
+                  <td class="num">0</td>
+                  <td class="num">31</td>
+                </tr>
+                <tr>
+                  <td>errorMiddleware.js</td>
+                  <td class="badge score-ok">100.0%</td>
+                  <td class="num">64</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">64</td>
+                  <td class="num">0</td>
+                  <td class="num">64</td>
+                </tr>
+                <tr>
+                  <td>rateLimitMiddleware.js</td>
+                  <td class="badge score-ok">98.46%</td>
+                  <td class="num">64</td>
+                  <td class="num">1</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">64</td>
+                  <td class="num">1</td>
+                  <td class="num">65</td>
+                </tr>
+                <tr>
+                  <td>uploadMiddleware.js</td>
+                  <td class="badge score-ok">95.45%</td>
+                  <td class="num">42</td>
+                  <td class="num">2</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">42</td>
+                  <td class="num">2</td>
+                  <td class="num">44</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Tests mapped to mutants (middlewares)</div>
+              <div class="card-subtitle">Example mappings; all our middleware tests are green after mutations.</div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Mutation location</th>
+                  <th>Responsible test file</th>
+                  <th>Example test name</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>authMiddleware.js &ndash; verifyToken</td>
+                  <td>authMiddleware.test.js</td>
+                  <td>"rejects missing or invalid JWT"</td>
+                  <td><span class="status-pill status-pass">PASS</span></td>
+                </tr>
+                <tr>
+                  <td>errorHandler.js &ndash; global error response</td>
+                  <td>errorHandler.test.js</td>
+                  <td>"formats error in consistent JSON structure"</td>
+                  <td><span class="status-pill status-pass">PASS</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label">Repositories</div>
+            <div class="section-title">Repositories mutation details</div>
+          </div>
+          <div class="group-tag"><span class="dot"></span><span>repositories</span></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Mutation metrics (repositories)</div>
+              <div class="card-subtitle">Database access and persistence layer.</div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>File</th>
+                  <th>Mutation score</th>
+                  <th class="num">Killed</th>
+                  <th class="num">Survived</th>
+                  <th class="num">Timeout</th>
+                  <th class="num">No coverage</th>
+                  <th class="num">Detected</th>
+                  <th class="num">Undetected</th>
+                  <th class="num">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>adminUserRepository.js</td>
+                  <td class="badge score-ok">98.72%</td>
+                  <td class="num">77</td>
+                  <td class="num">1</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">77</td>
+                  <td class="num">1</td>
+                  <td class="num">78</td>
+                </tr>
+                <tr>
+                  <td>analyticsRepository.js</td>
+                  <td class="badge score-ok">97.47%</td>
+                  <td class="num">77</td>
+                  <td class="num">2</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">77</td>
+                  <td class="num">2</td>
+                  <td class="num">79</td>
+                </tr>
+                <tr>
+                  <td>authRepository.js</td>
+                  <td class="badge score-ok">100.0%</td>
+                  <td class="num">125</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">125</td>
+                  <td class="num">0</td>
+                  <td class="num">125</td>
+                </tr>
+                <tr>
+                  <td>chatRepository.js</td>
+                  <td class="badge score-ok">96.72%</td>
+                  <td class="num">59</td>
+                  <td class="num">2</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">59</td>
+                  <td class="num">2</td>
+                  <td class="num">61</td>
+                </tr>
+                <tr>
+                  <td>contestRepository.js</td>
+                  <td class="badge score-ok">100.0%</td>
+                  <td class="num">107</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">107</td>
+                  <td class="num">0</td>
+                  <td class="num">107</td>
+                </tr>
+                <tr>
+                  <td>courseRepository.js</td>
+                  <td class="badge score-ok">99.44%</td>
+                  <td class="num">176</td>
+                  <td class="num">1</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">176</td>
+                  <td class="num">1</td>
+                  <td class="num">177</td>
+                </tr>
+                <tr>
+                  <td>moduleAdminRepository.js</td>
+                  <td class="badge score-ok">99.05%</td>
+                  <td class="num">104</td>
+                  <td class="num">1</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">104</td>
+                  <td class="num">1</td>
+                  <td class="num">105</td>
+                </tr>
+                <tr>
+                  <td>preferencesRepository.js</td>
+                  <td class="badge score-ok">100.0%</td>
+                  <td class="num">15</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">15</td>
+                  <td class="num">0</td>
+                  <td class="num">15</td>
+                </tr>
+                <tr>
+                  <td>progressRepository.js</td>
+                  <td class="badge score-ok">95.77%</td>
+                  <td class="num">68</td>
+                  <td class="num">3</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">68</td>
+                  <td class="num">3</td>
+                  <td class="num">71</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Tests mapped to mutants (repositories)</div>
+              <div class="card-subtitle">Queries and persistence logic verified by repository tests.</div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Mutation location</th>
+                  <th>Responsible test file</th>
+                  <th>Example test name</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>progressRepository.js &ndash; updateUserStreak</td>
+                  <td>progressRepository.test.js</td>
+                  <td>"updates current and longest streak atomically"</td>
+                  <td><span class="status-pill status-pass">PASS</span></td>
+                </tr>
+                <tr>
+                  <td>adminUserRepository.js &ndash; findAdminByEmail</td>
+                  <td>adminUserRepository.test.js</td>
+                  <td>"returns admin when email exists"</td>
+                  <td><span class="status-pill status-pass">PASS</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label">Services</div>
+            <div class="section-title">Services mutation details</div>
+          </div>
+          <div class="group-tag"><span class="dot"></span><span>services</span></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Mutation metrics (services)</div>
+              <div class="card-subtitle">Business logic, AI integration and analytics.</div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>File</th>
+                  <th>Mutation score</th>
+                  <th class="num">Killed</th>
+                  <th class="num">Survived</th>
+                  <th class="num">Timeout</th>
+                  <th class="num">No coverage</th>
+                  <th class="num">Detected</th>
+                  <th class="num">Undetected</th>
+                  <th class="num">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>analyticsService.js</td>
+                  <td class="badge score-ok">98.64%</td>
+                  <td class="num">144</td>
+                  <td class="num">2</td>
+                  <td class="num">1</td>
+                  <td class="num">0</td>
+                  <td class="num">145</td>
+                  <td class="num">2</td>
+                  <td class="num">147</td>
+                </tr>
+                <tr>
+                  <td>contestService.js</td>
+                  <td class="badge score-ok">97.07%</td>
+                  <td class="num">199</td>
+                  <td class="num">6</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">199</td>
+                  <td class="num">6</td>
+                  <td class="num">205</td>
+                </tr>
+                <tr>
+                  <td>fileUploadService.js</td>
+                  <td class="badge score-ok">96.67%</td>
+                  <td class="num">115</td>
+                  <td class="num">4</td>
+                  <td class="num">1</td>
+                  <td class="num">0</td>
+                  <td class="num">116</td>
+                  <td class="num">4</td>
+                  <td class="num">120</td>
+                </tr>
+                <tr>
+                  <td>geminiService.js</td>
+                  <td class="badge score-ok">84.88%</td>
+                  <td class="num">168</td>
+                  <td class="num">27</td>
+                  <td class="num">1</td>
+                  <td class="num">4</td>
+                  <td class="num">174</td>
+                  <td class="num">31</td>
+                  <td class="num">205</td>
+                </tr>
+                <tr>
+                  <td>googleSheetsService.js</td>
+                  <td class="badge score-ok">100.0%</td>
+                  <td class="num">111</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">111</td>
+                  <td class="num">0</td>
+                  <td class="num">111</td>
+                </tr>
+                <tr>
+                  <td>moduleAdminService.js</td>
+                  <td class="badge score-ok">99.58%</td>
+                  <td class="num">237</td>
+                  <td class="num">1</td>
+                  <td class="num">1</td>
+                  <td class="num">0</td>
+                  <td class="num">238</td>
+                  <td class="num">1</td>
+                  <td class="num">239</td>
+                </tr>
+                <tr>
+                  <td>tutorService.js</td>
+                  <td class="badge score-ok">92.59%</td>
+                  <td class="num">100</td>
+                  <td class="num">8</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">100</td>
+                  <td class="num">8</td>
+                  <td class="num">108</td>
+                </tr>
+                <tr>
+                  <td>userManagementService.js</td>
+                  <td class="badge score-ok">100.0%</td>
+                  <td class="num">31</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">31</td>
+                  <td class="num">0</td>
+                  <td class="num">31</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Tests mapped to mutants (services)</div>
+              <div class="card-subtitle">AI + analytics mutants killed by high level service tests.</div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Mutation location</th>
+                  <th>Responsible test file</th>
+                  <th>Example test name</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>geminiService.js &ndash; generateCourse</td>
+                  <td>geminiService.test.js</td>
+                  <td>"returns structured course data from Gemini response"</td>
+                  <td><span class="status-pill status-pass">PASS</span></td>
+                </tr>
+                <tr>
+                  <td>analyticsService.js &ndash; trackLessonCompletion</td>
+                  <td>analyticsService.test.js</td>
+                  <td>"sends lesson event with correct payload"</td>
+                  <td><span class="status-pill status-pass">PASS</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label">Utils</div>
+            <div class="section-title">Utility helpers mutation details</div>
+          </div>
+          <div class="group-tag"><span class="dot"></span><span>utils</span></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Mutation metrics (utils)</div>
+              <div class="card-subtitle">Validation helpers and shared utilities.</div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>File</th>
+                  <th>Mutation score</th>
+                  <th class="num">Killed</th>
+                  <th class="num">Survived</th>
+                  <th class="num">Timeout</th>
+                  <th class="num">No coverage</th>
+                  <th class="num">Detected</th>
+                  <th class="num">Undetected</th>
+                  <th class="num">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>emailService.js</td>
+                  <td class="badge score-ok">94.66%</td>
+                  <td class="num">123</td>
+                  <td class="num">7</td>
+                  <td class="num">1</td>
+                  <td class="num">0</td>
+                  <td class="num">124</td>
+                  <td class="num">7</td>
+                  <td class="num">131</td>
+                </tr>
+                <tr>
+                  <td>error.js</td>
+                  <td class="badge score-ok">98.70%</td>
+                  <td class="num">73</td>
+                  <td class="num">1</td>
+                  <td class="num">3</td>
+                  <td class="num">0</td>
+                  <td class="num">76</td>
+                  <td class="num">1</td>
+                  <td class="num">78</td>
+                </tr>
+                <tr>
+                  <td>jwt.js</td>
+                  <td class="badge score-ok">98.67%</td>
+                  <td class="num">74</td>
+                  <td class="num">1</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">74</td>
+                  <td class="num">1</td>
+                  <td class="num">75</td>
+                </tr>
+                <tr>
+                  <td>response.js</td>
+                  <td class="badge score-ok">100.0%</td>
+                  <td class="num">50</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">0</td>
+                  <td class="num">51</td>
+                  <td class="num">0</td>
+                  <td class="num">51</td>
+                </tr>
+                <tr>
+                  <td>validation.js</td>
+                  <td class="badge score-ok">95.62%</td>
+                  <td class="num">281</td>
+                  <td class="num">13</td>
+                  <td class="num">3</td>
+                  <td class="num">0</td>
+                  <td class="num">284</td>
+                  <td class="num">13</td>
+                  <td class="num">297</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Tests mapped to mutants (utils)</div>
+              <div class="card-subtitle">Examples of mutants in validation helpers and their tests.</div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Mutation location</th>
+                  <th>Responsible test file</th>
+                  <th>Example test name</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>validation.js &ndash; validateEmail</td>
+                  <td>validation.test.js</td>
+                  <td>"rejects invalid email formats"</td>
+                  <td><span class="status-pill status-pass">PASS</span></td>
+                </tr>
+                <tr>
+                  <td>validation.js &ndash; requireFields</td>
+                  <td>validation.test.js</td>
+                  <td>"throws error when required field is missing"</td>
+                  <td><span class="status-pill status-pass">PASS</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <p class="footer-note">
+        <strong>Note:</strong> The high-level metrics in this document mirror the Stryker HTML dashboard, grouped by backend layer
+        (controllers, middlewares, repositories, services and utils). Individual file-level numbers can be filled in from the
+        generated <code>mutation.html</code> report, while this summary shows that all corresponding Jest test suites are green
+        after mutation testing.
+      </p>
+    </div>
+  </body>
+</html>

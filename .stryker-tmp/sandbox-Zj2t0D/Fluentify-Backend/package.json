@@ -1,0 +1,63 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "init-db": "node scripts/initDatabase.js",
+    "setup-db": "node scripts/setup-database.js",
+    "migrate-chat": "node scripts/migrate-chat-tables.js",
+    "test-gemini": "node src/test-gemini.js",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@supabase/supabase-js": "^2.57.0",
+    "axios": "^1.13.1",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "express-validator": "^7.3.0",
+    "googleapis": "^144.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.10",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": ["<rootDir>/src"],
+    "testMatch": ["<rootDir>/src/test/**/*.test.js"],
+    "collectCoverageFrom": [
+      "src/controllers/adminUserController.js",
+      "src/controllers/analyticsController.js",
+      "src/controllers/authController.js",
+      "src/controllers/courseController.js",
+      "src/controllers/contestController.js",
+      "src/controllers/moduleAdminController.js",
+      "src/controllers/preferencesController.js",
+      "src/controllers/progressController.js",
+      "src/controllers/retellController.js",
+      "src/controllers/tutorController.js",
+      "src/controllers/userManagementController.js",
+      "src/utils/*.js",
+      "src/services/*.js",
+      "src/repositories/*.js",
+      "src/middlewares/*.js"
+    ],
+    "coverageReporters": ["text", "lcov"],
+    "moduleNameMapper": {}
+  }
+}

@@ -30,8 +30,7 @@ describe('moduleAdminService', () => {
     it('getLanguages returns list', async () => {
       mockRepo.getLanguages.mockResolvedValueOnce(['English']);
       const r = await service.getLanguages();
-      expect(r.success).toBe(true);
-      expect(r.data).toEqual(['English']);
+      expect(r).toEqual({ success: true, data: ['English'] });
     });
 
     it('getCoursesByLanguage requires language', async () => {
@@ -40,7 +39,7 @@ describe('moduleAdminService', () => {
     it('getCoursesByLanguage returns list', async () => {
       mockRepo.getCoursesByLanguage.mockResolvedValueOnce([{ id: 1 }]);
       const r = await service.getCoursesByLanguage('English');
-      expect(r.data).toEqual([{ id: 1 }]);
+      expect(r).toEqual({ success: true, data: [{ id: 1 }] });
     });
   });
 
@@ -49,11 +48,54 @@ describe('moduleAdminService', () => {
       await expect(service.createCourse(1, { title: '', language: '' })).rejects.toThrow('Title and language are required');
       await expect(service.createCourse(1, { title: 'T', language: 'English' })).rejects.toThrow('Level is required');
     });
-    it('createCourse success', async () => {
+    it('createCourse success with default fallbacks', async () => {
       mockRepo.createCourse.mockResolvedValueOnce({ id: 10 });
-      const r = await service.createCourse(7, { title: 'T', language: 'English', level: 'Beginner' });
-      expect(r.success).toBe(true);
-      expect(r.data).toEqual({ id: 10 });
+      const payload = {
+        title: 'T',
+        language: 'English',
+        level: 'Beginner',
+      };
+      const r = await service.createCourse(7, payload);
+
+      expect(mockRepo.createCourse).toHaveBeenCalledWith({
+        admin_id: 7,
+        language: 'English',
+        level: 'Beginner',
+        title: 'T',
+        description: '',
+        thumbnail_url: null,
+        estimated_duration: null,
+        is_published: false,
+      });
+      expect(r).toEqual({
+        success: true,
+        message: 'Course created successfully',
+        data: { id: 10 },
+      });
+    });
+
+    it('createCourse honors optional fields when provided', async () => {
+      mockRepo.createCourse.mockResolvedValueOnce({ id: 11 });
+      await service.createCourse(9, {
+        title: 'With Optional',
+        language: 'Spanish',
+        level: 'Advanced',
+        description: 'Desc',
+        thumbnail_url: 'url',
+        estimated_duration: 90,
+        is_published: true,
+      });
+
+      expect(mockRepo.createCourse).toHaveBeenCalledWith({
+        admin_id: 9,
+        language: 'Spanish',
+        level: 'Advanced',
+        title: 'With Optional',
+        description: 'Desc',
+        thumbnail_url: 'url',
+        estimated_duration: 90,
+        is_published: true,
+      });
     });
 
     it('getCourseDetails requires id and not found', async () => {
@@ -64,7 +106,7 @@ describe('moduleAdminService', () => {
     it('getCourseDetails success', async () => {
       mockRepo.getCourseDetails.mockResolvedValueOnce({ id: 1 });
       const r = await service.getCourseDetails(1);
-      expect(r.data).toEqual({ id: 1 });
+      expect(r).toEqual({ success: true, data: { id: 1 } });
     });
 
     it('updateCourse requires id and not found', async () => {
@@ -76,7 +118,7 @@ describe('moduleAdminService', () => {
       mockRepo.getCourseDetails.mockResolvedValueOnce({ id: 1 });
       mockRepo.updateCourse.mockResolvedValueOnce({ id: 1, title: 'New' });
       const r = await service.updateCourse(1, { title: 'New' });
-      expect(r.data.title).toBe('New');
+      expect(r).toEqual({ success: true, message: 'Course updated successfully', data: { id: 1, title: 'New' } });
     });
 
     it('deleteCourse requires id and not found', async () => {
@@ -88,8 +130,7 @@ describe('moduleAdminService', () => {
       mockRepo.getCourseDetails.mockResolvedValueOnce({ id: 1 });
       mockRepo.deleteCourse.mockResolvedValueOnce(true);
       const r = await service.deleteCourse(1);
-      expect(r.success).toBe(true);
-      expect(r.data).toBe(true);
+      expect(r).toEqual({ success: true, message: 'Course deleted successfully', data: true });
     });
   });
 
@@ -104,7 +145,14 @@ describe('moduleAdminService', () => {
       mockRepo.getCourseDetails.mockResolvedValueOnce({ id: 1 });
       mockRepo.createUnit.mockResolvedValueOnce({ id: 2 });
       const r = await service.createUnit(1, { title: 'U' });
-      expect(r.data).toEqual({ id: 2 });
+      expect(mockRepo.createUnit).toHaveBeenCalledWith({
+        module_id: 1,
+        title: 'U',
+        description: '',
+        difficulty: 'Beginner',
+        estimated_time: 0,
+      });
+      expect(r).toEqual({ success: true, message: 'Unit created successfully', data: { id: 2 } });
     });
 
     it('updateUnit validates id and existence; success', async () => {
@@ -114,7 +162,7 @@ describe('moduleAdminService', () => {
       mockRepo.getUnitById.mockResolvedValueOnce({ id: 2 });
       mockRepo.updateUnit.mockResolvedValueOnce({ id: 2, title: 'X' });
       const r = await service.updateUnit(2, { title: 'X' });
-      expect(r.data.title).toBe('X');
+      expect(r).toEqual({ success: true, message: 'Unit updated successfully', data: { id: 2, title: 'X' } });
     });
 
     it('deleteUnit validates id and existence; success', async () => {
@@ -124,7 +172,7 @@ describe('moduleAdminService', () => {
       mockRepo.getUnitById.mockResolvedValueOnce({ id: 2 });
       mockRepo.deleteUnit.mockResolvedValueOnce(true);
       const r = await service.deleteUnit(2);
-      expect(r.data).toBe(true);
+      expect(r).toEqual({ success: true, message: 'Unit deleted successfully', data: true });
     });
   });
 
@@ -140,7 +188,19 @@ describe('moduleAdminService', () => {
       mockRepo.getUnitById.mockResolvedValueOnce({ id: 1 });
       mockRepo.createLesson.mockResolvedValueOnce({ id: 3 });
       const r = await service.createLesson(1, { title: 'L', content_type: 'vocabulary' });
-      expect(r.data).toEqual({ id: 3 });
+      expect(mockRepo.createLesson).toHaveBeenCalledWith({
+        unit_id: 1,
+        title: 'L',
+        content_type: 'vocabulary',
+        description: '',
+        media_url: null,
+        key_phrases: [],
+        vocabulary: {},
+        grammar_points: {},
+        exercises: {},
+        xp_reward: 0,
+      });
+      expect(r).toEqual({ success: true, message: 'Lesson created successfully', data: { id: 3 } });
     });
 
     it('updateLesson validates id and existence; success', async () => {
@@ -150,7 +210,7 @@ describe('moduleAdminService', () => {
       mockRepo.getLessonById.mockResolvedValueOnce({ id: 3 });
       mockRepo.updateLesson.mockResolvedValueOnce({ id: 3, title: 'Z' });
       const r = await service.updateLesson(3, { title: 'Z' });
-      expect(r.data.title).toBe('Z');
+      expect(r).toEqual({ success: true, message: 'Lesson updated successfully', data: { id: 3, title: 'Z' } });
     });
 
     it('deleteLesson validates id and existence; success', async () => {
@@ -160,7 +220,7 @@ describe('moduleAdminService', () => {
       mockRepo.getLessonById.mockResolvedValueOnce({ id: 3 });
       mockRepo.deleteLesson.mockResolvedValueOnce(true);
       const r = await service.deleteLesson(3);
-      expect(r.data).toBe(true);
+      expect(r).toEqual({ success: true, message: 'Lesson deleted successfully', data: true });
     });
   });
 
@@ -168,14 +228,14 @@ describe('moduleAdminService', () => {
     it('getPublishedLanguages returns list', async () => {
       mockRepo.getPublishedLanguages.mockResolvedValueOnce(['English']);
       const r = await service.getPublishedLanguages();
-      expect(r.data).toEqual(['English']);
+      expect(r).toEqual({ success: true, data: ['English'] });
     });
 
     it('getPublishedCoursesByLanguage validates language and returns list', async () => {
       await expect(service.getPublishedCoursesByLanguage('')).rejects.toThrow('Language parameter is required');
       mockRepo.getPublishedCoursesByLanguage.mockResolvedValueOnce([{ id: 1 }]);
       const r = await service.getPublishedCoursesByLanguage('English');
-      expect(r.data).toEqual([{ id: 1 }]);
+      expect(r).toEqual({ success: true, data: [{ id: 1 }] });
     });
 
     it('getPublishedCourseDetails validates id, not found, and success', async () => {
@@ -184,7 +244,7 @@ describe('moduleAdminService', () => {
       await expect(service.getPublishedCourseDetails(1)).rejects.toThrow('Course not found');
       mockRepo.getPublishedCourseDetails.mockResolvedValueOnce({ id: 1 });
       const r = await service.getPublishedCourseDetails(1);
-      expect(r.data).toEqual({ id: 1 });
+      expect(r).toEqual({ success: true, data: { id: 1 } });
     });
   });
 });

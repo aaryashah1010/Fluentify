@@ -45,9 +45,17 @@ describe('utils/response', () => {
     expect(d.message).toBe('Resource deleted successfully');
   });
 
-  it('authResponse wraps user and token', () => {
+  it('authResponse wraps user and token and uses default message', () => {
     const a = authResponse({ user: { id: 1 }, token: 't' });
     expect(a.success).toBe(true);
     expect(a.data).toEqual({ user: { id: 1 }, token: 't' });
+    expect(a.message).toBe('Authentication successful');
+  });
+
+  it('authResponse allows overriding message', () => {
+    const a = authResponse({ user: { id: 2 }, token: 'tok' }, 'Logged in successfully');
+    expect(a.success).toBe(true);
+    expect(a.data).toEqual({ user: { id: 2 }, token: 'tok' });
+    expect(a.message).toBe('Logged in successfully');
   });
 });

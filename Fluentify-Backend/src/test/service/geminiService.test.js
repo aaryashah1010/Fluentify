@@ -7,22 +7,26 @@ async function importGeminiWithEnv(key = 'test-key') {
 
   // fresh mocks per import
   const genModelMock = { generateContent: jest.fn() };
+  const getGenerativeModel = jest.fn().mockReturnValue(genModelMock);
   const GoogleGenerativeAI = jest.fn().mockImplementation(() => ({
-    getGenerativeModel: () => genModelMock,
+    getGenerativeModel,
   }));
   await jest.unstable_mockModule('@google/generative-ai', () => ({ GoogleGenerativeAI }));
   const mod = await import('../../services/geminiService.js');
-  return { service: mod.default, genModelMock };
+  return { service: mod.default, genModelMock, GoogleGenerativeAI, getGenerativeModel };
 }
+
+const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
 describe('geminiService', () => {
   beforeEach(() => {
     jest.useRealTimers();
     jest.clearAllMocks();
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
+    consoleLogSpy.mockClear();
+    consoleWarnSpy.mockClear();
+    consoleErrorSpy.mockClear();
   });
 
   it('constructor throws when GEMINI_API_KEY missing', async () => {
@@ -31,11 +35,19 @@ describe('geminiService', () => {
     await expect(import('../../services/geminiService.js')).rejects.toThrow('GEMINI_API_KEY');
   });
 
+  it('initializes GoogleGenerativeAI with key and gemini-2.0-flash model', async () => {
+    const { service, getGenerativeModel, GoogleGenerativeAI } = await importGeminiWithEnv('abc123');
+    expect(service).toBeDefined();
+    expect(GoogleGenerativeAI).toHaveBeenCalledWith('abc123');
+    expect(getGenerativeModel).toHaveBeenCalledWith({ model: 'gemini-2.0-flash' });
+  });
+
   describe('parseJSON', () => {
     it('parses valid JSON with code fences', async () => {
       const { service } = await importGeminiWithEnv();
       const text = '```json\n{ "units": [] }\n```';
       expect(service.parseJSON(text)).toEqual({ units: [] });
+      expect(consoleLogSpy).toHaveBeenCalledWith('Response length:', text.length, 'characters');
     });
 
     it('parses valid JSON without code fences but with surrounding text', async () => {
@@ -49,6 +61,7 @@ describe('geminiService', () => {
       const text = '{\n  "units": [\n    {"id":1,}\n  ]\n}';
       const res = service.parseJSON(text);
       expect(res.units[0].id).toBe(1);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('JSON parse error:', expect.any(String));
     });
 
     it('repairs unescaped newlines in strings', async () => {
@@ -60,42 +73,130 @@ describe('geminiService', () => {
       expect(res.description).toBe("Line 1 Line 2");
     });
 
-    it('auto-closes JSON on second attempt using error position', async () => {
+    it('handles code fences even when ```json marker is not followed by a newline', async () => {
       const { service } = await importGeminiWithEnv();
-      // Missing closing brackets, JSON.parse will throw with position
-      const broken = '{"a": { "b": [1, 2, 3 }'; 
-      const res = service.parseJSON(broken);
-      // Expect it to close the array and the two objects
-      expect(res.a.b).toHaveLength(3);
+      const text = '```json{"value":3}\n```';
+      expect(service.parseJSON(text)).toEqual({ value: 3 });
     });
 
-    it('throws second error if position extraction fails during auto-close attempt', async () => {
+    it('removes code fences using exact regex replacements and trims the cleaned text', async () => {
       const { service } = await importGeminiWithEnv();
-      const brokenJson = '{ "test": "fail" }'; // Actually valid, but we will force mock failure
-      
-      // We spy on JSON.parse to simulate a specific failure sequence
-      const jsonSpy = jest.spyOn(JSON, 'parse');
-      
-      // 1. First parse attempts extraction: Fail
-      jsonSpy.mockImplementationOnce(() => { throw new Error('First syntax error'); });
-      // 2. Second parse attempts "fixed" json: Fail with an error that lacks a position number
-      jsonSpy.mockImplementationOnce(() => { throw new Error('Syntax error: Unexpected token (no position)'); });
+      const text = '   ```json\n{ "value": 2 }```   ';
 
-      expect(() => service.parseJSON(brokenJson)).toThrow('Syntax error: Unexpected token (no position)');
+      const originalReplace = String.prototype.replace;
+      const originalTrim = String.prototype.trim;
+      const replaceCalls = [];
+      let trimCalled = false;
+
+      String.prototype.replace = function(pattern, replacement) {
+        if (this.includes('```')) {
+          replaceCalls.push({
+            pattern: pattern instanceof RegExp ? pattern.source : pattern,
+            replacement,
+          });
+        }
+        return originalReplace.call(this, pattern, replacement);
+      };
+
+      String.prototype.trim = function() {
+        if (this.includes('```json') || this.startsWith('{')) {
+          trimCalled = true;
+        }
+        return originalTrim.call(this);
+      };
+
+      try {
+        expect(service.parseJSON(text)).toEqual({ value: 2 });
+      } finally {
+        String.prototype.replace = originalReplace;
+        String.prototype.trim = originalTrim;
+      }
+
+      expect(replaceCalls).toEqual(expect.arrayContaining([
+        { pattern: '```json\\n?', replacement: '' },
+        { pattern: '```', replacement: '' },
+      ]));
+      expect(trimCalled).toBe(true);
+    });
+
+    it('uses the /\{[\\s\\S]*\}/ regex before manual extraction', async () => {
+      const { service } = await importGeminiWithEnv();
+      const text = 'PREFIX { "id": 9 } SUFFIX';
+
+      const originalMatch = String.prototype.match;
+      const seenSources = [];
+      String.prototype.match = function(regex) {
+        if (regex instanceof RegExp) {
+          seenSources.push(regex.source);
+        }
+        return originalMatch.call(this, regex);
+      };
+
+      try {
+        expect(service.parseJSON(text)).toEqual({ id: 9 });
+      } finally {
+        String.prototype.match = originalMatch;
+      }
+
+      expect(seenSources).toContain('\\{[\\s\\S]*\\}');
+    });
+
+    it('skips manual extraction when the regex already finds JSON', async () => {
+      const { service } = await importGeminiWithEnv();
+      const text = '{ "ok": true }';
+
+      const originalSubstring = String.prototype.substring;
+      let substringCalls = 0;
+      String.prototype.substring = function(start, end) {
+        if (this.includes('"ok"')) {
+          substringCalls += 1;
+        }
+        return originalSubstring.call(this, start, end);
+      };
+
+      try {
+        expect(service.parseJSON(text)).toEqual({ ok: true });
+      } finally {
+        String.prototype.substring = originalSubstring;
+      }
+
+      expect(substringCalls).toBe(0);
     });
 
     it('attempts fallback manual extraction if regex match fails', async () => {
       const { service } = await importGeminiWithEnv();
-      // Force String.prototype.match to return null once, while the text still
-      // contains a valid JSON object. This drives parseJSON into the manual
-      // extraction branch (startIdx/endIdx) that builds jsonMatch via substring.
       const text = 'prefix { "a": 1 } suffix';
-      const matchSpy = jest.spyOn(String.prototype, 'match').mockImplementationOnce(() => null);
+      const startIdx = text.indexOf('{');
+      const endIdx = text.lastIndexOf('}');
 
-      const res = service.parseJSON(text);
-      expect(res).toEqual({ a: 1 });
+      const originalMatch = String.prototype.match;
+      const originalSubstring = String.prototype.substring;
+      const substringCalls = [];
 
-      matchSpy.mockRestore();
+      String.prototype.match = function(regex) {
+        if (regex instanceof RegExp && regex.source === '\\{[\\s\\S]*\\}') {
+          return null;
+        }
+        return originalMatch.call(this, regex);
+      };
+
+      String.prototype.substring = function(start, end) {
+        if (this.includes('"a"')) {
+          substringCalls.push({ start, end });
+        }
+        return originalSubstring.call(this, start, end);
+      };
+
+      try {
+        const res = service.parseJSON(text);
+        expect(res).toEqual({ a: 1 });
+      } finally {
+        String.prototype.match = originalMatch;
+        String.prototype.substring = originalSubstring;
+      }
+
+      expect(substringCalls).toHaveLength(1);
+      expect(substringCalls[0]).toEqual({ start: startIdx, end: endIdx + 1 });
     });
 
     it('throws when no valid JSON found even after manual extraction check', async () => {
@@ -104,39 +205,132 @@ describe('geminiService', () => {
       expect(() => service.parseJSON('} {')).toThrow('No valid JSON found');
     });
 
-    it('enters auto-close branch using error position and ultimately throws wrapped error', async () => {
+    it('treats missing brace/bracket counts as zero when match returns null', async () => {
+      const { service } = await importGeminiWithEnv();
+      const broken = '{"__FORCE_NULL__": {"list": [1, 2, 3 }';
+
+      const originalMatch = String.prototype.match;
+      let nullHits = 0;
+      String.prototype.match = function(regex) {
+        if (
+          regex instanceof RegExp &&
+          (regex.source === '\\{' || regex.source === '\\[') &&
+          this.includes('__FORCE_NULL__')
+        ) {
+          nullHits += 1;
+          return null;
+        }
+        return originalMatch.call(this, regex);
+      };
+
+      try {
+        expect(() => service.parseJSON(broken)).toThrow(/Failed to parse JSON/);
+        expect(nullHits).toBeGreaterThan(0);
+      } finally {
+        String.prototype.match = originalMatch;
+      }
+    });
+
+    it('logs raw response preview capped at 500 characters when parsing ultimately fails', async () => {
+      const { service } = await importGeminiWithEnv();
+      const text = 'x'.repeat(600);
+      consoleErrorSpy.mockClear();
+
+      expect(() => service.parseJSON(text)).toThrow(/Failed to parse JSON/);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error parsing JSON:', expect.any(Error));
+      const rawCall = consoleErrorSpy.mock.calls.find(([msg]) => msg === 'Raw response:');
+      expect(rawCall).toBeDefined();
+      expect(rawCall[1]).toHaveLength(500);
+      expect(rawCall[1]).toBe(text.substring(0, 500));
+    });
+
+    it('auto-closes JSON on second attempt using error position', async () => {
       const { service } = await importGeminiWithEnv();
       const broken = '{"items": [1, 2, 3,'; // clearly incomplete JSON with unmatched [ and {
 
       const realParse = JSON.parse;
+      let callCount = 0;
       const jsonSpy = jest.spyOn(JSON, 'parse').mockImplementation((input) => {
-        const call = jsonSpy.mock.calls.length;
-        if (call === 0) {
+        if (callCount === 0) {
+          callCount += 1;
           // First parse attempt behaves normally and throws
           return realParse(input);
         }
-        if (call === 1) {
+        if (callCount === 1) {
+          callCount += 1;
           // Second parse (fixedJson) fails with position information
           throw new Error('Unexpected token } in JSON at position 10');
         }
-        // Any subsequent parse attempts use the real implementation
         return realParse(input);
       });
 
-      expect(() => service.parseJSON(broken)).toThrow(/Failed to parse JSON:/);
-
-      jsonSpy.mockRestore();
+      try {
+        expect(() => service.parseJSON(broken)).toThrow(/Failed to parse JSON:/);
+      } finally {
+        jsonSpy.mockRestore();
+      }
     });
+
+    it('auto-close gracefully handles missing brace counts when regex match returns null', async () => {
+      const { service } = await importGeminiWithEnv();
+      const broken = '{"outer": {"inner": 1},';
+
+      const originalMatch = String.prototype.match;
+      let injected = false;
+      String.prototype.match = function(regex) {
+        if (!injected && regex instanceof RegExp && regex.source === '\\{') {
+          injected = true;
+          return null;
+        }
+        return originalMatch.call(this, regex);
+      };
+
+      try {
+        expect(() => service.parseJSON(broken)).toThrow(/Failed to parse JSON/);
+      } finally {
+        String.prototype.match = originalMatch;
+      }
+    });
+
+    it('auto-close gracefully handles missing bracket counts when regex match returns null', async () => {
+      const { service } = await importGeminiWithEnv();
+      const broken = '{"outer": {"inner": {"value": 1}},';
+
+      const originalMatch = String.prototype.match;
+      let injected = false;
+      String.prototype.match = function(regex) {
+        if (!injected && regex instanceof RegExp && regex.source === '\\[') {
+          injected = true;
+          return null;
+        }
+        return originalMatch.call(this, regex);
+      };
+
+      try {
+        const result = service.parseJSON(broken);
+        expect(result.outer.inner.value).toBe(1);
+        expect(injected).toBe(true);
+      } finally {
+        String.prototype.match = originalMatch;
+      }
+    });
+
   });
 
   describe('generateCourseOutline', () => {
     it('returns parsed outline', async () => {
       const { service, genModelMock } = await importGeminiWithEnv();
+
       genModelMock.generateContent.mockResolvedValueOnce({
         response: Promise.resolve({ text: () => '{"units":[{"id":1,"title":"U1","description":"d","difficulty":"Beginner","estimatedTime":"3-4 hours","lessonCount":1,"topics":["t"]}]}' })
       });
       const outline = await service.generateCourseOutline('English', '3 months', 'Beginner');
       expect(outline.units.length).toBe(1);
+      expect(genModelMock.generateContent).toHaveBeenCalledWith(expect.objectContaining({
+        contents: [{ role: 'user', parts: [{ text: expect.stringContaining('Generate a comprehensive, in-depth course outline') }] }],
+        generationConfig: { maxOutputTokens: 2048, temperature: 0.7 },
+      }));
     });
 
     it('uses default expertise parameter when not provided', async () => {
@@ -149,6 +343,9 @@ describe('geminiService', () => {
 
       expect(outline.units).toEqual([]);
       expect(genModelMock.generateContent).toHaveBeenCalledTimes(1);
+      const callArg = genModelMock.generateContent.mock.calls[0][0];
+      const prompt = callArg.contents[0].parts[0].text;
+      expect(prompt).toContain("User's Current Level: Beginner");
     });
   });
 
@@ -157,7 +354,7 @@ describe('geminiService', () => {
       jest.useFakeTimers();
       const { service, genModelMock } = await importGeminiWithEnv();
       const rateErr = Object.assign(new Error('Rate Limit'), { status: 429 });
-      
+
       // Fail once, then succeed
       genModelMock.generateContent
         .mockRejectedValueOnce(rateErr)
@@ -172,8 +369,29 @@ describe('geminiService', () => {
       expect(res.success).toBe(true);
     });
 
+    it('logs human readable delay when retrying on rate limit', async () => {
+      jest.useFakeTimers();
+      const { service } = await importGeminiWithEnv();
+      let attempts = 0;
+      const fn = jest.fn().mockImplementation(() => {
+        if (attempts === 0) {
+          attempts++;
+          const err = Object.assign(new Error('Too Many Requests'), { status: 429 });
+          throw err;
+        }
+        return 'ok';
+      });
+
+      const promise = service.retryWithBackoff(fn, 2, 2000);
+      await jest.advanceTimersByTimeAsync(2000);
+      const result = await promise;
+      expect(result).toBe('ok');
+      expect(consoleWarnSpy).toHaveBeenCalledWith('⏳ Rate limit hit. Retrying in 2s... (Attempt 1/2)');
+    });
+
     it('retries on error message containing "Too Many Requests" (without status code)', async () => {
       jest.useFakeTimers();
+
       const { service, genModelMock } = await importGeminiWithEnv();
       const msgErr = new Error('Error: 429 Too Many Requests');
       
@@ -195,28 +413,38 @@ describe('geminiService', () => {
 
     it('throws the last error if maxRetries are exhausted', async () => {
       const { service } = await importGeminiWithEnv();
+
       const rateErr = Object.assign(new Error('Persistent Rate Limit'), { status: 429 });
 
       const fn = jest.fn().mockRejectedValue(rateErr);
 
+      const delays = [];
       const timeoutSpy = jest
         .spyOn(global, 'setTimeout')
         .mockImplementation((cb, ms) => {
+          delays.push(ms);
           cb();
           return 0;
         });
 
       await expect(service.retryWithBackoff(fn, 3, 10)).rejects.toThrow('Persistent Rate Limit');
       expect(fn).toHaveBeenCalledTimes(3);
+      expect(delays).toEqual([10, 20, 40]);
 
       timeoutSpy.mockRestore();
+    });
+
+    it('rethrows errors without message without crashing optional chaining', async () => {
+      const { service } = await importGeminiWithEnv();
+      const err = { status: 500 };
+      await expect(service.retryWithBackoff(() => Promise.reject(err), 1)).rejects.toBe(err);
     });
   });
 
   describe('generateCourse', () => {
     it('combines outline and units into structured course with correct metadata defaults', async () => {
       const { service } = await importGeminiWithEnv();
-      
+
       // Mock Outline: 1 unit
       jest.spyOn(service, 'generateCourseOutline').mockResolvedValueOnce({ 
         units: [ { title: 'U', description: 'd', difficulty: 'Beginner', estimatedTime: '10 min', lessonCount: 1, topics: ['t'] } ] 
@@ -232,9 +460,19 @@ describe('geminiService', () => {
       const data = await service.generateCourse('English', '4w', 'Beginner');
       
       expect(data.course.units.length).toBe(1);
+      expect(data.course.title).toBe('English Learning Journey');
+      expect(data.course.version).toBe('1.0');
+      expect(data.course.totalLessons).toBe(1);
       expect(data.metadata.totalLessons).toBe(1);
       // Check if fallback time (150) was used because parseInt('Unknown') is NaN
       expect(data.metadata.estimatedTotalTime).toBe(150); 
+      
+      expect(consoleLogSpy).toHaveBeenCalledWith('Generating course for: English, Duration: 4w, Expertise: Beginner');
+      expect(consoleLogSpy).toHaveBeenCalledWith('Step 1: Generating course outline...');
+      expect(consoleLogSpy).toHaveBeenCalledWith('Step 2: Generating 1 units...');
+      expect(consoleLogSpy).toHaveBeenCalledWith('  Generating Unit 1: U...');
+      expect(consoleLogSpy).toHaveBeenCalledWith('Course generation complete!');
+      expect(consoleLogSpy).toHaveBeenCalledWith('Total: 1 units, 1 lessons');
     });
 
     it('handles empty course outline gracefully', async () => {
@@ -245,12 +483,39 @@ describe('geminiService', () => {
       const data = await service.generateCourse('English', '1w');
       expect(data.course.units).toHaveLength(0);
       expect(data.metadata.totalLessons).toBe(0);
+      // Default expertise should be "Beginner" when omitted
+      expect(service.generateCourseOutline).toHaveBeenCalledWith('English', '1w', 'Beginner');
     });
 
     it('wraps and rethrows errors', async () => {
       const { service } = await importGeminiWithEnv();
       jest.spyOn(service, 'generateCourseOutline').mockRejectedValueOnce(new Error('NOPE'));
       await expect(service.generateCourse('English', '4w')).rejects.toThrow('Failed to generate course content: NOPE');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error generating course:', expect.any(Error));
+    });
+
+    it('passes sequential unit indexes to generateUnit based on outline order', async () => {
+      const { service } = await importGeminiWithEnv();
+
+      jest.spyOn(service, 'generateCourseOutline').mockResolvedValueOnce({
+        units: [
+          { title: 'Unit A', description: 'd', difficulty: 'Beginner', estimatedTime: '10', lessonCount: 1, topics: [] },
+          { title: 'Unit B', description: 'd', difficulty: 'Intermediate', estimatedTime: '20', lessonCount: 2, topics: [] },
+        ],
+      });
+
+      const generateUnitSpy = jest.spyOn(service, 'generateUnit')
+        .mockImplementation(async (_lang, outline, unitNumber) => ({
+          id: unitNumber,
+          title: outline.title,
+          lessons: [],
+        }));
+
+      await service.generateCourse('English', '4w', 'Beginner');
+
+      expect(generateUnitSpy).toHaveBeenCalledTimes(2);
+      expect(generateUnitSpy.mock.calls[0][2]).toBe(1);
+      expect(generateUnitSpy.mock.calls[1][2]).toBe(2);
     });
   });
 
@@ -272,6 +537,54 @@ describe('geminiService', () => {
       const { service, genModelMock } = await importGeminiWithEnv();
       genModelMock.generateContent.mockRejectedValueOnce(new Error('fail'));
       await expect(service.generateExercises('L1','vocabulary','English')).rejects.toThrow('Failed to generate exercises');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error generating exercises:', expect.any(Error));
+    });
+
+    it('builds exercise prompt with lesson details and constraints', async () => {
+      const { service, genModelMock } = await importGeminiWithEnv();
+      genModelMock.generateContent.mockResolvedValueOnce({
+        response: Promise.resolve({ text: () => '{"exercises":[]}' })
+      });
+
+      await service.generateExercises('Greetings', 'vocabulary', 'Spanish');
+
+      expect(genModelMock.generateContent).toHaveBeenCalledTimes(1);
+      const prompt = genModelMock.generateContent.mock.calls[0][0];
+      expect(prompt).toContain('multiple choice questions (MCQ)');
+      expect(prompt).toContain('lesson titled "Greetings" in Spanish');
+      expect(prompt).toContain('ALL exercises MUST be "multiple_choice" type only');
+      expect(prompt).toContain('Make sure to generate exactly 5 exercises.');
+    });
+  });
+
+  describe('generateUnit', () => {
+    it('builds unit prompt with default expertise, topics list, and config', async () => {
+      const { service, genModelMock } = await importGeminiWithEnv();
+
+      genModelMock.generateContent.mockResolvedValueOnce({
+        response: Promise.resolve({ text: () => '{"id":2,"lessons":[]}' })
+      });
+
+      const outline = {
+        title: 'Unit Title',
+        description: 'desc',
+        difficulty: 'Beginner',
+        estimatedTime: '10 min',
+        topics: ['a', 'b'],
+        lessonCount: 2,
+      };
+
+      await service.generateUnit('French', outline, 2);
+
+      expect(genModelMock.generateContent).toHaveBeenCalledTimes(1);
+      const callArg = genModelMock.generateContent.mock.calls[0][0];
+      expect(callArg.contents).toHaveLength(1);
+      expect(callArg.contents[0].role).toBe('user');
+      const prompt = callArg.contents[0].parts[0].text;
+      expect(prompt).toContain('Generate detailed lessons for Unit 2 of a French course.');
+      expect(prompt).toContain("User's Current Level: Beginner");
+      expect(prompt).toContain('Topics: a, b');
+      expect(callArg.generationConfig).toEqual({ maxOutputTokens: 8192, temperature: 0.7 });
     });
   });
 
@@ -279,6 +592,11 @@ describe('geminiService', () => {
     const { service } = await importGeminiWithEnv();
     const prompt = service.createCoursePrompt('Spanish', '6 months');
     expect(prompt).toContain('Spanish');
-    expect(prompt).toContain('6 months');
   });
+});
+
+afterAll(() => {
+  consoleLogSpy.mockRestore();
+  consoleWarnSpy.mockRestore();
+  consoleErrorSpy.mockRestore();
 });

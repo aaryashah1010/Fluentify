@@ -46,13 +46,19 @@ describe('analyticsController', () => {
     next = createMockNext();
   });
 
-  // Helper to test error path for a given service function
-  async function expectErrorPath(method, failingMockFn) {
+  // Helper to test error path for a given service function and log prefix
+  async function expectErrorPath(method, failingMockFn, expectedLogPrefix) {
     const err = new Error('Service failure');
     failingMockFn.mockRejectedValueOnce(err);
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
     await method(req, res, next);
+
     expect(res.json).not.toHaveBeenCalled();
     expect(next).toHaveBeenCalledWith(err);
+    expect(errorSpy).toHaveBeenCalledWith(expectedLogPrefix, err);
+
+    errorSpy.mockRestore();
   }
 
   describe('getPlatformAnalytics', () => {
@@ -64,8 +70,12 @@ describe('analyticsController', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('forwards errors to next', async () => {
-      await expectErrorPath(analyticsController.getPlatformAnalytics.bind(analyticsController), mockAnalyticsService.getAnalytics);
+    it('forwards errors to next and logs platform analytics failure', async () => {
+      await expectErrorPath(
+        analyticsController.getPlatformAnalytics.bind(analyticsController),
+        mockAnalyticsService.getAnalytics,
+        'Error fetching platform analytics:',
+      );
     });
   });
 
@@ -84,8 +94,12 @@ describe('analyticsController', () => {
       expect(mockSuccessResponse).toHaveBeenCalledWith(mockPeriodAnalytics, 'Analytics for 7 days retrieved successfully');
     });
 
-    it('forwards errors to next', async () => {
-      await expectErrorPath(analyticsController.getAnalyticsForPeriod.bind(analyticsController), mockAnalyticsService.getAnalyticsForPeriod);
+    it('forwards errors to next and logs period analytics failure', async () => {
+      await expectErrorPath(
+        analyticsController.getAnalyticsForPeriod.bind(analyticsController),
+        mockAnalyticsService.getAnalyticsForPeriod,
+        'Error fetching period analytics:',
+      );
     });
   });
 
@@ -100,8 +114,12 @@ describe('analyticsController', () => {
       expect(res.json).toHaveBeenCalled();
     });
 
-    it('forwards errors to next', async () => {
-      await expectErrorPath(analyticsController.getLanguageDistribution.bind(analyticsController), mockAnalyticsService.getAnalytics);
+    it('forwards errors to next and logs language distribution failure', async () => {
+      await expectErrorPath(
+        analyticsController.getLanguageDistribution.bind(analyticsController),
+        mockAnalyticsService.getAnalytics,
+        'Error fetching language distribution:',
+      );
     });
   });
 
@@ -116,8 +134,12 @@ describe('analyticsController', () => {
       expect(res.json).toHaveBeenCalled();
     });
 
-    it('forwards errors to next', async () => {
-      await expectErrorPath(analyticsController.getModuleUsage.bind(analyticsController), mockAnalyticsService.getAnalytics);
+    it('forwards errors to next and logs module usage failure', async () => {
+      await expectErrorPath(
+        analyticsController.getModuleUsage.bind(analyticsController),
+        mockAnalyticsService.getAnalytics,
+        'Error fetching module usage:',
+      );
     });
   });
 
@@ -132,8 +154,12 @@ describe('analyticsController', () => {
       expect(res.json).toHaveBeenCalled();
     });
 
-    it('forwards errors to next', async () => {
-      await expectErrorPath(analyticsController.getUserEngagement.bind(analyticsController), mockAnalyticsService.getAnalytics);
+    it('forwards errors to next and logs user engagement failure', async () => {
+      await expectErrorPath(
+        analyticsController.getUserEngagement.bind(analyticsController),
+        mockAnalyticsService.getAnalytics,
+        'Error fetching user engagement:',
+      );
     });
   });
 
@@ -154,8 +180,12 @@ describe('analyticsController', () => {
       expect(mockAnalyticsService.getAnalyticsForPeriod).toHaveBeenCalledWith(14);
     });
 
-    it('forwards errors to next', async () => {
-      await expectErrorPath(analyticsController.getLessonCompletionTrends.bind(analyticsController), mockAnalyticsService.getAnalyticsForPeriod);
+    it('forwards errors to next and logs lesson completion trends failure', async () => {
+      await expectErrorPath(
+        analyticsController.getLessonCompletionTrends.bind(analyticsController),
+        mockAnalyticsService.getAnalyticsForPeriod,
+        'Error fetching lesson completion trends:',
+      );
     });
   });
 });

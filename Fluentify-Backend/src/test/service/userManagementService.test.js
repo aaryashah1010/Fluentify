@@ -19,8 +19,11 @@ describe('userManagementService', () => {
       const res = await service.getUsersList(2, 2);
       expect(res.users).toEqual([{ id: 1, name: 'A' }]);
       expect(res.pagination).toEqual({ total: 5, page: 2, limit: 2, totalPages: Math.ceil(5/2) });
-      // Ensure limit/offset bound variables were passed
+      // Ensure SQL text and parameters were passed
+      expect(queryMock.mock.calls[0][0]).toContain('SELECT id, name, email, created_at, updated_at');
+      expect(queryMock.mock.calls[0][0]).toContain('LIMIT $1 OFFSET $2');
       expect(queryMock.mock.calls[0][1]).toEqual([2, 2]);
+      expect(queryMock.mock.calls[1][0]).toBe('SELECT COUNT(*) FROM learners');
     });
 
     it('uses default page and limit when not provided', async () => {
@@ -29,7 +32,9 @@ describe('userManagementService', () => {
         .mockResolvedValueOnce({ rows: [ { count: '0' } ] });
       await service.getUsersList();
       // default limit=20, page=1 -> offset=0
+      expect(queryMock.mock.calls[0][0]).toContain('ORDER BY created_at DESC');
       expect(queryMock.mock.calls[0][1]).toEqual([20, 0]);
+      expect(queryMock.mock.calls[1][0]).toBe('SELECT COUNT(*) FROM learners');
     });
   });
 
@@ -40,6 +45,7 @@ describe('userManagementService', () => {
       expect(res).toEqual([{ id: 2, name: 'B' }]);
       const params = queryMock.mock.calls[0][1];
       expect(params).toEqual(['%term%', '%term%']);
+      expect(queryMock.mock.calls[0][0]).toContain('WHERE name ILIKE $1 OR email ILIKE $2');
     });
   });
 
@@ -62,6 +68,12 @@ describe('userManagementService', () => {
       expect(res.user.id).toBe(1);
       expect(res.courses[0].id).toBe(10);
       expect(res.summary.total_xp).toBe(0);
+      expect(queryMock.mock.calls[0][0]).toContain('SELECT id, name, email, created_at, updated_at, is_email_verified');
+      expect(queryMock.mock.calls[0][1]).toEqual([1]);
+      expect(queryMock.mock.calls[1][0]).toContain('SELECT \n                c.id');
+      expect(queryMock.mock.calls[1][1]).toEqual([1]);
+      expect(queryMock.mock.calls[2][0]).toContain('SELECT \n                COALESCE((SELECT SUM(xp_earned)');
+      expect(queryMock.mock.calls[2][1]).toEqual([1]);
     });
   });
 
@@ -72,6 +84,8 @@ describe('userManagementService', () => {
       expect(res).toEqual({ id: 1, name: 'New', email: 'new@mail.com' });
       const params = queryMock.mock.calls[0][1];
       expect(params).toEqual(['New', 'new@mail.com', 1]);
+      expect(queryMock.mock.calls[0][0]).toContain('UPDATE learners');
+      expect(queryMock.mock.calls[0][0]).toContain('RETURNING id, name, email, created_at, updated_at');
     });
   });
 
@@ -82,6 +96,7 @@ describe('userManagementService', () => {
       expect(queryMock).toHaveBeenCalled();
       const params = queryMock.mock.calls[0][1];
       expect(params).toEqual([3]);
+      expect(queryMock.mock.calls[0][0]).toBe('DELETE FROM learners WHERE id = $1');
     });
   });
 });

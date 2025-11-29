@@ -48,8 +48,16 @@ describe('preferencesRepository', () => {
 
   it('preferencesExist returns boolean flag', async () => {
     queryMock.mockResolvedValueOnce({ rows: [{ exists: true }] });
-    expect(await repo.preferencesExist(7)).toBe(true);
+    const first = await repo.preferencesExist(7);
+    expect(first).toBe(true);
+    const [sql1, params1] = queryMock.mock.calls[0];
+    expect(sql1).toBe('SELECT EXISTS(SELECT 1 FROM learner_preferences WHERE learner_id = $1) as exists');
+    expect(params1).toEqual([7]);
     queryMock.mockResolvedValueOnce({ rows: [{ exists: false }] });
-    expect(await repo.preferencesExist(7)).toBe(false);
+    const second = await repo.preferencesExist(7);
+    expect(second).toBe(false);
+    const [sql2, params2] = queryMock.mock.calls[1];
+    expect(sql2).toBe('SELECT EXISTS(SELECT 1 FROM learner_preferences WHERE learner_id = $1) as exists');
+    expect(params2).toEqual([7]);
   });
 });

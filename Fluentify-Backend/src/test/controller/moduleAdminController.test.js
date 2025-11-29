@@ -26,6 +26,9 @@ await jest.unstable_mockModule('../../services/analyticsService.js', () => ({ de
 
 const controller = (await import('../../controllers/moduleAdminController.js')).default;
 
+const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
 function createRes() {
   const res = {};
   res.statusCode = 200;
@@ -42,6 +45,13 @@ function createNext() {
 describe('moduleAdminController', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    consoleErrorSpy.mockClear();
+    consoleWarnSpy.mockClear();
+  });
+
+  afterAll(() => {
+    consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
   });
 
   it('getLanguages returns 200 with data and uses service', async () => {
@@ -87,7 +97,7 @@ describe('moduleAdminController', () => {
     expect(next).toHaveBeenCalledWith(err);
   });
 
-  it('createCourse returns 201 and triggers analytics non-blocking', async () => {
+  it('createCourse returns 201, tracks analytics payload and handles resolved analytics', async () => {
     const result = { data: { id: 10 } };
     mockModuleAdminService.createCourse.mockResolvedValueOnce(result);
     trackAdminModuleUsage.mockResolvedValueOnce();
@@ -96,31 +106,65 @@ describe('moduleAdminController', () => {
     const next = createNext();
 
     await controller.createCourse(req, res, next);
+
     expect(mockModuleAdminService.createCourse).toHaveBeenCalledWith(5, req.body);
-    expect(trackAdminModuleUsage).toHaveBeenCalled();
+    expect(trackAdminModuleUsage).toHaveBeenCalledWith(
+      5,
+      'en',
+      'CREATE_COURSE',
+      {
+        courseId: 10,
+        details: {
+          title: 'T',
+          expectedDuration: '3m',
+        },
+      }
+    );
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.body).toEqual(result);
+  });
+
+  it('createCourse still tracks analytics when service result lacks data (optional chaining guards)', async () => {
+    const result = {}; // no data property
+    mockModuleAdminService.createCourse.mockResolvedValueOnce(result);
+    trackAdminModuleUsage.mockResolvedValueOnce();
+    const req = { user: { id: 8 }, body: { language: 'en', title: 'Fallback', expectedDuration: '5m' } };
+    const res = createRes();
+
+    await controller.createCourse(req, res, createNext());
+
+    expect(trackAdminModuleUsage).toHaveBeenCalledWith(
+      8,
+      'en',
+      'CREATE_COURSE',
+      {
+        courseId: undefined,
+        details: {
+          title: 'Fallback',
+          expectedDuration: '5m',
+        },
+      }
+    );
+    expect(res.status).toHaveBeenCalledWith(201);
   });
 
   it('createCourse logs error and forwards on failure', async () => {
     const err = new Error('fail');
     mockModuleAdminService.createCourse.mockRejectedValueOnce(err);
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const req = { user: { id: 5 }, body: { language: 'en' } };
     const res = createRes();
     const next = createNext();
 
     await controller.createCourse(req, res, next);
-    expect(consoleSpy).toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error creating course:', err);
     expect(next).toHaveBeenCalledWith(err);
-    consoleSpy.mockRestore();
   });
 
-  it('createCourse swallows analytics rejection with console.warn', async () => {
+  it('createCourse swallows analytics rejection with console.warn and preserves response', async () => {
     const result = { data: { id: 11 } };
     mockModuleAdminService.createCourse.mockResolvedValueOnce(result);
-    trackAdminModuleUsage.mockRejectedValueOnce(new Error('analytics fail'));
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const analyticsError = new Error('analytics fail');
+    trackAdminModuleUsage.mockRejectedValueOnce(analyticsError);
     const req = { user: { id: 1 }, body: { language: 'en', title: 'T', expectedDuration: 'x' } };
     const res = createRes();
     const next = createNext();
@@ -128,9 +172,8 @@ describe('moduleAdminController', () => {
     await controller.createCourse(req, res, next);
     // give microtask a tick to run .catch
     await new Promise((r) => setImmediate(r));
-    expect(warnSpy).toHaveBeenCalled();
+    expect(consoleWarnSpy).toHaveBeenCalledWith('Analytics tracking failed (non-critical):', 'analytics fail');
     expect(res.status).toHaveBeenCalledWith(201);
-    warnSpy.mockRestore();
   });
 
   it('getCourseDetails/updateCourse/deleteCourse call service and return 200', async () => {
@@ -193,16 +236,15 @@ describe('moduleAdminController', () => {
   it('createUnit catches analytics error but still returns response', async () => {
     const result = { data: { id: 21 } };
     mockModuleAdminService.createUnit.mockResolvedValueOnce(result);
-    trackAdminModuleUsage.mockRejectedValueOnce(new Error('analytics'));
-    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const analyticsError = new Error('analytics');
+    trackAdminModuleUsage.mockRejectedValueOnce(analyticsError);
     const req = { params: { courseId: '3' }, user: { id: 7 }, body: { language: 'fr', title: 'U', difficulty: 'easy' } };
     const res = createRes();
     const next = createNext();
 
     await controller.createUnit(req, res, next);
-    expect(errSpy).toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error tracking admin unit creation analytics:', analyticsError);
     expect(res.status).toHaveBeenCalledWith(201);
-    errSpy.mockRestore();
   });
 
   it('createUnit falls back to Unknown language and handles missing data id', async () => {
@@ -247,14 +289,14 @@ describe('moduleAdminController', () => {
 
     // error branch
     jest.clearAllMocks();
+    consoleErrorSpy.mockClear();
     mockModuleAdminService.createLesson.mockResolvedValueOnce(result);
-    trackAdminModuleUsage.mockRejectedValueOnce(new Error('fail'));
-    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const analyticsError = new Error('fail');
+    trackAdminModuleUsage.mockRejectedValueOnce(analyticsError);
     const res2 = createRes();
     await controller.createLesson(req, res2, next);
-    expect(errSpy).toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error tracking admin lesson creation analytics:', analyticsError);
     expect(res2.status).toHaveBeenCalledWith(201);
-    errSpy.mockRestore();
   });
 
   it('createLesson falls back to Unknown language and handles missing data id', async () => {

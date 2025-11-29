@@ -67,11 +67,34 @@ describe('authMiddleware', () => {
     const res = createRes();
     const next = createNext();
     const user = { id: 1, email: 'u', role: 'learner' };
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     verifyMock.mockImplementation((token, secret, cb) => cb(null, user));
 
     authMiddleware(req, res, next);
     expect(req.user).toEqual(user);
     expect(next).toHaveBeenCalledWith();
+    expect(logSpy).toHaveBeenCalledWith(
+      `🔐 Auth: User ${user.id} (${user.email}) authenticated - Role: ${user.role}`
+    );
+    logSpy.mockRestore();
+  });
+
+  it('extracts bearer token from Authorization header correctly', () => {
+    const req = createReq({ authorization: 'Bearer mytoken123' });
+    const res = createRes();
+    const next = createNext();
+    const user = { id: 2, email: 'e@example.com', role: 'admin' };
+
+    verifyMock.mockImplementation((token, secret, cb) => {
+      cb(null, user);
+    });
+
+    authMiddleware(req, res, next);
+
+    expect(verifyMock).toHaveBeenCalledTimes(1);
+    const [tokenArg, secretArg, cb] = verifyMock.mock.calls[0];
+    expect(tokenArg).toBe('mytoken123');
+    expect(typeof cb).toBe('function');
   });
 });
 
@@ -91,7 +114,10 @@ describe('adminOnly', () => {
 
     adminOnly(createReq({}, null), res, next);
     expect(res.status).toHaveBeenCalledWith(403);
-    expect(res.json).toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      message: 'Forbidden: Admin access required',
+    });
 
     jest.clearAllMocks();
     const req2 = createReq({}, { id: 1, role: 'learner' });
@@ -99,5 +125,9 @@ describe('adminOnly', () => {
     const next2 = createNext();
     adminOnly(req2, res2, next2);
     expect(res2.status).toHaveBeenCalledWith(403);
+    expect(res2.json).toHaveBeenCalledWith({
+      success: false,
+      message: 'Forbidden: Admin access required',
+    });
   });
 });

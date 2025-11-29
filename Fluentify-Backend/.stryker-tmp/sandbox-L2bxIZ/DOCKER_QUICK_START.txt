@@ -1,0 +1,119 @@
+═══════════════════════════════════════════════════════════════
+  FLUENTIFY BACKEND - DOCKER QUICK START
+═══════════════════════════════════════════════════════════════
+
+📋 PREREQUISITES:
+  ✓ Docker Desktop installed and running
+  ✓ .env file created (see DOCKER_SETUP.md)
+
+═══════════════════════════════════════════════════════════════
+
+🚀 START BACKEND (FIRST TIME):
+
+  cd Fluentify-Backend
+  docker-compose up --build
+
+  Wait for: "🚀 Server running at http://localhost:5000"
+
+═══════════════════════════════════════════════════════════════
+
+🔄 START BACKEND (SUBSEQUENT RUNS):
+
+  docker-compose up
+
+═══════════════════════════════════════════════════════════════
+
+🛑 STOP BACKEND:
+
+  Press Ctrl+C
+  
+  OR in another terminal:
+  docker-compose down
+
+═══════════════════════════════════════════════════════════════
+
+✅ VERIFY IT'S WORKING:
+
+  Open browser: http://localhost:5000/health
+  
+  Should see: {"status":"healthy","database":"connected"}
+
+═══════════════════════════════════════════════════════════════
+
+📊 VIEW LOGS:
+
+  docker-compose logs -f
+
+═══════════════════════════════════════════════════════════════
+
+🔧 TROUBLESHOOTING:
+
+  Problem: Port 5000 already in use
+  Solution: docker-compose down
+           netstat -ano | findstr :5000
+           taskkill /PID <PID> /F
+           docker-compose up
+
+  Problem: Database not connecting
+  Solution: Wait 30 seconds for database to initialize
+           Check logs: docker-compose logs postgres
+
+  Problem: nodemailer not found
+  Solution: docker-compose down
+           docker-compose up --build
+
+  Problem: Email not sending
+  Solution: Check .env has EMAIL_USER and EMAIL_PASS
+           Restart: docker-compose restart
+
+═══════════════════════════════════════════════════════════════
+
+🗄️ DATABASE ACCESS:
+
+  docker exec -it fluentify-postgres psql -U postgres -d fluentify
+
+  Inside PostgreSQL:
+    \dt                    -- List tables
+    SELECT * FROM learners;  -- View users
+    \q                     -- Exit
+
+═══════════════════════════════════════════════════════════════
+
+🔄 RESET EVERYTHING (FRESH START):
+
+  docker-compose down -v
+  docker-compose up --build
+
+  ⚠️  WARNING: This deletes all database data!
+
+═══════════════════════════════════════════════════════════════
+
+📝 IMPORTANT FILES:
+
+  .env                    -- Configuration (CREATE THIS!)
+  docker-compose.yml      -- Container orchestration
+  Dockerfile              -- Backend container definition
+  DOCKER_SETUP.md         -- Detailed documentation
+
+═══════════════════════════════════════════════════════════════
+
+✅ CHECKLIST BEFORE STARTING:
+
+  [ ] Docker Desktop is running
+  [ ] .env file exists with all variables
+  [ ] Gmail App Password added to .env
+  [ ] In Fluentify-Backend directory
+
+═══════════════════════════════════════════════════════════════
+
+🎯 QUICK TEST:
+
+  1. docker-compose up --build
+  2. Wait for "Server running" message
+  3. Open: http://localhost:5000/health
+  4. Should see: {"status":"healthy"}
+  5. Done! ✅
+
+═══════════════════════════════════════════════════════════════
+
+For detailed help, see: DOCKER_SETUP.md

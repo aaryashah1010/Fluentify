@@ -142,6 +142,7 @@ describe('AdminUserController', () => {
             expect(courseRepository.findLearnerCoursesWithStats).toHaveBeenCalledWith('123');
             expect(res.json).toHaveBeenCalled();
             expect(res.json.mock.calls[0][0].data).toEqual(expectedData);
+            expect(res.json.mock.calls[0][0].message).toBe('Learner details retrieved');
             expect(next).not.toHaveBeenCalled();
         });
 
@@ -175,7 +176,9 @@ describe('AdminUserController', () => {
             await adminUserController.updateLearner({ params: { id: '1' } }, res, next);
             expect(res.status).toHaveBeenCalledWith(400);
 
-            expect(res.json.mock.calls[0][0].message).toBe('Nothing to update');
+            const payload = res.json.mock.calls[0][0];
+            expect(payload.success).toBe(false);
+            expect(payload.message).toBe('Nothing to update');
             expect(next).not.toHaveBeenCalled();
         });
 
@@ -187,19 +190,25 @@ describe('AdminUserController', () => {
             await adminUserController.updateLearner(req, res, next);
 
             expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.json.mock.calls[0][0].success).toBe(false);
+            const payload = res.json.mock.calls[0][0];
+            expect(payload.success).toBe(false);
+            expect(payload.message).toContain('Name must be at least 2 characters long');
+            expect(payload.message).toContain(', Name cannot contain numbers');
             expect(next).not.toHaveBeenCalled();
         });
 
         it('should return **400** on **invalid email** input', async () => {
-            const req = { params: { id: '1' }, body: { email: 'bad' } }; // 'bad' is invalid email
+            const req = { params: { id: '1' }, body: { email: 'user@tempmail.com' } }; // disposable + temp domain for multiple errors
             const res = createMockRes();
             const next = createMockNext();
 
             await adminUserController.updateLearner(req, res, next);
 
             expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.json.mock.calls[0][0].success).toBe(false);
+            const payload = res.json.mock.calls[0][0];
+            expect(payload.success).toBe(false);
+            expect(payload.message).toContain('Disposable email addresses are not allowed. Please use a permanent email address');
+            expect(payload.message).toContain(', Temporary email addresses are not allowed. Please use a permanent email address');
             expect(next).not.toHaveBeenCalled();
         });
 
@@ -248,6 +257,7 @@ describe('AdminUserController', () => {
             );
 
             expect(res.json).toHaveBeenCalled();
+            expect(res.json.mock.calls[0][0].message).toBe('Learner updated successfully');
             expect(next).not.toHaveBeenCalled();
         });
 

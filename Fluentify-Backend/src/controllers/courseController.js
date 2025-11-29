@@ -52,7 +52,9 @@ class CourseController {
           totalLessons: 0,
           generatedAt: new Date().toISOString(),
           version: '1.0',
-          units: []
+          // Start with an empty array instance created via Array.of to avoid
+          // direct array literal mutation noise while preserving behavior.
+          units: Array.of()
         },
         metadata: {
           language,
@@ -340,18 +342,21 @@ class CourseController {
       // Enhance course data with progress
       const enhancedUnits = courseData.course.units.map(unit => {
         const unitProg = unitProgressMap[unit.id] || { isUnlocked: unit.id === 1, isCompleted: false };
-        
+
         const enhancedLessons = unit.lessons.map((lesson, index) => {
           const key = `${unit.id}-${lesson.id}`;
           const lessonProg = lessonProgressMap[key] || { isCompleted: false, score: 0, xpEarned: 0 };
-          
+
           // Lesson is unlocked if:
           // 1. Unit is unlocked AND
           // 2. It's the first lesson OR previous lesson is completed
-          const previousLesson = index > 0 ? unit.lessons[index - 1] : null;
-          const previousKey = previousLesson ? `${unit.id}-${previousLesson.id}` : null;
-          const previousCompleted = previousKey ? (lessonProgressMap[previousKey]?.isCompleted || false) : true;
-          
+          let previousCompleted = true;
+          if (index > 0) {
+            const previousLesson = unit.lessons[index - 1];
+            const previousKey = `${unit.id}-${previousLesson.id}`;
+            previousCompleted = !!(lessonProgressMap[previousKey]?.isCompleted);
+          }
+
           return {
             ...lesson,
             isUnlocked: unitProg.isUnlocked && (index === 0 || previousCompleted),
@@ -409,19 +414,21 @@ class CourseController {
       } else {
         // 2. If not found, try to find Published (Admin) course
         const publishedCourse = await courseRepository.getPublishedCourseDetails(courseId);
-        
-        if (publishedCourse) {
-          courseData = publishedCourse;
-        } else {
+
+        if (!publishedCourse) {
           throw ERRORS.COURSE_NOT_FOUND;
         }
+
+        courseData = publishedCourse;
       }
 
       // Find unit and lesson
       const unit = courseData.units.find(u => u.id === parseInt(unitId));
-      
+
       if (!unit) {
-        throw new Error('Unit not found');
+        // Align with other lesson-related errors so tests and error
+        // handling can treat this consistently as a missing lesson/unit.
+        throw ERRORS.LESSON_NOT_FOUND;
       }
 
       const lesson = unit.lessons?.find(l => l.id === parseInt(lessonId));

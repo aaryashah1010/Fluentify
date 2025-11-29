@@ -16,21 +16,34 @@ await jest.unstable_mockModule('../../repositories/analyticsRepository.js', () =
 
 const service = (await import('../../services/analyticsService.js')).default;
 
+const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
 describe('analyticsService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    consoleLogSpy.mockClear();
+    consoleErrorSpy.mockClear();
+    consoleWarnSpy.mockClear();
   });
 
   describe('trackLessonCompletion', () => {
-    it('logs event successfully', async () => {
-      mockRepo.logEvent.mockResolvedValueOnce({ id: 1 });
-      await service.trackLessonCompletion(1, 'English', 'VOCAB', 60, { lessonId: 10, unitId: 2, courseId: 3, score: 80, xpEarned: 50, exercisesCompleted: 5 });
-      expect(mockRepo.logEvent).toHaveBeenCalled();
+    it('logs event successfully with metadata and console output', async () => {
+      const details = { lessonId: 10, unitId: 2, courseId: 3, score: 80, xpEarned: 50, exercisesCompleted: 5 };
+      const logResult = { id: 1 };
+      mockRepo.logEvent.mockResolvedValueOnce(logResult);
+      await service.trackLessonCompletion(1, 'English', 'VOCAB', 60, details);
+      expect(mockRepo.logEvent).toHaveBeenCalledWith(1, 'LESSON_COMPLETED', 'English', 'VOCAB', 60, details);
+      expect(consoleLogSpy).toHaveBeenCalledWith('📊 Analytics Service - trackLessonCompletion called:', expect.objectContaining({ userId: 1, lessonDetails: details }));
+      expect(consoleLogSpy).toHaveBeenCalledWith('✅ Analytics Service - Event logged successfully:', logResult);
     });
 
     it('propagates error', async () => {
-      mockRepo.logEvent.mockRejectedValueOnce(new Error('fail'));
+      const err = new Error('fail');
+      mockRepo.logEvent.mockRejectedValueOnce(err);
       await expect(service.trackLessonCompletion(1, 'English', 'VOCAB')).rejects.toThrow('fail');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Analytics Service - Error tracking lesson completion:', err);
     });
   });
 
@@ -42,8 +55,10 @@ describe('analyticsService', () => {
     });
 
     it('error path', async () => {
-      mockRepo.logEvent.mockRejectedValueOnce(new Error('boom'));
+      const err = new Error('boom');
+      mockRepo.logEvent.mockRejectedValueOnce(err);
       await expect(service.trackAIGeneration(1, 'English', false, { errorMessage: 'x' })).rejects.toThrow('boom');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error tracking AI generation:', err);
     });
 
     it('uses default success and details when omitted', async () => {
@@ -68,8 +83,10 @@ describe('analyticsService', () => {
     });
 
     it('error path', async () => {
-      mockRepo.logEvent.mockRejectedValueOnce(new Error('err'));
+      const err = new Error('err');
+      mockRepo.logEvent.mockRejectedValueOnce(err);
       await expect(service.trackAdminModuleUsage(2, 'English', 'CREATE_COURSE', {})).rejects.toThrow('err');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error tracking admin module usage:', err);
     });
 
     it('uses default moduleDetails when omitted', async () => {
@@ -88,36 +105,55 @@ describe('analyticsService', () => {
 
   describe('getAnalytics', () => {
     it('returns combined analytics with fallbacks triggered', async () => {
-      mockRepo.getRealTimeStats.mockRejectedValueOnce(new Error('rt'));
-      mockRepo.getLanguageDistribution.mockRejectedValueOnce(new Error('lang'));
-      mockRepo.getModuleUsage.mockRejectedValueOnce(new Error('mod'));
-      mockRepo.getAIPerformance.mockRejectedValueOnce(new Error('ai'));
-      mockRepo.getDailyActivity.mockRejectedValueOnce(new Error('daily'));
-      mockRepo.getUserEngagement.mockRejectedValueOnce(new Error('eng'));
-      mockRepo.getLessonCompletionTrends.mockRejectedValueOnce(new Error('trend'));
-      mockRepo.getAverageLessonDuration.mockRejectedValueOnce(new Error('avg'));
+      const rtError = new Error('rt');
+      const langError = new Error('lang');
+      const modError = new Error('mod');
+      const aiError = new Error('ai');
+      const dailyError = new Error('daily');
+      const engError = new Error('eng');
+      const trendError = new Error('trend');
+      const avgError = new Error('avg');
+      mockRepo.getRealTimeStats.mockRejectedValueOnce(rtError);
+      mockRepo.getLanguageDistribution.mockRejectedValueOnce(langError);
+      mockRepo.getModuleUsage.mockRejectedValueOnce(modError);
+      mockRepo.getAIPerformance.mockRejectedValueOnce(aiError);
+      mockRepo.getDailyActivity.mockRejectedValueOnce(dailyError);
+      mockRepo.getUserEngagement.mockRejectedValueOnce(engError);
+      mockRepo.getLessonCompletionTrends.mockRejectedValueOnce(trendError);
+      mockRepo.getAverageLessonDuration.mockRejectedValueOnce(avgError);
 
       const res = await service.getAnalytics();
-      expect(res.realTimeStats).toBeTruthy();
-      expect(Array.isArray(res.languageDistribution)).toBe(true);
-      expect(Array.isArray(res.moduleUsage)).toBe(true);
-      expect(res.aiPerformance).toBeTruthy();
-      expect(Array.isArray(res.dailyActivity)).toBe(true);
-      expect(res.userEngagement).toBeTruthy();
-      expect(Array.isArray(res.lessonCompletionTrends)).toBe(true);
-      expect(Array.isArray(res.averageDuration)).toBe(true);
-      expect(res.summary).toBeTruthy();
+      expect(consoleWarnSpy).toHaveBeenCalledWith('Error getting real-time stats:', 'rt');
+      expect(consoleWarnSpy).toHaveBeenCalledWith('Error getting language distribution:', 'lang');
+      expect(consoleWarnSpy).toHaveBeenCalledWith('Error getting module usage:', 'mod');
+      expect(consoleWarnSpy).toHaveBeenCalledWith('Error getting AI performance:', 'ai');
+      expect(consoleWarnSpy).toHaveBeenCalledWith('Error getting daily activity:', 'daily');
+      expect(consoleWarnSpy).toHaveBeenCalledWith('Error getting user engagement:', 'eng');
+      expect(consoleWarnSpy).toHaveBeenCalledWith('Error getting lesson completion trends:', 'trend');
+      expect(consoleWarnSpy).toHaveBeenCalledWith('Error getting average lesson duration:', 'avg');
+      expect(res.realTimeStats).toEqual({ total_lessons: 0, active_users: 0, popular_language: 'N/A', ai_courses_generated: 0, avg_generation_time: 0, total_xp_earned: 0 });
+      expect(res.languageDistribution).toEqual([]);
+      expect(res.moduleUsage).toEqual([]);
+      expect(res.aiPerformance).toEqual({ total_generations: 0, success_count: 0, failure_count: 0 });
+      expect(res.dailyActivity).toEqual([]);
+      expect(res.userEngagement).toEqual({ total_active_users: 0, avg_lessons_per_user: 0, max_lessons_per_user: 0 });
+      expect(res.lessonCompletionTrends).toEqual([]);
+      expect(res.averageDuration).toEqual([]);
+      expect(res.summary.totalActiveUsers).toBe(0);
     });
 
     it('throws helpful message when table does not exist', async () => {
-      mockRepo.getRealTimeStats.mockImplementationOnce(() => { throw new Error('relation "analytics" does not exist'); });
+      const err = new Error('relation "analytics" does not exist');
+      mockRepo.getRealTimeStats.mockImplementationOnce(() => { throw err; });
       await expect(service.getAnalytics()).rejects.toThrow('Analytics table not found. Please run the analytics migration script.');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error getting analytics:', err);
     });
 
     it('rethrows non-migration errors from getAnalytics', async () => {
       const genericError = new Error('something else failed');
       mockRepo.getRealTimeStats.mockImplementationOnce(() => { throw genericError; });
       await expect(service.getAnalytics()).rejects.toBe(genericError);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error getting analytics:', genericError);
     });
   });
 
@@ -131,9 +167,11 @@ describe('analyticsService', () => {
       expect(res.lessonCompletionTrends).toEqual([2]);
     });
 
-    it('propagates error', async () => {
-      mockRepo.getDailyActivity.mockRejectedValueOnce(new Error('nope'));
+    it('propagates error and logs message', async () => {
+      const err = new Error('nope');
+      mockRepo.getDailyActivity.mockRejectedValueOnce(err);
       await expect(service.getAnalyticsForPeriod(7)).rejects.toThrow('nope');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error getting analytics for period:', err);
     });
 
     it('uses default days=30 when no argument is provided', async () => {
@@ -159,8 +197,9 @@ describe('analyticsService', () => {
       expect(s1.mostPopularLanguage).toBe('Spanish');
       expect(s1.totalLessons).toBe(100);
       expect(s1.preferredModule).toBe('AI');
-      expect(s1.aiSuccessRate).toBe('100%'); // totalGenerations from realtime > 0 sets 100%
-      expect(s1.avgLessonsPerUser).toBe('10.0'); // 100/10
+      expect(s1.totalActiveUsers).toBe(10);
+      expect(s1.aiSuccessRate).toBe('100%');
+      expect(s1.avgLessonsPerUser).toBe('10.0');
 
       const data2 = {
         realTimeStats: { popular_language: '', total_lessons: 0, active_users: 0, ai_courses_generated: 0 },
@@ -171,9 +210,10 @@ describe('analyticsService', () => {
       };
       const s2 = service._generateSummary(data2);
       expect(s2.mostPopularLanguage).toBe('French');
-      expect(s2.totalLessons).toBe(0 + 7); // fallback sum
+      expect(s2.totalLessons).toBe(7);
       expect(s2.preferredModule).toBe('ADMIN');
       expect(s2.aiSuccessRate).toBe('70.0%');
+      expect(s2.totalActiveUsers).toBe(4);
       expect(s2.avgLessonsPerUser).toBe('3.5');
     });
 
@@ -187,8 +227,8 @@ describe('analyticsService', () => {
       };
 
       const summary = service._generateSummary(data);
-      expect(summary.mostPopularLanguage).toBe('N/A');
       expect(summary.totalLessons).toBe(0);
+      expect(summary.totalActiveUsers).toBe(0);
       expect(summary.preferredModule).toBe('N/A');
       expect(summary.aiSuccessRate).toBe('0%');
       expect(summary.avgLessonsPerUser).toBe('0.0');

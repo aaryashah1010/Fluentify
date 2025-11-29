@@ -35,7 +35,11 @@ await jest.unstable_mockModule('googleapis', () => ({
   },
 }));
 
+const { google } = await import('googleapis');
 const googleSheetsService = (await import('../../services/googleSheetsService.js')).default;
+
+const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
 describe('googleSheetsService', () => {
   beforeEach(() => {
@@ -47,11 +51,16 @@ describe('googleSheetsService', () => {
     process.env = ORIGINAL_ENV;
   });
 
+  it('starts with null sheets and auth from constructor', () => {
+    expect(googleSheetsService.sheets).toBeNull();
+    expect(googleSheetsService.auth).toBeNull();
+  });
+
   describe('initialize', () => {
     it('initializes sheets client successfully with valid credentials', async () => {
       process.env.GOOGLE_SERVICE_ACCOUNT_JSON = JSON.stringify({
         client_email: 'test@service-account.iam.gserviceaccount.com',
-        private_key: '-----BEGIN PRIVATE KEY-----\\nkey\\n-----END PRIVATE KEY-----\\n',
+        private_key: '-----BEGIN PRIVATE KEY-----\nkey\n-----END PRIVATE KEY-----\n',
       });
 
       // Force re-initialize internal client
@@ -61,6 +70,15 @@ describe('googleSheetsService', () => {
 
       expect(result).toBe(true);
       expect(googleSheetsService.sheets).toBeTruthy();
+      expect(google.auth.JWT).toHaveBeenCalledWith(
+        'test@service-account.iam.gserviceaccount.iam.gserviceaccount.com' ? 'test@service-account.iam.gserviceaccount.com' : 'test',
+        null,
+        '-----BEGIN PRIVATE KEY-----\nkey\n-----END PRIVATE KEY-----\n',
+        ['https://www.googleapis.com/auth/spreadsheets'],
+      );
+      const authInstance = google.auth.JWT.mock.results[0]?.value || googleSheetsService.auth;
+      expect(google.sheets).toHaveBeenCalledWith({ version: 'v4', auth: authInstance });
+      expect(consoleLogSpy).toHaveBeenCalledWith('✅ Google Sheets API initialized successfully');
     });
 
     it('throws error when credentials are invalid / missing', async () => {
@@ -71,6 +89,15 @@ describe('googleSheetsService', () => {
       await expect(googleSheetsService.initialize()).rejects.toThrow(
         'Invalid Google Service Account credentials',
       );
+      expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Failed to initialize Google Sheets API:', 'Invalid Google Service Account credentials');
+    });
+
+    it('requires both client_email and private_key in credentials', async () => {
+      process.env.GOOGLE_SERVICE_ACCOUNT_JSON = JSON.stringify({ client_email: 'only-email@svc.com' });
+      googleSheetsService.sheets = null;
+
+      await expect(googleSheetsService.initialize()).rejects.toThrow('Invalid Google Service Account credentials');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Failed to initialize Google Sheets API:', 'Invalid Google Service Account credentials');
     });
 
     it('throws error when GOOGLE_SERVICE_ACCOUNT_JSON is not set (uses default {})', async () => {
@@ -81,6 +108,7 @@ describe('googleSheetsService', () => {
       await expect(googleSheetsService.initialize()).rejects.toThrow(
         'Invalid Google Service Account credentials',
       );
+      expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Failed to initialize Google Sheets API:', 'Invalid Google Service Account credentials');
     });
   });
 
@@ -118,8 +146,11 @@ describe('googleSheetsService', () => {
         expect.objectContaining({
           spreadsheetId: 'sheet-id-init-1',
           range: 'Sheet1!A:B',
+          valueInputOption: 'USER_ENTERED',
+          insertDataOption: 'INSERT_ROWS',
         }),
       );
+      expect(consoleLogSpy).toHaveBeenCalledWith('✅ Appended 1 learners to Google Sheet');
     });
 
     it('initializes if needed and appends learners successfully', async () => {
@@ -143,6 +174,8 @@ describe('googleSheetsService', () => {
         expect.objectContaining({
           spreadsheetId: 'sheet-id-123',
           range: 'Sheet1!A:B',
+          valueInputOption: 'USER_ENTERED',
+          insertDataOption: 'INSERT_ROWS',
           requestBody: {
             values: [
               ['Alice', 'alice@example.com'],
@@ -157,6 +190,7 @@ describe('googleSheetsService', () => {
         updatedRange: 'Sheet1!A2:B3',
         spreadsheetId: 'sheet-id-123',
       });
+      expect(consoleLogSpy).toHaveBeenCalledWith('✅ Appended 2 learners to Google Sheet');
     });
 
     it('throws when GOOGLE_SHEET_ID is missing', async () => {
@@ -166,6 +200,7 @@ describe('googleSheetsService', () => {
       await expect(googleSheetsService.appendLearnersToSheet(learners)).rejects.toThrow(
         'GOOGLE_SHEET_ID not configured in environment variables',
       );
+      expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Error appending to Google Sheet:', 'GOOGLE_SHEET_ID not configured in environment variables');
     });
 
     it('propagates error from sheets.append', async () => {
@@ -177,6 +212,7 @@ describe('googleSheetsService', () => {
       await expect(googleSheetsService.appendLearnersToSheet(learners)).rejects.toThrow(
         'append failed',
       );
+      expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Error appending to Google Sheet:', 'append failed');
     });
 
     it('maps missing learner name/email to empty strings', async () => {
@@ -240,9 +276,11 @@ describe('googleSheetsService', () => {
         expect.objectContaining({
           spreadsheetId: 'sheet-id-init-2',
           range: 'Sheet1!A:B',
+          valueInputOption: 'USER_ENTERED',
         }),
       );
       expect(res.success).toBe(true);
+      expect(consoleLogSpy).toHaveBeenCalledWith('✅ Replaced data with 1 learners in Google Sheet');
     });
 
     it('clears and replaces learners successfully', async () => {
@@ -268,6 +306,7 @@ describe('googleSheetsService', () => {
         expect.objectContaining({
           spreadsheetId: 'sheet-id-456',
           range: 'Sheet1!A:B',
+          valueInputOption: 'USER_ENTERED',
           requestBody: {
             values: [
               ['Name', 'Email'],
@@ -295,6 +334,7 @@ describe('googleSheetsService', () => {
       await expect(googleSheetsService.replaceLearnersInSheet(learners)).rejects.toThrow(
         'GOOGLE_SHEET_ID not configured in environment variables',
       );
+      expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Error replacing data in Google Sheet:', 'GOOGLE_SHEET_ID not configured in environment variables');
     });
 
     it('propagates error from clear or update', async () => {
@@ -306,6 +346,7 @@ describe('googleSheetsService', () => {
       await expect(googleSheetsService.replaceLearnersInSheet(learners)).rejects.toThrow(
         'clear failed',
       );
+      expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Error replacing data in Google Sheet:', 'clear failed');
     });
 
     it('maps missing learner name/email to empty strings in replace', async () => {
@@ -384,6 +425,12 @@ describe('googleSheetsService', () => {
       mockGet.mockRejectedValueOnce(new Error('get failed'));
 
       await expect(googleSheetsService.getSheetData()).rejects.toThrow('get failed');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Error reading Google Sheet:', 'get failed');
     });
   });
+});
+
+afterAll(() => {
+  consoleLogSpy.mockRestore();
+  consoleErrorSpy.mockRestore();
 });

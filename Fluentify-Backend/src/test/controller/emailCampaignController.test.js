@@ -54,7 +54,7 @@ describe('emailCampaignController', () => {
   });
 
   describe('getLearnersForCampaign', () => {
-    it('returns 200 with learners and count', async () => {
+    it('returns 200 with learners and count and uses correct SQL', async () => {
       const rows = [
         { name: 'Alice', email: 'alice@example.com', created_at: '2024-01-01' },
         { name: 'Bob', email: 'bob@example.com', created_at: '2024-01-02' },
@@ -67,7 +67,12 @@ describe('emailCampaignController', () => {
 
       await getLearnersForCampaign(req, res, next);
 
+      // ensure SQL contains the important clauses (guards against query -> '')
       expect(mockDb.query).toHaveBeenCalledTimes(1);
+      expect(mockDb.query).toHaveBeenCalledWith(expect.stringContaining('FROM learners'));
+      expect(mockDb.query).toHaveBeenCalledWith(expect.stringContaining('WHERE email IS NOT NULL'));
+      expect(mockDb.query).toHaveBeenCalledWith(expect.stringContaining('ORDER BY created_at DESC'));
+
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.body).toEqual({
         success: true,
@@ -80,7 +85,7 @@ describe('emailCampaignController', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('forwards errors via next', async () => {
+    it('forwards errors via next and logs the error', async () => {
       const err = new Error('db fail');
       mockDb.query.mockRejectedValueOnce(err);
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -91,7 +96,7 @@ describe('emailCampaignController', () => {
 
       await getLearnersForCampaign(req, res, next);
 
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Error fetching learners:'), err);
       expect(next).toHaveBeenCalledWith(err);
       consoleSpy.mockRestore();
     });
@@ -115,7 +120,7 @@ describe('emailCampaignController', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('appends learners and triggers webhook successfully', async () => {
+    it('appends learners and triggers webhook successfully and logs steps', async () => {
       const rows = [
         { name: 'Alice', email: 'alice@example.com', created_at: '2024-01-01' },
       ];
@@ -129,6 +134,8 @@ describe('emailCampaignController', () => {
       process.env.N8N_WEBHOOK_URL = 'https://example.com/webhook';
       global.fetch.mockResolvedValueOnce({ ok: true });
 
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
       const req = {};
       const res = createRes();
       const next = createNext();
@@ -136,14 +143,35 @@ describe('emailCampaignController', () => {
       await triggerEmailCampaign(req, res, next);
 
       expect(mockDb.query).toHaveBeenCalledTimes(1);
+      // SQL sanity checks
+      expect(mockDb.query).toHaveBeenCalledWith(expect.stringContaining('FROM learners'));
+      expect(mockDb.query).toHaveBeenCalledWith(expect.stringContaining('ORDER BY created_at DESC'));
+
       expect(mockGoogleSheetsService.appendLearnersToSheet).toHaveBeenCalledWith(rows);
+
+      // Check fetch called with webhook and body contains expected data strings
       expect(global.fetch).toHaveBeenCalledWith(
         'https://example.com/webhook',
         expect.objectContaining({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          body: expect.any(String),
         }),
       );
+
+      // Validate the body contains action, source and learnerCount
+      const fetchCallBody = JSON.parse(global.fetch.mock.calls[0][1].body);
+      expect(fetchCallBody.action).toBe('email_campaign_triggered');
+      expect(fetchCallBody.source).toBe('Fluentify Admin');
+      expect(fetchCallBody.learnerCount).toBe(1);
+      expect(typeof fetchCallBody.timestamp).toBe('string');
+
+      // Ensure the controller logged the main steps (guards against emptying log strings)
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('📊 Appending 1 learners to Google Sheet'));
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('✅ Learners appended to Google Sheet successfully'));
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('🔔 Triggering N8N workflow...'));
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('✅ N8N workflow triggered successfully'));
+
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.body).toEqual({
         success: true,
@@ -156,9 +184,11 @@ describe('emailCampaignController', () => {
         message: 'Successfully appended 1 learners to Google Sheet',
       });
       expect(next).not.toHaveBeenCalled();
+
+      consoleLogSpy.mockRestore();
     });
 
-    it('handles missing webhook URL and still succeeds', async () => {
+    it('handles missing webhook URL and still succeeds (no fetch call)', async () => {
       const rows = [
         { name: 'Alice', email: 'alice@example.com', created_at: '2024-01-01' },
       ];
@@ -171,6 +201,7 @@ describe('emailCampaignController', () => {
 
       delete process.env.N8N_WEBHOOK_URL;
 
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
       const req = {};
       const res = createRes();
       const next = createNext();
@@ -179,10 +210,13 @@ describe('emailCampaignController', () => {
 
       expect(global.fetch).not.toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(next).not.toHaveBeenCalled();
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.spreadsheetId).toBe('sheet-2');
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('📊 Appending 1 learners to Google Sheet'));
+      consoleLogSpy.mockRestore();
     });
 
-    it('returns specific 500 when GOOGLE_SHEET_ID is missing', async () => {
+    it('returns specific 500 when GOOGLE_SHEET_ID is missing (and logs error)', async () => {
       const err = new Error('GOOGLE_SHEET_ID not configured');
       mockDb.query.mockRejectedValueOnce(err);
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -193,7 +227,7 @@ describe('emailCampaignController', () => {
 
       await triggerEmailCampaign(req, res, next);
 
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Error in email campaign:'), err);
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.body).toEqual({
         success: false,
@@ -203,7 +237,7 @@ describe('emailCampaignController', () => {
       consoleSpy.mockRestore();
     });
 
-    it('returns specific 500 when credentials are missing', async () => {
+    it('returns specific 500 when credentials are missing (and logs error)', async () => {
       const err = new Error('credentials missing');
       mockDb.query.mockRejectedValueOnce(err);
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -214,7 +248,7 @@ describe('emailCampaignController', () => {
 
       await triggerEmailCampaign(req, res, next);
 
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Error in email campaign:'), err);
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.body).toEqual({
         success: false,
@@ -236,7 +270,7 @@ describe('emailCampaignController', () => {
       });
 
       process.env.N8N_WEBHOOK_URL = 'https://example.com/webhook';
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       global.fetch.mockResolvedValueOnce({ ok: false });
 
       const req = {};
@@ -245,10 +279,10 @@ describe('emailCampaignController', () => {
 
       await triggerEmailCampaign(req, res, next);
 
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️ N8N webhook call failed, but data was added to sheet'));
       expect(res.status).toHaveBeenCalledWith(200);
       expect(next).not.toHaveBeenCalled();
-      consoleSpy.mockRestore();
+      consoleWarnSpy.mockRestore();
     });
 
     it('logs warning when webhook call throws but still returns success', async () => {
@@ -263,7 +297,7 @@ describe('emailCampaignController', () => {
       });
 
       process.env.N8N_WEBHOOK_URL = 'https://example.com/webhook';
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       global.fetch.mockRejectedValueOnce(new Error('network fail'));
 
       const req = {};
@@ -272,13 +306,13 @@ describe('emailCampaignController', () => {
 
       await triggerEmailCampaign(req, res, next);
 
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️ N8N webhook error (data still added to sheet):'), expect.any(String));
       expect(res.status).toHaveBeenCalledWith(200);
       expect(next).not.toHaveBeenCalled();
-      consoleSpy.mockRestore();
+      consoleWarnSpy.mockRestore();
     });
 
-    it('forwards unexpected errors via next', async () => {
+    it('forwards unexpected errors via next and logs the error', async () => {
       const err = new Error('other error');
       mockDb.query.mockRejectedValueOnce(err);
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -289,14 +323,14 @@ describe('emailCampaignController', () => {
 
       await triggerEmailCampaign(req, res, next);
 
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Error in email campaign:'), err);
       expect(next).toHaveBeenCalledWith(err);
       consoleSpy.mockRestore();
     });
   });
 
   describe('exportLearnersCSV', () => {
-    it('returns CSV with learners and sets headers', async () => {
+    it('returns CSV with learners and sets headers and uses correct SQL', async () => {
       const rows = [
         { name: 'Alice', email: 'alice@example.com' },
         { name: 'Bob', email: 'bob@example.com' },
@@ -309,7 +343,11 @@ describe('emailCampaignController', () => {
 
       await exportLearnersCSV(req, res, next);
 
+      // ensure SQL contains the important clauses
       expect(mockDb.query).toHaveBeenCalledTimes(1);
+      expect(mockDb.query).toHaveBeenCalledWith(expect.stringContaining('FROM learners'));
+      expect(mockDb.query).toHaveBeenCalledWith(expect.stringContaining('ORDER BY created_at DESC'));
+
       expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'text/csv');
       expect(res.setHeader).toHaveBeenCalledWith('Content-Disposition', 'attachment; filename=learners.csv');
       expect(res.status).toHaveBeenCalledWith(200);
@@ -317,7 +355,7 @@ describe('emailCampaignController', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('forwards errors via next', async () => {
+    it('forwards errors via next and logs the error', async () => {
       const err = new Error('db error');
       mockDb.query.mockRejectedValueOnce(err);
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -328,7 +366,7 @@ describe('emailCampaignController', () => {
 
       await exportLearnersCSV(req, res, next);
 
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Error exporting learners:'), err);
       expect(next).toHaveBeenCalledWith(err);
       consoleSpy.mockRestore();
     });

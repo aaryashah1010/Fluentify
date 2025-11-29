@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { jest } from '@jest/globals';
 
 // Mocks for services and repositories used by fileUploadController
@@ -55,6 +56,15 @@ describe('fileUploadController', () => {
     jest.clearAllMocks();
   });
 
+  // Helper: assert missing fields response
+  function expectMissingFieldsResponse(res) {
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.body).toEqual({
+      success: false,
+      message: 'Missing required fields: language, courseNumber, unitNumber, lessonNumber',
+    });
+  }
+
   describe('uploadLessonMedia', () => {
     it('returns 400 when no file is provided', async () => {
       const req = createReq({ file: null });
@@ -71,18 +81,29 @@ describe('fileUploadController', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('returns 400 when required fields are missing', async () => {
-      const req = createReq({ body: { language: 'en' } });
-      const res = createRes();
-      const next = createNext();
-
+    // Single-missing-field tests to catch logical operator mutations
+    it('returns 400 when courseNumber is missing', async () => {
+      const base = createReq();
+      const req = { ...base, body: { ...base.body, courseNumber: undefined } };
+      const res = createRes(); const next = createNext();
       await controller.uploadLessonMedia(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.body).toEqual({
-        success: false,
-        message: 'Missing required fields: language, courseNumber, unitNumber, lessonNumber',
-      });
+      expectMissingFieldsResponse(res);
+      expect(next).not.toHaveBeenCalled();
+    });
+    it('returns 400 when unitNumber is missing', async () => {
+      const base = createReq();
+      const req = { ...base, body: { ...base.body, unitNumber: undefined } };
+      const res = createRes(); const next = createNext();
+      await controller.uploadLessonMedia(req, res, next);
+      expectMissingFieldsResponse(res);
+      expect(next).not.toHaveBeenCalled();
+    });
+    it('returns 400 when lessonNumber is missing', async () => {
+      const base = createReq();
+      const req = { ...base, body: { ...base.body, lessonNumber: undefined } };
+      const res = createRes(); const next = createNext();
+      await controller.uploadLessonMedia(req, res, next);
+      expectMissingFieldsResponse(res);
       expect(next).not.toHaveBeenCalled();
     });
 
@@ -104,9 +125,9 @@ describe('fileUploadController', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('returns 400 when file size exceeds maximum allowed', async () => {
+    it('returns 400 when file size exceeds maximum allowed AND message contains correct MB value', async () => {
       mockFileUploadService.validateFileType.mockReturnValueOnce(true);
-      mockFileUploadService.getMaxFileSize.mockReturnValueOnce(512);
+      mockFileUploadService.getMaxFileSize.mockReturnValueOnce(512); // bytes
 
       const req = createReq({ file: { buffer: Buffer.from('x'), originalname: 'big.pdf', mimetype: 'application/pdf', size: 1024 } });
       const res = createRes();
@@ -116,9 +137,32 @@ describe('fileUploadController', () => {
 
       expect(mockFileUploadService.getMaxFileSize).toHaveBeenCalledWith('pdf');
       expect(res.status).toHaveBeenCalledWith(400);
+      // exact formatted MB string check to catch arithmetic mutations
+      const expectedMsg = `File size exceeds maximum allowed (${Math.round(512 / 1024 / 1024)}MB)`;
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain('File size exceeds maximum allowed');
+      expect(res.body.message).toBe(expectedMsg);
       expect(next).not.toHaveBeenCalled();
+    });
+
+    it('allows file size exactly equal to maxSize (boundary)', async () => {
+      mockFileUploadService.validateFileType.mockReturnValueOnce(true);
+      mockFileUploadService.getMaxFileSize.mockReturnValueOnce(1024); // maxSize
+      mockFileUploadService.uploadFile.mockResolvedValueOnce({
+        url: 'http://example.com/file.pdf',
+        message: 'Uploaded successfully',
+        manualUploadRequired: true,
+      });
+
+      // file.size === maxSize should be accepted (controller uses > not >=)
+      const req = createReq({ file: { buffer: Buffer.from('x'), originalname: 'eq.pdf', mimetype: 'application/pdf', size: 1024 } });
+      const res = createRes();
+      const next = createNext();
+
+      await controller.uploadLessonMedia(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.filename).toBe('eq.pdf');
     });
 
     it('uploads file successfully and returns 200 with data', async () => {
@@ -187,7 +231,7 @@ describe('fileUploadController', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('forwards errors via next when upload fails', async () => {
+    it('forwards errors via next when upload fails and logs the original error', async () => {
       mockFileUploadService.validateFileType.mockReturnValueOnce(true);
       const err = new Error('upload failed');
       mockFileUploadService.uploadFile.mockRejectedValueOnce(err);
@@ -199,7 +243,8 @@ describe('fileUploadController', () => {
 
       await controller.uploadLessonMedia(req, res, next);
 
-      expect(consoleSpy).toHaveBeenCalled();
+      // expect original log message format
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Error uploading lesson media:'), err);
       expect(next).toHaveBeenCalledWith(err);
       consoleSpy.mockRestore();
     });
@@ -221,18 +266,29 @@ describe('fileUploadController', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('returns 400 when required fields are missing', async () => {
-      const req = createReq({ body: { language: 'en' }, params: { lessonId: '10' } });
-      const res = createRes();
-      const next = createNext();
-
+    // Single-missing-field tests for uploadAndUpdateLesson as well
+    it('returns 400 when courseNumber is missing (uploadAndUpdateLesson)', async () => {
+      const base = createReq({ params: { lessonId: '10' } });
+      const req = { ...base, body: { ...base.body, courseNumber: undefined } };
+      const res = createRes(); const next = createNext();
       await controller.uploadAndUpdateLesson(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.body).toEqual({
-        success: false,
-        message: 'Missing required fields: language, courseNumber, unitNumber, lessonNumber',
-      });
+      expectMissingFieldsResponse(res);
+      expect(next).not.toHaveBeenCalled();
+    });
+    it('returns 400 when unitNumber is missing (uploadAndUpdateLesson)', async () => {
+      const base = createReq({ params: { lessonId: '10' } });
+      const req = { ...base, body: { ...base.body, unitNumber: undefined } };
+      const res = createRes(); const next = createNext();
+      await controller.uploadAndUpdateLesson(req, res, next);
+      expectMissingFieldsResponse(res);
+      expect(next).not.toHaveBeenCalled();
+    });
+    it('returns 400 when lessonNumber is missing (uploadAndUpdateLesson)', async () => {
+      const base = createReq({ params: { lessonId: '10' } });
+      const req = { ...base, body: { ...base.body, lessonNumber: undefined } };
+      const res = createRes(); const next = createNext();
+      await controller.uploadAndUpdateLesson(req, res, next);
+      expectMissingFieldsResponse(res);
       expect(next).not.toHaveBeenCalled();
     });
 
@@ -318,7 +374,7 @@ describe('fileUploadController', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('forwards errors via next when upload fails', async () => {
+    it('forwards errors via next when upload fails and logs the original error', async () => {
       mockFileUploadService.validateFileType.mockReturnValueOnce(true);
       const err = new Error('upload error');
       mockFileUploadService.uploadFile.mockRejectedValueOnce(err);
@@ -330,12 +386,12 @@ describe('fileUploadController', () => {
 
       await controller.uploadAndUpdateLesson(req, res, next);
 
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Error uploading and updating lesson:'), err);
       expect(next).toHaveBeenCalledWith(err);
       consoleSpy.mockRestore();
     });
 
-    it('forwards errors via next when updateLesson fails', async () => {
+    it('forwards errors via next when updateLesson fails and logs the original error', async () => {
       mockFileUploadService.validateFileType.mockReturnValueOnce(true);
       mockFileUploadService.uploadFile.mockResolvedValueOnce({ url: 'x' });
       const err = new Error('update error');
@@ -348,7 +404,7 @@ describe('fileUploadController', () => {
 
       await controller.uploadAndUpdateLesson(req, res, next);
 
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Error uploading and updating lesson:'), err);
       expect(next).toHaveBeenCalledWith(err);
       consoleSpy.mockRestore();
     });
@@ -377,7 +433,7 @@ describe('fileUploadController', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('forwards errors via next when repository fails', async () => {
+    it('forwards errors via next when repository fails and logs the error', async () => {
       const err = new Error('repo fail');
       mockModuleAdminRepository.getCoursesByLanguage.mockRejectedValueOnce(err);
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -388,7 +444,7 @@ describe('fileUploadController', () => {
 
       await controller.getCourseCountForLanguage(req, res, next);
 
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Error getting course count:'), err);
       expect(next).toHaveBeenCalledWith(err);
       consoleSpy.mockRestore();
     });

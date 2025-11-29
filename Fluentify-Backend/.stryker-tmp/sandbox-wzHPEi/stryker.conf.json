@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "jest",
+  "mutate": [
+    "src/controllers/**/*.js",
+    "src/services/**/*.js",
+    "src/repositories/**/*.js",
+    "src/utils/**/*.js",
+    "!src/test/**/*.js"
+  ],
+  "jest": {
+    "projectType": "custom",
+    "config": {
+      "testEnvironment": "node",
+      "roots": ["<rootDir>/src"],
+      "testMatch": ["<rootDir>/src/test/**/*.test.js"]
+    }
+  },
+  "reporters": ["progress", "clear-text", "html"],
+  "coverageAnalysis": "off"
+}

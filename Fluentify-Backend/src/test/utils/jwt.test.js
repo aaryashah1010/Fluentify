@@ -53,6 +53,17 @@ describe('utils/jwt', () => {
     expect(options).toEqual({ expiresIn: '2h' });
   });
 
+  it('createAuthToken sets hasPreferences to true when flag provided', async () => {
+    const { createAuthToken } = await importJwtWithEnv('abc');
+    signMock.mockReturnValueOnce('token-has-pref');
+
+    createAuthToken({ id: 5, email: 'hp@mail.com', role: 'learner', hasPreferences: true });
+
+    const [payload, , options] = signMock.mock.calls[0];
+    expect(payload.hasPreferences).toBe(true);
+    expect(options).toEqual({ expiresIn: '2h' });
+  });
+
   it('createRefreshToken signs payload with refresh expiry', async () => {
     const { createRefreshToken } = await importJwtWithEnv('abc', { JWT_REFRESH_EXPIRES_IN: '10d' });
     signMock.mockReturnValueOnce('refresh');
@@ -68,6 +79,41 @@ describe('utils/jwt', () => {
     expect(t).toBe('refresh-default');
     const [payload, , options] = signMock.mock.calls[0];
     expect(payload).toEqual({ id: 3, email: 'c@mail.com', role: 'learner' });
+    expect(options).toEqual({ expiresIn: '7d' });
+  });
+
+  it('createAuthToken falls back to default JWT_EXPIRES_IN when env not set', async () => {
+    jest.resetModules();
+    process.env.JWT_SECRET = 'abc';
+    delete process.env.JWT_EXPIRES_IN;
+    // keep refresh expiry defined so only access token path uses fallback
+    process.env.JWT_REFRESH_EXPIRES_IN = '7d';
+
+    const { createAuthToken } = await import('../../utils/jwt.js');
+    signMock.mockReturnValueOnce('token-fallback');
+
+    const t = createAuthToken({ id: 10, email: 'e@mail.com', role: 'learner' });
+    expect(t).toBe('token-fallback');
+
+    const [payload, , options] = signMock.mock.calls[0];
+    expect(payload).toEqual({ id: 10, email: 'e@mail.com', role: 'learner', hasPreferences: false });
+    expect(options).toEqual({ expiresIn: '2h' });
+  });
+
+  it('createRefreshToken falls back to default JWT_REFRESH_EXPIRES_IN when env not set', async () => {
+    jest.resetModules();
+    process.env.JWT_SECRET = 'abc';
+    process.env.JWT_EXPIRES_IN = '2h';
+    delete process.env.JWT_REFRESH_EXPIRES_IN;
+
+    const { createRefreshToken } = await import('../../utils/jwt.js');
+    signMock.mockReturnValueOnce('refresh-fallback');
+
+    const t = createRefreshToken({ id: 11, email: 'd@mail.com', role: 'admin' });
+    expect(t).toBe('refresh-fallback');
+
+    const [payload, , options] = signMock.mock.calls[0];
+    expect(payload).toEqual({ id: 11, email: 'd@mail.com', role: 'admin' });
     expect(options).toEqual({ expiresIn: '7d' });
   });
 

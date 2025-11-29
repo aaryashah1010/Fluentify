@@ -72,6 +72,8 @@ describe('UserManagementController', () => {
     const nextMissing = createNext();
     await controller.searchUsers(reqMissing, resMissing, nextMissing);
     expect(resMissing.status).toHaveBeenCalledWith(400);
+    expect(resMissing.json).toHaveBeenCalledWith({ message: 'Search query is required' });
+    expect(nextMissing).not.toHaveBeenCalled();
 
     mockService.findUsers.mockResolvedValueOnce([{ id: 1 }]);
     const req = { query: { q: 'john' } };
@@ -95,6 +97,8 @@ describe('UserManagementController', () => {
     const next = createNext();
     await controller.getUserDetails(req, res, next);
     expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.body).toEqual({ message: 'User not found' });
+    expect(next).not.toHaveBeenCalled();
 
     jest.clearAllMocks();
     mockService.getUserWithProgress.mockResolvedValueOnce({ user: { id: 1 } });
@@ -118,6 +122,8 @@ describe('UserManagementController', () => {
     const nextInvalid = createNext();
     await controller.updateUser(reqInvalid, resInvalid, nextInvalid);
     expect(resInvalid.status).toHaveBeenCalledWith(400);
+    expect(resInvalid.body).toEqual({ errors: errorsObj.array() });
+    expect(nextInvalid).not.toHaveBeenCalled();
 
     // not found
     validationResult.mockReturnValueOnce({ isEmpty: () => true });
@@ -125,6 +131,7 @@ describe('UserManagementController', () => {
     const resNF = createRes();
     await controller.updateUser({ params: { userId: '1' }, body: {} }, resNF, createNext());
     expect(resNF.status).toHaveBeenCalledWith(404);
+    expect(resNF.body).toEqual({ message: 'User not found' });
 
     // success with changes
     validationResult.mockReturnValueOnce({ isEmpty: () => true });
@@ -136,6 +143,14 @@ describe('UserManagementController', () => {
     const next = createNext();
     await controller.updateUser(req, res, next);
     expect(res.status).toHaveBeenCalledWith(200);
+    expect(emailServiceMock.sendAdminProfileChangeNotification).toHaveBeenCalledWith(
+      'new@mail.com',
+      'New',
+      {
+        name: { old: 'Old', new: 'New' },
+        email: { old: 'old@mail.com', new: 'new@mail.com' },
+      },
+    );
   });
 
   it('updateUser does not send email when there are no changes', async () => {
@@ -163,6 +178,7 @@ describe('UserManagementController', () => {
     const res = createRes();
     const next = createNext();
 
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     await controller.updateUser(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(200);
@@ -171,6 +187,11 @@ describe('UserManagementController', () => {
       'Old',
       { email: { old: 'old@mail.com', new: 'new@mail.com' } },
     );
+
+    // wait for async notification handler and assert success log content
+    await new Promise((r) => setImmediate(r));
+    expect(logSpy).toHaveBeenCalledWith('✅ Profile update notification sent to:', 'new@mail.com');
+    logSpy.mockRestore();
   });
 
   it('updateUser: email notification result.success=false path', async () => {
@@ -187,7 +208,7 @@ describe('UserManagementController', () => {
     await controller.updateUser(req, res, next);
     await new Promise((r) => setImmediate(r));
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(logSpy).toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith('⚠️ Failed to send notification email:', 'smtp');
     logSpy.mockRestore();
   });
 
@@ -205,7 +226,7 @@ describe('UserManagementController', () => {
     await controller.updateUser(req, res, next);
     await new Promise((r) => setImmediate(r));
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(errSpy).toHaveBeenCalled();
+    expect(errSpy).toHaveBeenCalledWith('❌ Email notification error:', expect.any(Error));
     errSpy.mockRestore();
   });
 
@@ -229,6 +250,7 @@ describe('UserManagementController', () => {
     const next = createNext();
     await controller.deleteUser(req, res, next);
     expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.body).toEqual({ message: 'User deleted successfully' });
 
     jest.clearAllMocks();
     const err = new Error('db');

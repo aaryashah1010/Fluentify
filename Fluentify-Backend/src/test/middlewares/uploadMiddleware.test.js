@@ -24,7 +24,7 @@ multerFn.MulterError = MockMulterError;
 await jest.unstable_mockModule('multer', () => ({ default: multerFn }));
 
 const middlewareModule = await import('../../middlewares/uploadMiddleware.js');
-const { handleUploadError } = middlewareModule;
+const { handleUploadError, uploadSingle, uploadMedia } = middlewareModule;
 
 function createRes() {
   const res = {};
@@ -87,7 +87,7 @@ describe('uploadMiddleware handleUploadError', () => {
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.body).toEqual({
       success: false,
-      message: 'not allowed',
+      message: err.message,
     });
     expect(next).not.toHaveBeenCalled();
   });
@@ -106,6 +106,22 @@ describe('uploadMiddleware handleUploadError', () => {
 });
 
 describe('uploadMiddleware fileFilter', () => {
+  // Ensure multer initialization runs here (and after any earlier mock clears)
+  beforeAll(() => {
+    jest.clearAllMocks();
+    if (!capturedConfig) {
+      throw new Error('capturedConfig not initialized');
+    }
+    // Re-simulate the module initialization calls so mock histories are populated:
+    // - memoryStorage is called during module init
+    // - multer(...) is called with capturedConfig
+    // - the returned upload.single(...) is called with the 'file' field during module init
+    multerFn.memoryStorage();
+    const uploadInstance = multerFn(capturedConfig);
+    // simulate the module calling upload.single('file') during import
+    uploadInstance.single('file');
+  });
+
   it('accepts allowed mimetype (e.g. application/pdf)', () => {
     const { fileFilter } = capturedConfig;
 
@@ -116,6 +132,27 @@ describe('uploadMiddleware fileFilter', () => {
     fileFilter(req, file, cb);
 
     expect(cb).toHaveBeenCalledWith(null, true);
+  });
+
+  it('accepts all configured audio and video mimetypes', () => {
+    const { fileFilter } = capturedConfig;
+
+    const allowedTypes = [
+      'audio/mpeg',
+      'audio/mp3',
+      'audio/wav',
+      'audio/ogg',
+      'audio/x-wav',
+      'video/mp4',
+      'video/webm',
+      'video/quicktime',
+    ];
+
+    for (const type of allowedTypes) {
+      const cb = jest.fn();
+      fileFilter({}, { mimetype: type }, cb);
+      expect(cb).toHaveBeenCalledWith(null, true);
+    }
   });
 
   it('rejects disallowed mimetype and returns descriptive error', () => {
@@ -132,5 +169,50 @@ describe('uploadMiddleware fileFilter', () => {
     expect(err).toBeInstanceOf(Error);
     expect(err.message).toContain('File type image/png is not allowed');
     expect(allowed).toBe(false);
+  });
+});
+
+describe('uploadMiddleware config and handlers', () => {
+  // Ensure multer initialization runs here (and after any earlier mock clears)
+  beforeAll(() => {
+    jest.clearAllMocks();
+    if (!capturedConfig) {
+      throw new Error('capturedConfig not initialized');
+    }
+    // Re-simulate the module initialization calls so mock histories are populated:
+    multerFn.memoryStorage();
+    const uploadInstance = multerFn(capturedConfig);
+    // simulate the module calling upload.single('file') and upload.single('media') during import
+    uploadInstance.single('file');
+    uploadInstance.single('media');
+  });
+
+  it('configures multer with memory storage, fileFilter, and correct limits', () => {
+    expect(multerFn.memoryStorage).toHaveBeenCalled();
+    expect(capturedConfig).toBeDefined();
+    expect(typeof capturedConfig.fileFilter).toBe('function');
+    expect(capturedConfig.storage).toBeDefined();
+    expect(capturedConfig.limits).toEqual({
+      fileSize: 500 * 1024 * 1024,
+      files: 1,
+    });
+  });
+
+  it('defines uploadSingle to use the "file" field', () => {
+    // upload.single is mocked as jest.fn
+    const singleMock = multerFn.mock.results[0].value.single;
+
+    // call the exported middleware (this executes the middleware function returned earlier)
+    uploadSingle({}, {}, jest.fn());
+
+    expect(singleMock).toHaveBeenCalledWith('file');
+  });
+
+  it('defines uploadMedia to use the "media" field', () => {
+    const singleMock = multerFn.mock.results[0].value.single;
+
+    uploadMedia({}, {}, jest.fn());
+
+    expect(singleMock).toHaveBeenCalledWith('media');
   });
 });
