@@ -16,6 +16,7 @@ services:
       - ./src/database/03-auth-enhancements.sql:/docker-entrypoint-initdb.d/03-auth-enhancements.sql
       - ./src/database/03-analytics-tables.sql:/docker-entrypoint-initdb.d/03-analytics-tables.sql
       - ./src/database/04-chat-tables.sql:/docker-entrypoint-initdb.d/04-chat-tables.sql
+      - ./src/database/05-fix-otp-codes.sql:/docker-entrypoint-initdb.d/05-fix-otp-codes.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
