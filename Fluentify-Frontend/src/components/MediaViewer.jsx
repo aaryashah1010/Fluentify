@@ -57,14 +57,6 @@ const MediaViewer = ({ mediaUrl, mediaType, title = 'Lesson Content' }) => {
               <ExternalLink className="w-4 h-4" />
               Open
             </a>
-            <a
-              href={mediaUrl}
-              download
-              className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm flex items-center gap-2 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Download
-            </a>
           </div>
         </div>
         
@@ -104,13 +96,6 @@ const MediaViewer = ({ mediaUrl, mediaType, title = 'Lesson Content' }) => {
               Your browser does not support the audio element.
             </audio>
           </div>
-          <a
-            href={mediaUrl}
-            download
-            className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm flex items-center gap-2 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-          </a>
         </div>
       </div>
     );

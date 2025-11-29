@@ -76,7 +76,7 @@ const ModuleCourseDetailsPage = () => {
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         
         <button 
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(`/language-modules/${course.language}`)}
           className="flex items-center gap-2 text-orange-600 hover:text-orange-700 mb-6 transition-colors font-medium"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -180,7 +180,7 @@ const ModuleCourseDetailsPage = () => {
                                             unit.lessons.map((lesson, lessonIndex) => (
                                                 <div 
                                                     key={lesson.id}
-                                                    onClick={() => navigate(`/lesson/${courseId}/${unit.id}/${lesson.id}`)}
+                                                    onClick={() => navigate(`/module-lesson/${courseId}/${unit.id}/${lesson.id}`)}
                                                     className="group bg-slate-900/90 p-4 rounded-xl border border-white/10 shadow-md hover:shadow-xl hover:border-teal-400/70 transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center gap-4"
                                                 >
                                                     <div className="w-12 h-12 rounded-full bg-orange-500/20 text-orange-200 flex items-center justify-center flex-shrink-0 group-hover:bg-gradient-to-br group-hover:from-teal-400 group-hover:to-cyan-500 group-hover:text-white transition-all duration-300">
