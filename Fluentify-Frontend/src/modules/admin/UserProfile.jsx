@@ -144,7 +144,7 @@ const UserProfile = () => {
           <div className="space-y-6">
             {/* Name Field */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2 ">
                 Full Name
               </label>
               {isEditing ? (
@@ -154,7 +154,7 @@ const UserProfile = () => {
                     type="text"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="flex-1 bg-slate-950/60 border-white/15 text-slate-50 placeholder-slate-500"
+                    className="flex-1 bg-slate-900/80 border border-white/15 text-slate-50 placeholder-slate-500"
                     error={editError}
                     required
                   />
@@ -186,6 +186,7 @@ const UserProfile = () => {
                     variant="ghost"
                     onClick={() => setIsEditing(true)}
                     icon={<Edit2 className="w-4 h-4" />}
+                    className="bg-slate-900/80 border border-teal-400/60 text-teal-100 hover:bg-teal-500/20 hover:border-teal-300"
                   >
                     Edit
                   </Button>

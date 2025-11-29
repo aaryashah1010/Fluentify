@@ -62,16 +62,6 @@ const UserListPage = () => {
             </div>
 
             {/* Active Users */}
-            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-md">
-                  <UserCheck className="w-6 h-6 text-white" />
-                </div>
-                <TrendingUp className="w-5 h-5 text-green-600" />
-              </div>
-              <p className="text-sm font-medium text-slate-300 mb-1">Active Users</p>
-              <p className="text-3xl font-bold text-slate-50">{users?.filter(u => u.is_verified).length || 0}</p>
-            </div>
 
             {/* Current Page */}
             <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
@@ -85,15 +75,6 @@ const UserListPage = () => {
             </div>
 
             {/* Showing */}
-            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-md">
-                  <UserPlus className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <p className="text-sm font-medium text-slate-300 mb-1">Showing</p>
-              <p className="text-3xl font-bold text-slate-50">{users?.length || 0}</p>
-            </div>
           </div>
         )}
 

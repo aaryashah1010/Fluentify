@@ -77,18 +77,32 @@ const AdminDashboard = () => {
   const dailyActivity = analytics?.dailyActivity || [];
   const realTimeStats = analytics?.realTimeStats;
   const aiPerformance = analytics?.aiPerformance;
+  const languageDistribution = analytics?.languageDistribution || [];
 
-  const totalActiveUsers = summary?.totalActiveUsers ?? realTimeStats?.active_users ?? 0;
+  // Get active users from userEngagement first (more reliable), fallback to summary
+  const totalActiveUsers = userEngagement?.total_active_users ?? summary?.totalActiveUsers ?? realTimeStats?.active_users ?? 0;
+  
   const totalLessons = summary?.totalLessons ?? 0;
   const aiSuccessRate = summary?.aiSuccessRate ?? '0%';
-  const avgLessonsPerUserRaw = summary?.avgLessonsPerUser ?? userEngagement?.avg_lessons_per_user ?? 0;
+  
+  // Get avg lessons per user from userEngagement (more reliable)
+  const avgLessonsPerUserRaw = userEngagement?.avg_lessons_per_user ?? summary?.avgLessonsPerUser ?? 0;
   const avgLessonsPerUser = Number.isFinite(Number(avgLessonsPerUserRaw))
     ? Number(avgLessonsPerUserRaw)
     : 0;
   const avgLessonsPerUserDisplay = avgLessonsPerUser.toFixed(1);
 
   const totalAIGenerations = aiPerformance?.total_generations ?? realTimeStats?.ai_courses_generated ?? 0;
-  const popularLanguage = summary?.mostPopularLanguage ?? 'N/A';
+  
+  // Get most popular language - derive from languageDistribution if not in summary
+  let popularLanguage = summary?.mostPopularLanguage;
+  if (!popularLanguage || popularLanguage === 'N/A') {
+    // Get from languageDistribution (already sorted by count)
+    popularLanguage = languageDistribution && languageDistribution.length > 0 
+      ? languageDistribution[0].language_name 
+      : 'N/A';
+  }
+  
   const activeUsers30 = userEngagement?.total_active_users ?? 0;
 
   const contestsArray = Array.isArray(contests) ? contests : [];
@@ -395,10 +409,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="rounded-2xl bg-slate-900/80 border border-white/10 px-3 py-2">
-                  <p className="text-[11px] text-slate-300">Active users (30 days)</p>
-                  <p className="text-lg font-semibold text-slate-50">{activeUsers30}</p>
-                </div>
+
                 <div className="rounded-2xl bg-slate-900/80 border border-white/10 px-3 py-2">
                   <p className="text-[11px] text-slate-300">Avg lessons per user</p>
                   <p className="text-lg font-semibold text-emerald-300">{avgLessonsPerUserDisplay}</p>
