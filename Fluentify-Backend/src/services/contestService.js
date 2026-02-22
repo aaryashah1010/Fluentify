@@ -152,7 +152,7 @@ class ContestService {
    * Learner: Get contest for participation
    */
   async getContestForLearner(contestId, learnerId) {
-    const contest = await contestRepository.getContestById(contestId);
+    let contest = await contestRepository.getContestById(contestId);
     if (!contest) {
       throw ERRORS.CONTEST_NOT_FOUND;
     }
@@ -162,13 +162,13 @@ class ContestService {
     const startTime = new Date(contest.start_time);
     const endTime = new Date(contest.end_time);
 
-    // Update status if needed
+    // Update status if needed (and refetch so we rely on repository state)
     if (contest.status === 'PUBLISHED' && now >= startTime && now < endTime) {
       await contestRepository.updateContestStatus(contestId, 'ACTIVE');
-      contest.status = 'ACTIVE';
+      contest = await contestRepository.getContestById(contestId);
     } else if (contest.status === 'ACTIVE' && now >= endTime) {
       await contestRepository.updateContestStatus(contestId, 'ENDED');
-      contest.status = 'ENDED';
+      contest = await contestRepository.getContestById(contestId);
     }
 
     // Check if contest is active
