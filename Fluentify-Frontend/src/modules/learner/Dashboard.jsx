@@ -535,6 +535,7 @@ const LearnerDashboard = () => {
       <VoiceAIModal
         isOpen={showVoiceAiModal}
         onClose={() => setShowVoiceAiModal(false)}
+        courses={courses}
       />
 
     </div>

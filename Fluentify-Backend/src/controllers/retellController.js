@@ -11,30 +11,40 @@ import chatRepository from '../repositories/chatRepository.js';
 import courseRepository from '../repositories/courseRepository.js';
 
 /**
- * Look up what this learner is actually studying, so the voice agent
- * doesn't have to interview them from scratch on every call.
+ * Look up what this learner is actually studying, so the voice agent doesn't
+ * have to interview them from scratch on every call. If the learner has more
+ * than one course, `courseId` lets the frontend say explicitly which one they
+ * picked; otherwise we fall back to whichever course they most recently
+ * actually studied (see findMostRecentlyActiveCourse).
  */
-async function getLearnerVoiceContext(userId) {
-  const [learner, languageInfo] = await Promise.all([
-    authRepository.findLearnerById(userId),
-    chatRepository.getUserLanguageInfo(userId),
-  ]);
+async function getLearnerVoiceContext(userId, courseId) {
+  const learner = await authRepository.findLearnerById(userId);
 
-  let baseLanguage = 'English';
-  try {
-    const course = await courseRepository.findActiveCourseByLanguage(userId, languageInfo.language);
-    baseLanguage = course?.course_data?.metadata?.baseLanguage
-      || course?.course_data?.course?.baseLanguage
-      || 'English';
-  } catch (err) {
-    console.error('Could not look up base language for voice call, defaulting to English:', err.message);
+  let course = null;
+  if (courseId) {
+    course = await courseRepository.findCourseByIdForUser(userId, courseId);
+  }
+  if (!course) {
+    course = await courseRepository.findMostRecentlyActiveCourse(userId);
   }
 
+  if (course) {
+    const data = course.course_data || {};
+    return {
+      learner_name: learner?.name || 'there',
+      target_language: data.metadata?.language || data.course?.language || course.language || 'English',
+      proficiency_level: data.metadata?.expertise || data.course?.expertise || 'Beginner',
+      base_language: data.metadata?.baseLanguage || data.course?.baseLanguage || 'English',
+    };
+  }
+
+  // No courses generated yet - fall back to onboarding preferences
+  const languageInfo = await chatRepository.getUserLanguageInfo(userId);
   return {
     learner_name: learner?.name || 'there',
     target_language: languageInfo.language,
     proficiency_level: languageInfo.proficiency,
-    base_language: baseLanguage,
+    base_language: 'English',
   };
 }
 
@@ -44,7 +54,7 @@ async function getLearnerVoiceContext(userId) {
  */
 export const createRetellCall = async (req, res, next) => {
   try {
-    const { agentId } = req.body;
+    const { agentId, courseId } = req.body;
     const userId = req.user.id;
 
     console.log('📞 Creating Retell AI call...');
@@ -60,7 +70,7 @@ export const createRetellCall = async (req, res, next) => {
       throw ERRORS.RETELL_API_NOT_CONFIGURED;
     }
 
-    const voiceContext = await getLearnerVoiceContext(userId);
+    const voiceContext = await getLearnerVoiceContext(userId, courseId);
     console.log('🗣️  Voice call context:', voiceContext);
 
     // Call Retell API to create a web call
