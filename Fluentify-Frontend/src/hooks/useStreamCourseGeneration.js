@@ -50,7 +50,7 @@ export const useStreamCourseGeneration = () => {
     });
   }, [abortController]);
 
-  const generateCourse = useCallback(async ({ language, expectedDuration, expertise }) => {
+  const generateCourse = useCallback(async ({ language, expectedDuration, expertise, baseLanguage }) => {
     // Close any existing connection
     if (abortController) {
       abortController.abort();
@@ -77,6 +77,7 @@ export const useStreamCourseGeneration = () => {
       language: language,
       expectedDuration: expectedDuration,
       expertise: expertise,
+      ...(baseLanguage ? { baseLanguage } : {}),
     });
 
     // Build URL using API_BASE_URL

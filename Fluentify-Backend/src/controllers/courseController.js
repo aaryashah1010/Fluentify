@@ -1,4 +1,4 @@
-import geminiService from '../services/geminiService.js';
+import openaiService from '../services/openaiService.js';
 import courseRepository from '../repositories/courseRepository.js';
 import progressRepository from '../repositories/progressRepository.js';
 import analyticsService from '../services/analyticsService.js';
@@ -11,13 +11,14 @@ class CourseController {
    */
   async generateCourseStream(req, res, next) {
     try {
-      const { language, expectedDuration, expertise = 'Beginner' } = req.query;
+      const { language, expectedDuration, expertise = 'Beginner', baseLanguage = 'English' } = req.query;
       const userId = req.user.id;
 
       console.log('📥 Starting streaming course generation...');
       console.log('🌍 Language:', language);
       console.log('⏱️  Duration:', expectedDuration);
       console.log('🎓 Expertise:', expertise);
+      console.log('🗣️  Base language:', baseLanguage);
 
       if (!language || !expectedDuration) {
         throw ERRORS.MISSING_REQUIRED_FIELDS;
@@ -41,13 +42,14 @@ class CourseController {
       console.log(`🚀 Generating course outline...`);
       
       // Generate course outline first with expertise level
-      const outline = await geminiService.generateCourseOutline(language, expectedDuration, expertise);
+      const outline = await openaiService.generateCourseOutline(language, expectedDuration, expertise);
       
       // Create initial course record in database
       const courseData = {
         course: {
           title: `${language} Learning Journey`,
           language: language,
+          baseLanguage: baseLanguage,
           duration: expectedDuration,
           totalLessons: 0,
           generatedAt: new Date().toISOString(),
@@ -56,6 +58,7 @@ class CourseController {
         },
         metadata: {
           language,
+          baseLanguage,
           totalUnits: outline.units.length,
           totalLessons: 0,
           estimatedTotalTime: 0,
@@ -97,7 +100,7 @@ class CourseController {
         console.log(`  📝 Generating Unit ${i + 1}: ${unitOutline.title}...`);
         
         // Generate the unit content with expertise level
-        const unit = await geminiService.generateUnit(language, unitOutline, i + 1, expertise);
+        const unit = await openaiService.generateUnit(language, unitOutline, i + 1, expertise, baseLanguage);
         units.push(unit);
 
         totalLessons += unit.lessons.length;
@@ -200,7 +203,7 @@ class CourseController {
    */
   async generateCourse(req, res, next) {
     try {
-      const { language, expectedDuration, expertise = 'Beginner' } = req.body;
+      const { language, expectedDuration, expertise = 'Beginner', baseLanguage = 'English' } = req.body;
       const userId = req.user.id;
 
       console.log('📥 Received request body:', req.body);
@@ -223,8 +226,8 @@ class CourseController {
 
       console.log(`🚀 Starting course generation for ${language}...`);
       
-      // Generate course content using Gemini with expertise level
-      const courseData = await geminiService.generateCourse(language, expectedDuration, expertise);
+      // Generate course content using OpenAI with expertise level
+      const courseData = await openaiService.generateCourse(language, expectedDuration, expertise, baseLanguage);
 
       console.log('Saving course to database...');
       
@@ -656,11 +659,13 @@ class CourseController {
         throw ERRORS.LESSON_NOT_FOUND;
       }
 
-      // Generate 5 new MCQ exercises using Gemini
-      const exercisesData = await geminiService.generateExercises(
+      // Generate 5 new MCQ exercises using OpenAI
+      const baseLanguage = courseData.metadata?.baseLanguage || courseData.course?.baseLanguage || 'English';
+      const exercisesData = await openaiService.generateExercises(
         lesson.title,
         lesson.type,
-        courseData.course.language
+        courseData.course.language,
+        baseLanguage
       );
 
       // Update the lesson exercises in the database
