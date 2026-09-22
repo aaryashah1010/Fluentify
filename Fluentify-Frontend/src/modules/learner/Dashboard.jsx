@@ -182,6 +182,13 @@ const LearnerDashboard = () => {
     }
   }, [pendingGeneratedCourse, streamState.isComplete]);
 
+  const openGenerateForm = () => {
+    setShowGenerateForm(true);
+    // The form renders near the top of the page, but the buttons that open it
+    // sit further down - scroll up so it's actually visible immediately.
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleGenerateCourse = async () => {
     if (!form.language || !form.expectedDuration || !form.expertise) {
       setFormError("Please fill all fields.");
@@ -473,7 +480,7 @@ const LearnerDashboard = () => {
             </h2>
             <button
               type="button"
-              onClick={() => setShowGenerateForm(true)}
+              onClick={openGenerateForm}
               className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-orange-500 text-white text-sm font-medium shadow-md hover:shadow-lg hover:from-teal-600 hover:to-orange-600"
             >
               <Plus className="w-4 h-4" />
@@ -489,7 +496,7 @@ const LearnerDashboard = () => {
               </p>
               <button
                 type="button"
-                onClick={() => setShowGenerateForm(true)}
+                onClick={openGenerateForm}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-orange-500 text-white text-sm font-medium shadow-md hover:shadow-lg hover:from-teal-600 hover:to-orange-600"
               >
                 <Plus className="w-4 h-4" />
