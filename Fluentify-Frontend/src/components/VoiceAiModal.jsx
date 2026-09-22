@@ -3,14 +3,21 @@ import { Mic, MicOff, Phone, X, Volume2, Loader } from 'lucide-react';
 import { RetellWebClient } from 'retell-client-js-sdk';
 import { createRetellCall } from '../api/retell';
 
-const VoiceAIModal = ({ isOpen, onClose }) => {
+const VoiceAIModal = ({ isOpen, onClose, courses = [] }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isAgentSpeaking, setIsAgentSpeaking] = useState(false);
   const [error, setError] = useState('');
-  
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+
   const retellClientRef = useRef(null);
+  const needsCourseSelection = courses.length > 1;
+
+  // Reset the picker each time the modal reopens
+  useEffect(() => {
+    if (isOpen) setSelectedCourseId(null);
+  }, [isOpen]);
 
   // Initialize Retell client
   useEffect(() => {
@@ -75,7 +82,7 @@ const VoiceAIModal = ({ isOpen, onClose }) => {
       }
       
       // Step 1: Get access token from backend
-      const response = await createRetellCall(agentId);
+      const response = await createRetellCall(agentId, selectedCourseId);
       
       if (!response.success || !response.data.accessToken) {
         throw new Error('Failed to get access token');
@@ -156,102 +163,124 @@ const VoiceAIModal = ({ isOpen, onClose }) => {
           </p>
         </div>
 
-        {/* Visual Indicator */}
-        <div className="flex justify-center mb-8">
-          <div className="relative">
-            {/* Outer pulsing ring when AI is speaking */}
-            {isAgentSpeaking && (
-              <>
-                <div className="absolute inset-0 rounded-full bg-teal-400 opacity-30 animate-ping" />
-                <div className="absolute inset-0 rounded-full bg-teal-400 opacity-20 animate-pulse" style={{ animationDelay: '150ms' }} />
-              </>
-            )}
-            
-            {/* Main circle */}
-            <div className={`relative w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 ${
-              isConnected 
-                ? isAgentSpeaking 
-                  ? 'bg-gradient-to-br from-teal-500 to-teal-600 shadow-lg shadow-teal-300' 
-                  : 'bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-300'
-                : 'bg-gradient-to-br from-orange-400 to-teal-400 shadow-lg shadow-teal-200'
-            }`}>
-              {isConnecting ? (
-                <Loader className="w-12 h-12 text-white animate-spin" />
-              ) : isAgentSpeaking ? (
-                <Volume2 className="w-12 h-12 text-white animate-pulse" />
-              ) : isConnected ? (
-                <Mic className="w-12 h-12 text-white" />
-              ) : (
-                <Phone className="w-12 h-12 text-white" />
-              )}
+        {needsCourseSelection && !selectedCourseId ? (
+          /* Course picker - only shown when the learner has more than one active course */
+          <div className="mb-2">
+            <p className="text-sm text-slate-300 text-center mb-4">
+              Which language do you want to practice today?
+            </p>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {courses.map((course) => (
+                <button
+                  key={course.id}
+                  onClick={() => setSelectedCourseId(course.id)}
+                  className="w-full text-left px-4 py-3 rounded-xl border border-white/10 bg-slate-900/80 hover:border-teal-400/60 hover:bg-teal-500/10 transition-colors text-slate-100 font-medium"
+                >
+                  {course.language}
+                </button>
+              ))}
             </div>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Visual Indicator */}
+            <div className="flex justify-center mb-8">
+              <div className="relative">
+                {/* Outer pulsing ring when AI is speaking */}
+                {isAgentSpeaking && (
+                  <>
+                    <div className="absolute inset-0 rounded-full bg-teal-400 opacity-30 animate-ping" />
+                    <div className="absolute inset-0 rounded-full bg-teal-400 opacity-20 animate-pulse" style={{ animationDelay: '150ms' }} />
+                  </>
+                )}
 
-        {/* Status Text */}
-        <div className="text-center mb-6">
-          {isConnecting && (
-            <p className="text-sm text-slate-300 animate-pulse">Connecting to AI tutor...</p>
-          )}
-          {isConnected && !isAgentSpeaking && (
-            <p className="text-sm text-emerald-300 font-medium">🎙️ Listening...</p>
-          )}
-          {isAgentSpeaking && (
-            <p className="text-sm text-cyan-300 font-medium animate-pulse">🗣️ AI is speaking...</p>
-          )}
-        </div>
+                {/* Main circle */}
+                <div className={`relative w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  isConnected
+                    ? isAgentSpeaking
+                      ? 'bg-gradient-to-br from-teal-500 to-teal-600 shadow-lg shadow-teal-300'
+                      : 'bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-300'
+                    : 'bg-gradient-to-br from-orange-400 to-teal-400 shadow-lg shadow-teal-200'
+                }`}>
+                  {isConnecting ? (
+                    <Loader className="w-12 h-12 text-white animate-spin" />
+                  ) : isAgentSpeaking ? (
+                    <Volume2 className="w-12 h-12 text-white animate-pulse" />
+                  ) : isConnected ? (
+                    <Mic className="w-12 h-12 text-white" />
+                  ) : (
+                    <Phone className="w-12 h-12 text-white" />
+                  )}
+                </div>
+              </div>
+            </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-4 p-3 bg-red-900/40 border border-red-500/60 rounded-lg">
-            <p className="text-sm text-red-200 text-center">{error}</p>
-          </div>
+            {/* Status Text */}
+            <div className="text-center mb-6">
+              {isConnecting && (
+                <p className="text-sm text-slate-300 animate-pulse">Connecting to AI tutor...</p>
+              )}
+              {isConnected && !isAgentSpeaking && (
+                <p className="text-sm text-emerald-300 font-medium">🎙️ Listening...</p>
+              )}
+              {isAgentSpeaking && (
+                <p className="text-sm text-cyan-300 font-medium animate-pulse">🗣️ AI is speaking...</p>
+              )}
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-900/40 border border-red-500/60 rounded-lg">
+                <p className="text-sm text-red-200 text-center">{error}</p>
+              </div>
+            )}
+
+            {/* Controls */}
+            <div className="flex items-center justify-center gap-4">
+              {!isConnected ? (
+                <button
+                  onClick={startCall}
+                  disabled={isConnecting}
+                  className="px-8 py-3 bg-gradient-to-r from-teal-500 to-orange-500 text-white rounded-full font-semibold hover:from-teal-600 hover:to-orange-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <Phone className="w-5 h-5" />
+                  {isConnecting ? 'Connecting...' : 'Start Call'}
+                </button>
+              ) : (
+                <>
+                  {/* Mute Button */}
+                  <button
+                    onClick={toggleMute}
+                    className={`p-4 rounded-full transition-all shadow-lg ${
+                      isMuted
+                        ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-100'
+                    }`}
+                    title={isMuted ? 'Unmute' : 'Mute'}
+                  >
+                    {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+                  </button>
+
+                  {/* End Call Button */}
+                  <button
+                    onClick={endCall}
+                    className="px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-semibold hover:from-red-700 hover:to-red-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+                  >
+                    <Phone className="w-5 h-5 rotate-135" />
+                    End Call
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Info Text */}
+            <div className="mt-6 p-4 bg-slate-900/80 rounded-lg border border-white/10">
+              <p className="text-xs text-slate-200 text-center">
+                💡 Practice speaking naturally. Your AI tutor will help you improve pronunciation, fluency, and confidence.
+              </p>
+            </div>
+          </>
         )}
-
-        {/* Controls */}
-        <div className="flex items-center justify-center gap-4">
-          {!isConnected ? (
-            <button
-              onClick={startCall}
-              disabled={isConnecting}
-              className="px-8 py-3 bg-gradient-to-r from-teal-500 to-orange-500 text-white rounded-full font-semibold hover:from-teal-600 hover:to-orange-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              <Phone className="w-5 h-5" />
-              {isConnecting ? 'Connecting...' : 'Start Call'}
-            </button>
-          ) : (
-            <>
-              {/* Mute Button */}
-              <button
-                onClick={toggleMute}
-                className={`p-4 rounded-full transition-all shadow-lg ${
-                  isMuted 
-                    ? 'bg-yellow-500 hover:bg-yellow-600 text-white' 
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-100'
-                }`}
-                title={isMuted ? 'Unmute' : 'Mute'}
-              >
-                {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
-              </button>
-
-              {/* End Call Button */}
-              <button
-                onClick={endCall}
-                className="px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-semibold hover:from-red-700 hover:to-red-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
-              >
-                <Phone className="w-5 h-5 rotate-135" />
-                End Call
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Info Text */}
-        <div className="mt-6 p-4 bg-slate-900/80 rounded-lg border border-white/10">
-          <p className="text-xs text-slate-200 text-center">
-            💡 Practice speaking naturally. Your AI tutor will help you improve pronunciation, fluency, and confidence.
-          </p>
-        </div>
       </div>
     </div>
   );

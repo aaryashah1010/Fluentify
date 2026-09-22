@@ -13,6 +13,39 @@ class CourseRepository {
   }
 
   /**
+   * Find a specific course, scoped to its owner (for explicit user selection - e.g. voice practice)
+   */
+  async findCourseByIdForUser(userId, courseId) {
+    const result = await db.query(
+      'SELECT * FROM courses WHERE id = $1 AND learner_id = $2 AND is_active = true',
+      [courseId, userId]
+    );
+    return result.rows[0] || null;
+  }
+
+  /**
+   * Find the course this learner has most recently actually engaged with -
+   * whichever is later of "most recent lesson completed" or "when the course
+   * was created" wins, so a brand-new course with zero completions still beats
+   * an older course whose last completion was further back. Used to default
+   * voice practice to the right language without asking, when the learner only
+   * has one active course.
+   */
+  async findMostRecentlyActiveCourse(userId) {
+    const result = await db.query(
+      `SELECT c.*
+       FROM courses c
+       LEFT JOIN lesson_progress lp ON lp.course_id = c.id AND lp.learner_id = c.learner_id
+       WHERE c.learner_id = $1 AND c.is_active = true
+       GROUP BY c.id
+       ORDER BY GREATEST(COALESCE(MAX(lp.completion_time), c.created_at), c.created_at) DESC
+       LIMIT 1`,
+      [userId]
+    );
+    return result.rows[0] || null;
+  }
+
+  /**
    * Create a new course
    */
   async createCourse(userId, language, expectedDuration, courseData) {

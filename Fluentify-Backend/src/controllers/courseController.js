@@ -50,6 +50,7 @@ class CourseController {
           title: `${language} Learning Journey`,
           language: language,
           baseLanguage: baseLanguage,
+          expertise: expertise,
           duration: expectedDuration,
           totalLessons: 0,
           generatedAt: new Date().toISOString(),
@@ -59,6 +60,7 @@ class CourseController {
         metadata: {
           language,
           baseLanguage,
+          expertise,
           totalUnits: outline.units.length,
           totalLessons: 0,
           estimatedTotalTime: 0,

@@ -230,7 +230,7 @@ IMPORTANT:
 - Lessons that are NOT type "conversation" should have "dialogue": [] (empty array)
 - LANGUAGE RULE (critical, applies to every lesson): the material being taught (vocabulary words, example sentences, dialogue lines, exercise answer options) is always in ${language}. Everything that explains, translates, or asks about that material (translations, pronunciation guides, grammar explanations, exercise questions) is always in ${baseLanguage}. Never write an exercise question in ${language} - the learner is still acquiring ${language}, so questions must be in ${baseLanguage} they already understand, while the options/answers they pick from must be in ${language} to test what they're learning.
 - This rule applies exactly the same way even when ${language} is "English": the learner is acquiring English, ${baseLanguage} is what they already speak fluently. Do NOT default to writing exercise options in English out of habit - the "vocabulary"/"options"/example-sentence language is whichever value ${language} holds (which may itself be "English"), and the "question"/"translation"/"explanation" language is whichever value ${baseLanguage} holds (which may be a language other than English). Before writing each field, check which of the two variables it belongs to.
-- Each vocabulary lesson MUST have 10-15 vocabulary items with detailed examples - be thorough and cover the topic fully (e.g. a "greetings" lesson should include hello, goodbye, good morning/afternoon/evening/night, how are you, nice to meet you, see you later, and similar variants, not just 2-3 words)
+- Each vocabulary lesson's item count is NOT fixed - size it to what the topic actually requires, decided by you: if the topic is a complete, enumerable set (the alphabet, days of the week, months, numbers 1-20, etc.), include EVERY item in that set, not a sample of it - e.g. a lesson on the alphabet must teach all 26+ letters, never stop partway through. If the topic is open-ended (greetings, common verbs, travel phrases), include a thorough, representative set - at minimum 10 items, more if the topic genuinely calls for it. Never truncate a bounded topic early just to hit a small round number.
 - Each grammar lesson MUST have 2-4 comprehensive grammar points with multiple examples
 - Include EXACTLY 5 multiple choice questions (MCQ) per lesson
 - ALL exercises MUST be type "multiple_choice" with exactly 4 options
@@ -242,7 +242,7 @@ IMPORTANT:
 
     // Use retry with backoff to handle rate limits
     return await this.retryWithBackoff(async () => {
-      const text = await this.generateText(prompt, { maxTokens: 15000, temperature: 0.7 });
+      const text = await this.generateText(prompt, { maxTokens: 16384, temperature: 0.7 });
       return this.parseJSON(text);
     });
   }
