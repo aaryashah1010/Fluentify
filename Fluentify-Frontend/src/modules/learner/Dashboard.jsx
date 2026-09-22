@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BookOpen,
@@ -132,6 +132,8 @@ const LearnerDashboard = () => {
     expertise: "",
     baseLanguage: "",
   });
+
+  const coursesSectionRef = useRef(null);
   
   const totalLessonsCompleted = courses.reduce(
     (acc, course) => acc + (course.progress?.lessonsCompleted || 0),
@@ -200,6 +202,10 @@ const LearnerDashboard = () => {
       });
       setPendingGeneratedCourse(true);
       setShowGenerateForm(false);
+      // New course card renders at the top of the list - scroll there so it's
+      // obviously in progress, instead of leaving the learner scrolled past it
+      // wondering if their click did anything and clicking "Create" again.
+      coursesSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     } finally {
       setGenerating(false);
     }
@@ -459,7 +465,7 @@ const LearnerDashboard = () => {
         </div>
        
 
-        <section className="mt-10">
+        <section className="mt-10" ref={coursesSectionRef}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
             <h2 className="text-slate-50 font-bold text-xl flex items-center gap-2">
               <Brain className="w-5 h-5 text-purple-300" />
