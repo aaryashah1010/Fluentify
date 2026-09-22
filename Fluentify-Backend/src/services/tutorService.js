@@ -1,13 +1,14 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 import chatRepository from '../repositories/chatRepository.js';
+
+const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
 class TutorService {
   constructor() {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not set in environment variables');
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not set in environment variables');
     }
-    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    this.client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }
 
   /**
@@ -67,56 +68,61 @@ Remember: You're a world-class multilingual tutor ready to help with ANY languag
     }
 
     return messages.map(msg => ({
-      role: msg.sender_type === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }]
+      role: msg.sender_type === 'user' ? 'user' : 'assistant',
+      content: msg.content
     }));
   }
 
   /**
-   * Generate streaming AI response
+   * Generate streaming AI response. Returns an async iterable of chunks
+   * exposing a `.text()` method, matching the shape the controller expects.
    */
   async generateStreamingResponse(userMessage, sessionId, userId) {
     try {
       // Get user's language info
       const languageInfo = await chatRepository.getUserLanguageInfo(userId);
-      
+
       // Get recent conversation context
       const recentMessages = await chatRepository.getRecentMessages(sessionId, 6);
-      
+
       // Build system prompt
       const systemPrompt = this.generateSystemPrompt(languageInfo.language, languageInfo.proficiency);
-      
+
       // Build conversation history
       const conversationHistory = this.buildConversationContext(recentMessages);
-      
+
       // Prepare the full conversation context
-      const contents = [
-        {
-          role: 'user',
-          parts: [{ text: systemPrompt }]
-        },
+      const messages = [
+        { role: 'system', content: systemPrompt },
         ...conversationHistory,
-        {
-          role: 'user',
-          parts: [{ text: userMessage }]
-        }
+        { role: 'user', content: userMessage }
       ];
 
       // Generate streaming response
-      const result = await this.model.generateContentStream({
-        contents,
-        generationConfig: {
-          maxOutputTokens: 1024,
-          temperature: 0.7,
-          topP: 0.8,
-          topK: 40,
-        },
+      const stream = await this.client.chat.completions.create({
+        model: MODEL,
+        messages,
+        max_tokens: 1024,
+        temperature: 0.7,
+        top_p: 0.8,
+        stream: true,
       });
 
-      return result.stream;
+      return this.wrapOpenAIStream(stream);
     } catch (error) {
       console.error('Error generating streaming response:', error);
       throw new Error(`AI service error: ${error.message}`);
+    }
+  }
+
+  /**
+   * Adapt an OpenAI chat completion stream to yield chunks with a `.text()`
+   * accessor, so callers don't need to know which provider is behind this.
+   */
+  async *wrapOpenAIStream(stream) {
+    for await (const part of stream) {
+      const delta = part.choices[0]?.delta?.content || '';
+      yield { text: () => delta };
     }
   }
 
@@ -199,14 +205,15 @@ Remember: You're a world-class multilingual tutor ready to help with ANY languag
   }
 
   /**
-   * Sanitize AI response before sending to frontend
+   * Sanitize AI response before sending to frontend. Called per streamed
+   * chunk, so no trim() here - it would eat the leading/trailing spaces
+   * that OpenAI's token-level chunks carry and run words together.
    */
   sanitizeResponse(response) {
     // Basic sanitization - remove potentially harmful content
     return response
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-      .trim();
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
   }
 }
 

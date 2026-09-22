@@ -12,6 +12,7 @@ const CourseGenerationForm = ({
 
   // --- Data Options ---
   const languages = [
+    { value: 'English', label: 'English', flag: '🇬🇧' },
     { value: 'Spanish', label: 'Spanish', flag: '🇪🇸' },
     { value: 'French', label: 'French', flag: '🇫🇷' },
     { value: 'German', label: 'German', flag: '🇩🇪' },
@@ -19,6 +20,11 @@ const CourseGenerationForm = ({
     { value: 'Italian', label: 'Italian', flag: '🇮🇹' },
     { value: 'Hindi', label: 'Hindi', flag: '🇮🇳' },
   ];
+
+  // Base language options shown only when learning English - excludes English itself
+  const baseLanguages = languages.filter((lang) => lang.value !== 'English');
+
+  const isLearningEnglish = form.language === 'English';
 
   const expertiseLevels = [
     { value: 'Beginner', label: 'Beginner', icon: '🌱', description: 'Start from scratch' },
@@ -84,7 +90,10 @@ const CourseGenerationForm = ({
                 return (
                   <button
                     key={lang.value}
-                    onClick={() => updateField('language', lang.value)}
+                    onClick={() => {
+                      updateField('language', lang.value);
+                      if (lang.value !== 'English') updateField('baseLanguage', '');
+                    }}
                     className={`relative p-4 rounded-2xl border-2 transition-all duration-200 hover:scale-[1.02] flex flex-col items-center gap-2 ${
                       isSelected
                         ? 'border-teal-400 bg-teal-500/20 shadow-md shadow-teal-500/40'
@@ -100,6 +109,39 @@ const CourseGenerationForm = ({
                 );
               })}
             </div>
+
+            {isLearningEnglish && (
+              <div className="mt-4 p-4 rounded-2xl border-2 border-amber-400/50 bg-amber-500/10 animate-in slide-in-from-top-2">
+                <p className="text-sm font-bold text-amber-100 mb-3">
+                  Which language are you most comfortable with? 🗣️
+                </p>
+                <p className="text-xs text-amber-100/80 mb-3">
+                  We'll write explanations, translations, and exercise questions in this language, since you're still learning English.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {baseLanguages.map((lang) => {
+                    const isSelected = form.baseLanguage === lang.value;
+                    return (
+                      <button
+                        key={lang.value}
+                        onClick={() => updateField('baseLanguage', lang.value)}
+                        className={`relative p-3 rounded-xl border-2 transition-all duration-200 hover:scale-[1.02] flex flex-col items-center gap-1 ${
+                          isSelected
+                            ? 'border-amber-400 bg-amber-500/25 shadow-md shadow-amber-500/40'
+                            : 'border-white/10 hover:border-amber-400/60 bg-slate-900/80'
+                        }`}
+                      >
+                        <span className="text-2xl filter drop-shadow-sm">{lang.flag}</span>
+                        <span className={`text-xs font-medium ${isSelected ? 'text-amber-100' : 'text-slate-200'}`}>
+                          {lang.label}
+                        </span>
+                        {isSelected && <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-400 rounded-full"></div>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 2. Expertise Level */}
@@ -218,9 +260,9 @@ const CourseGenerationForm = ({
             </button>
             <button
               onClick={onGenerate}
-              disabled={!form.language || !form.expertise || !form.expectedDuration}
+              disabled={!form.language || !form.expertise || !form.expectedDuration || (isLearningEnglish && !form.baseLanguage)}
               className={`flex-1 py-3.5 px-6 rounded-xl text-white font-bold shadow-lg transition-all flex items-center justify-center gap-2 ${
-                !form.language || !form.expertise || !form.expectedDuration
+                !form.language || !form.expertise || !form.expectedDuration || (isLearningEnglish && !form.baseLanguage)
                   ? 'bg-slate-700 cursor-not-allowed shadow-none'
                   : 'bg-gradient-to-r from-teal-500 to-orange-500 hover:from-teal-600 hover:to-orange-600 hover:scale-[1.02] hover:shadow-orange-200'
               }`}

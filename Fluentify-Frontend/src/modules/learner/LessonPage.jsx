@@ -9,6 +9,7 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
+  MessageCircle,
 } from 'lucide-react';
 import {
   useLessonDetails,
@@ -64,10 +65,24 @@ const LessonPage = () => {
   [lesson?.grammarPoints, lesson?.grammar_points]
   );
 
-  const vocabulary = useMemo(() => 
-    Array.isArray(lesson?.vocabulary) ? lesson.vocabulary : [], 
+  const vocabulary = useMemo(() =>
+    Array.isArray(lesson?.vocabulary) ? lesson.vocabulary : [],
     [lesson?.vocabulary]
   );
+
+  const dialogue = useMemo(() =>
+    Array.isArray(lesson?.dialogue) ? lesson.dialogue : [],
+    [lesson?.dialogue]
+  );
+
+  const dialogueSpeakers = useMemo(() => {
+    const seen = [];
+    for (const turn of dialogue) {
+      if (turn?.speaker && !seen.includes(turn.speaker)) seen.push(turn.speaker);
+    }
+    return seen;
+  }, [dialogue]);
+
   const error = queryError?.message;
 
   useEffect(() => {
@@ -281,6 +296,12 @@ const LessonPage = () => {
             )}
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs md:text-sm text-white/90">
+            {dialogue.length > 0 && (
+              <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
+                <MessageCircle className="w-4 h-4" />
+                <span>{dialogue.length}-line dialogue</span>
+              </div>
+            )}
             <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
               <BookOpen className="w-4 h-4" />
               <span>{vocabulary.length} vocabulary items</span>
@@ -398,6 +419,9 @@ const LessonPage = () => {
           </h2>
           <div className="space-y-4">
             {[
+              ...(dialogue.length > 0
+                ? [{ key: 'dialogue', title: 'Conversation Practice', subtitle: 'Dialogue' }]
+                : []),
               { key: 'vocabulary', title: 'Learn New Words', subtitle: 'Vocabulary' },
               { key: 'grammar', title: 'Grammar Rules', subtitle: 'Grammar' },
               { key: 'exercises', title: 'Practice Exercise', subtitle: 'Practice' },
@@ -450,6 +474,54 @@ const LessonPage = () => {
         </section>
 
         <section className="bg-slate-950/90 rounded-2xl shadow-2xl border border-white/15 mb-8 p-6">
+          {currentSection === 'dialogue' && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold mb-4 text-slate-50">
+                Conversation Practice
+              </h3>
+              {dialogue.length > 0 ? (
+                <div className="space-y-3 max-w-2xl">
+                  {dialogue.map((turn, index) => {
+                    const speakerIndex = dialogueSpeakers.indexOf(turn.speaker);
+                    const isSecondSpeaker = speakerIndex === 1;
+                    return (
+                      <div
+                        key={index}
+                        className={`flex ${isSecondSpeaker ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div
+                          className={`rounded-2xl px-4 py-3 max-w-[85%] border shadow-lg ${
+                            isSecondSpeaker
+                              ? 'bg-orange-500/15 border-orange-400/40'
+                              : 'bg-teal-500/15 border-teal-400/40'
+                          }`}
+                        >
+                          <p
+                            className={`text-xs font-semibold uppercase tracking-wide mb-1 ${
+                              isSecondSpeaker ? 'text-orange-200' : 'text-teal-200'
+                            }`}
+                          >
+                            {turn.speaker}
+                          </p>
+                          <p className="text-slate-50 font-medium">{turn.text}</p>
+                          {turn.translation && (
+                            <p className="text-sm text-slate-400 italic mt-1">
+                              {turn.translation}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-slate-300">
+                  No dialogue available for this lesson.
+                </p>
+              )}
+            </div>
+          )}
+
           {currentSection === 'vocabulary' && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold mb-4 text-slate-50">Vocabulary</h3>

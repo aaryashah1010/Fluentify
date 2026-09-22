@@ -1,13 +1,13 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 
-class GeminiService {
+const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+
+class OpenAIService {
   constructor() {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not set in environment variables');
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not set in environment variables');
     }
-    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    // Use gemini-pro which is the stable model for v1beta API
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    this.client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }
 
   /**
@@ -15,30 +15,44 @@ class GeminiService {
    */
   async retryWithBackoff(fn, maxRetries = 3, initialDelay = 2000) {
     let lastError;
-    
+
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
         return await fn();
       } catch (error) {
         lastError = error;
-        
+
         // Check if it's a rate limit error (429)
         if (error.status === 429 || error.message?.includes('429') || error.message?.includes('Too Many Requests')) {
           const delay = initialDelay * Math.pow(2, attempt); // Exponential backoff: 2s, 4s, 8s
           console.warn(`⏳ Rate limit hit. Retrying in ${delay/1000}s... (Attempt ${attempt + 1}/${maxRetries})`);
-          
+
           // Wait before retry
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
-        
+
         // If it's not a rate limit error, throw immediately
         throw error;
       }
     }
-    
+
     // If all retries failed, throw the last error
     throw lastError;
+  }
+
+  /**
+   * Call the chat completion API with a single user prompt and return the raw text
+   */
+  async generateText(prompt, { maxTokens = 2048, temperature = 0.7 } = {}) {
+    const completion = await this.client.chat.completions.create({
+      model: MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: maxTokens,
+      temperature,
+    });
+
+    return completion.choices[0].message.content;
   }
 
   /**
@@ -47,25 +61,25 @@ class GeminiService {
    * @param {string} expectedDuration - Expected learning duration (e.g., '3 months', '6 months')
    * @returns {Promise<Object>} - Structured course data
    */
-  async generateCourse(language, expectedDuration, expertise = 'Beginner') {
+  async generateCourse(language, expectedDuration, expertise = 'Beginner', baseLanguage = 'English') {
     try {
-      console.log(`Generating course for: ${language}, Duration: ${expectedDuration}, Expertise: ${expertise}`);
-      
+      console.log(`Generating course for: ${language}, Duration: ${expectedDuration}, Expertise: ${expertise}, Base language: ${baseLanguage}`);
+
       // Step 1: Generate course outline (units structure)
       console.log('Step 1: Generating course outline...');
       const outline = await this.generateCourseOutline(language, expectedDuration, expertise);
-      
+
       // Step 2: Generate each unit separately
       console.log(`Step 2: Generating ${outline.units.length} units...`);
       const units = [];
-      
+
       for (let i = 0; i < outline.units.length; i++) {
         const unitOutline = outline.units[i];
         console.log(`  Generating Unit ${i + 1}: ${unitOutline.title}...`);
-        const unit = await this.generateUnit(language, unitOutline, i + 1, expertise);
+        const unit = await this.generateUnit(language, unitOutline, i + 1, expertise, baseLanguage);
         units.push(unit);
       }
-      
+
       // Step 3: Combine everything
       const structuredCourse = {
         course: {
@@ -87,10 +101,10 @@ class GeminiService {
           }, 0)
         }
       };
-      
+
       console.log('Course generation complete!');
       console.log(`Total: ${structuredCourse.metadata.totalUnits} units, ${structuredCourse.metadata.totalLessons} lessons`);
-      
+
       return structuredCourse;
     } catch (error) {
       console.error('Error generating course:', error);
@@ -133,27 +147,19 @@ Requirements:
 - Cover: vocabulary, grammar, conversation, pronunciation, and cultural context
 - Build upon previous units logically`;
 
-    const result = await this.model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        maxOutputTokens: 2048,
-        temperature: 0.7,
-      },
-    });
-    
-    const response = await result.response;
-    const text = response.text();
-    
+    const text = await this.generateText(prompt, { maxTokens: 2048, temperature: 0.7 });
+
     return this.parseJSON(text);
   }
 
   /**
    * Generate a single unit with all its lessons
    */
-  async generateUnit(language, unitOutline, unitNumber, expertise = 'Beginner') {
+  async generateUnit(language, unitOutline, unitNumber, expertise = 'Beginner', baseLanguage = 'English') {
     const prompt = `Generate detailed lessons for Unit ${unitNumber} of a ${language} course.
 
 User's Current Level: ${expertise}
+User's Base Language (the language they already speak fluently - use this for ALL explanations, translations, and exercise questions): ${baseLanguage}
 
 Unit Info:
 - Title: ${unitOutline.title}
@@ -180,27 +186,34 @@ Respond with ONLY valid JSON in this exact format:
       "title": "Lesson Title",
       "type": "vocabulary|grammar|conversation|review",
       "description": "What the lesson covers",
-      "keyPhrases": ["phrase 1", "phrase 2"],
+      "keyPhrases": ["phrase 1", "phrase 2", "phrase 3", "phrase 4"],
+      "dialogue": [
+        {
+          "speaker": "Role name fitting the scenario (e.g. Traveler, Local, Waiter, Customer)",
+          "text": "Line of dialogue in ${language} (the language being learned)",
+          "translation": "${baseLanguage} translation of that exact line"
+        }
+      ],
       "vocabulary": [
         {
-          "word": "foreign word",
-          "translation": "english translation",
-          "pronunciation": "phonetic pronunciation",
-          "example": "example sentence"
+          "word": "word or phrase in ${language} (the language being learned)",
+          "translation": "translation in ${baseLanguage} (the user's base language)",
+          "pronunciation": "phonetic pronunciation, written so a ${baseLanguage} speaker can read it aloud",
+          "example": "example sentence in ${language}, showing the word used naturally"
         }
       ],
       "grammarPoints": [
         {
           "topic": "grammar topic",
-          "explanation": "brief explanation",
-          "examples": ["example 1", "example 2"]
+          "explanation": "explanation written in ${baseLanguage}, clear enough for a ${baseLanguage} speaker to understand",
+          "examples": ["example sentence in ${language} 1", "example sentence in ${language} 2"]
         }
       ],
       "exercises": [
         {
           "type": "multiple_choice",
-          "question": "exercise question",
-          "options": ["option 1", "option 2", "option 3", "option 4"],
+          "question": "A question written entirely in ${baseLanguage} that gives a ${baseLanguage} definition, context, or translation prompt for ONE specific ${language} word or phrase from this lesson (e.g. \\"Which word means 'water'?\\" or \\"How do you say 'water'?\\", phrased in ${baseLanguage}). The question text itself must contain NO ${language} words other than proper nouns.",
+          "options": ["4 candidate words/phrases, ALL written in ${language} - these are what the learner picks between"],
           "correctAnswer": 0
         }
       ],
@@ -210,9 +223,14 @@ Respond with ONLY valid JSON in this exact format:
   ]
 }
 
-IMPORTANT: 
+IMPORTANT:
 - Create exactly ${unitOutline.lessonCount} lessons
-- Each vocabulary lesson MUST have 5-8 vocabulary items with detailed examples
+- At least 1-2 lessons in this unit MUST be type "conversation"
+- Every lesson of type "conversation" MUST have a "dialogue" array with 6-8 turns, alternating between exactly 2 speakers with role names that fit a realistic scenario tied to the unit's topics (e.g. a traveler ordering food, checking into a hotel, asking for directions) - not generic "Person A / Person B" labels. Each turn's "text" must be in ${language}, and "translation" must be in ${baseLanguage}.
+- Lessons that are NOT type "conversation" should have "dialogue": [] (empty array)
+- LANGUAGE RULE (critical, applies to every lesson): the material being taught (vocabulary words, example sentences, dialogue lines, exercise answer options) is always in ${language}. Everything that explains, translates, or asks about that material (translations, pronunciation guides, grammar explanations, exercise questions) is always in ${baseLanguage}. Never write an exercise question in ${language} - the learner is still acquiring ${language}, so questions must be in ${baseLanguage} they already understand, while the options/answers they pick from must be in ${language} to test what they're learning.
+- This rule applies exactly the same way even when ${language} is "English": the learner is acquiring English, ${baseLanguage} is what they already speak fluently. Do NOT default to writing exercise options in English out of habit - the "vocabulary"/"options"/example-sentence language is whichever value ${language} holds (which may itself be "English"), and the "question"/"translation"/"explanation" language is whichever value ${baseLanguage} holds (which may be a language other than English). Before writing each field, check which of the two variables it belongs to.
+- Each vocabulary lesson MUST have 10-15 vocabulary items with detailed examples - be thorough and cover the topic fully (e.g. a "greetings" lesson should include hello, goodbye, good morning/afternoon/evening/night, how are you, nice to meet you, see you later, and similar variants, not just 2-3 words)
 - Each grammar lesson MUST have 2-4 comprehensive grammar points with multiple examples
 - Include EXACTLY 5 multiple choice questions (MCQ) per lesson
 - ALL exercises MUST be type "multiple_choice" with exactly 4 options
@@ -224,17 +242,7 @@ IMPORTANT:
 
     // Use retry with backoff to handle rate limits
     return await this.retryWithBackoff(async () => {
-      const result = await this.model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: {
-          maxOutputTokens: 8192,
-          temperature: 0.7,
-        },
-      });
-      
-      const response = await result.response;
-      const text = response.text();
-      
+      const text = await this.generateText(prompt, { maxTokens: 15000, temperature: 0.7 });
       return this.parseJSON(text);
     });
   }
@@ -245,25 +253,25 @@ IMPORTANT:
   parseJSON(text) {
     try {
       console.log('Response length:', text.length, 'characters');
-      
+
       // Clean the response text
       let cleanText = text.trim();
-      
+
       // Remove markdown code blocks if present
       cleanText = cleanText.replace(/```json\n?/g, '').replace(/```/g, '').trim();
-      
+
       // Try to extract JSON from the response
       let jsonMatch = cleanText.match(/\{[\s\S]*\}/);
-      
+
       if (!jsonMatch) {
         const startIdx = cleanText.indexOf('{');
         const endIdx = cleanText.lastIndexOf('}');
-        
+
         if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
           jsonMatch = [cleanText.substring(startIdx, endIdx + 1)];
         }
       }
-      
+
       if (!jsonMatch) {
         throw new Error('No valid JSON found in AI response');
       }
@@ -273,19 +281,19 @@ IMPORTANT:
         data = JSON.parse(jsonMatch[0]);
       } catch (parseError) {
         console.error('JSON parse error:', parseError.message);
-        
+
         // Try to fix common JSON issues
         let fixedJson = jsonMatch[0]
           .replace(/,\s*([}\]])/g, '$1') // Remove trailing commas
           .replace(/"\s*\n\s*"/g, '" "') // Fix line breaks in strings
           .replace(/([^\\])\n/g, '$1 '); // Remove unescaped newlines
-        
+
         // If still fails, try to truncate at last valid closing brace
         try {
           data = JSON.parse(fixedJson);
         } catch (secondError) {
           console.error('Second parse attempt failed, trying to auto-close JSON');
-          
+
           // Find the position of the error and try to close JSON properly
           const errorPos = parseInt(secondError.message.match(/position (\d+)/)?.[1] || '0');
           if (errorPos > 0) {
@@ -295,11 +303,11 @@ IMPORTANT:
             const closeBraces = (truncated.match(/\}/g) || []).length;
             const openBrackets = (truncated.match(/\[/g) || []).length;
             const closeBrackets = (truncated.match(/\]/g) || []).length;
-            
+
             // Add missing closing characters
             for (let i = 0; i < (openBrackets - closeBrackets); i++) truncated += ']';
             for (let i = 0; i < (openBraces - closeBraces); i++) truncated += '}';
-            
+
             console.log('Attempting to parse auto-closed JSON');
             data = JSON.parse(truncated);
           } else {
@@ -307,7 +315,7 @@ IMPORTANT:
           }
         }
       }
-      
+
       return data;
     } catch (error) {
       console.error('Error parsing JSON:', error);
@@ -319,9 +327,11 @@ IMPORTANT:
   /**
    * Generate additional exercises for a specific lesson (kept for backward compatibility)
    */
-  async generateExercises(lessonTitle, lessonType, language) {
+  async generateExercises(lessonTitle, lessonType, language, baseLanguage = 'English') {
     try {
-      const prompt = `Generate 5 multiple choice questions (MCQ) for a ${lessonType} lesson titled "${lessonTitle}" in ${language}. 
+      const prompt = `Generate 5 multiple choice questions (MCQ) for a ${lessonType} lesson titled "${lessonTitle}" in ${language}.
+
+The learner's base language (the language they already speak fluently) is ${baseLanguage}.
 
 IMPORTANT REQUIREMENTS:
 - ALL exercises MUST be "multiple_choice" type only
@@ -329,16 +339,17 @@ IMPORTANT REQUIREMENTS:
 - Questions should test understanding of the lesson content
 - Options should be plausible to make questions challenging
 - correctAnswer must be the index (0-3) of the correct option
+- LANGUAGE RULE (critical): the "question" MUST be written entirely in ${baseLanguage}, giving a ${baseLanguage} definition/context/translation prompt for one ${language} word or phrase (e.g. "Which word means 'water'?" phrased in ${baseLanguage}) - it must contain no ${language} words other than proper nouns. The "options" MUST be written in ${language}, the language being learned. This applies exactly the same way even when ${language} is "English": do not default to writing options in English out of habit - options go in whichever language ${language} names (even if that's English), and the question goes in whichever language ${baseLanguage} names (which may not be English). Check which variable each field belongs to before writing it.
 
 Provide the response in this EXACT JSON format:
 {
   "exercises": [
     {
       "type": "multiple_choice",
-      "question": "Exercise question",
-      "options": ["option 1", "option 2", "option 3", "option 4"],
+      "question": "Exercise question in ${baseLanguage}",
+      "options": ["4 options in ${language}"],
       "correctAnswer": 0,
-      "explanation": "Brief explanation of the answer"
+      "explanation": "Brief explanation of the answer, written in ${baseLanguage}"
     }
   ]
 }
@@ -347,10 +358,7 @@ Make sure to generate exactly 5 exercises.`;
 
       // Use retry with backoff to handle rate limits
       return await this.retryWithBackoff(async () => {
-        const result = await this.model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
-        
+        const text = await this.generateText(prompt, { maxTokens: 2048, temperature: 0.7 });
         return this.parseJSON(text);
       });
     } catch (error) {
@@ -358,89 +366,6 @@ Make sure to generate exactly 5 exercises.`;
       throw new Error('Failed to generate exercises');
     }
   }
-
-  createCoursePrompt(language, expectedDuration) {
-    return `Generate a language learning course for ${language} designed for ${expectedDuration} of learning.
-
-CRITICAL: Respond with ONLY valid JSON. Keep it concise. Each lesson should have 2-3 vocabulary items and 1-2 exercises maximum.
-
-1. Course Structure:
-   - Create 3 units total
-   - Each unit contains 3-4 lessons
-   - Progressive difficulty from beginner to intermediate
-
-2. JSON Format:
-{
-  "course": {
-    "title": "${language} Learning Journey",
-    "language": "${language}",
-    "duration": "${expectedDuration}",
-    "totalLessons": 35,
-    "units": [
-      {
-        "id": 1,
-        "title": "Unit Title",
-        "description": "Brief description of what will be learned",
-        "difficulty": "Beginner",
-        "estimatedTime": "2-3 hours",
-        "lessons": [
-          {
-            "id": 1,
-            "title": "Lesson Title",
-            "type": "vocabulary|grammar|conversation|review",
-            "description": "What the lesson covers",
-            "keyPhrases": ["phrase 1", "phrase 2", "phrase 3"],
-            "vocabulary": [
-              {
-                "word": "foreign word",
-                "translation": "english translation",
-                "pronunciation": "phonetic pronunciation",
-                "example": "example sentence"
-              }
-            ],
-            "grammarPoints": [
-              {
-                "topic": "grammar topic",
-                "explanation": "brief explanation",
-                "examples": ["example 1", "example 2"]
-              }
-            ],
-            "exercises": [
-              {
-                "type": "multiple_choice|translation|matching|listening",
-                "question": "exercise question",
-                "options": ["option 1", "option 2", "option 3", "option 4"],
-                "correctAnswer": 0
-              }
-            ],
-            "estimatedDuration": 15,
-            "xpReward": 50
-          }
-        ]
-      }
-    ]
-  }
 }
 
-3. Content Guidelines:
-   - Start with basic greetings and introductions
-   - Include essential vocabulary for daily life
-   - Cover fundamental grammar concepts
-   - Progress to more complex sentence structures
-   - Include cultural notes where relevant
-   - Each lesson should build upon previous knowledge
-   - Include review lessons at the end of each unit
-
-4. Difficulty Progression:
-   - Unit 1: Absolute basics (greetings, numbers, simple phrases)
-   - Unit 2: Building sentences (basic grammar, more vocabulary)
-   - Unit 3: Everyday conversations (present tense, common situations)
-   - Unit 4: More complex structures (past/future tense, more vocabulary)
-   - Unit 5: Intermediate skills (conversations, cultural context)
-
-Please ensure the response is valid JSON and covers all aspects mentioned above.`;
-  }
-
-}
-
-export default new GeminiService();
+export default new OpenAIService();

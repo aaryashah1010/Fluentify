@@ -130,6 +130,7 @@ const LearnerDashboard = () => {
     language: "",
     expectedDuration: "",
     expertise: "",
+    baseLanguage: "",
   });
   
   const totalLessonsCompleted = courses.reduce(
@@ -184,6 +185,10 @@ const LearnerDashboard = () => {
       setFormError("Please fill all fields.");
       return;
     }
+    if (form.language === "English" && !form.baseLanguage) {
+      setFormError("Please select which language you're most comfortable with.");
+      return;
+    }
     setFormError("");
     setGenerating(true);
     try {
@@ -191,6 +196,7 @@ const LearnerDashboard = () => {
         language: form.language,
         expectedDuration: form.expectedDuration,
         expertise: form.expertise,
+        baseLanguage: form.language === "English" ? form.baseLanguage : undefined,
       });
       setPendingGeneratedCourse(true);
       setShowGenerateForm(false);
