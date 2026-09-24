@@ -2,8 +2,8 @@ import React from "react";
 
 export default function PrivacyPolicy() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-900 via-orange-900 to-teal-900 p-4">
-      <div className="w-full max-w-4xl bg-slate-900/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 leading-relaxed text-slate-100 overflow-y-auto max-h-[90vh] border border-white/10">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-teal-50 dark:to-teal-900 p-4">
+      <div className="w-full max-w-4xl bg-white dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 leading-relaxed text-slate-800 dark:text-slate-100 overflow-y-auto max-h-[90vh] border border-slate-200 dark:border-white/10">
       <h1 className="text-3xl font-bold mb-4">Fluentify — Privacy Policy</h1>
 
       <h2 className="text-2xl font-semibold mt-6 mb-2">General</h2>

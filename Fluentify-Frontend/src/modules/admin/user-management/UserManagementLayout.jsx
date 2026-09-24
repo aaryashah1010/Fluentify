@@ -6,23 +6,23 @@ import { ArrowLeft } from 'lucide-react';
 const UserManagementLayout = () => {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 text-slate-50 relative overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 text-slate-900 dark:text-slate-50 relative overflow-x-hidden">
       <div className="flex min-h-screen relative z-10">
         {/* Main column */}
         <div className="flex-1 flex flex-col">
           {/* Header */}
-          <header className="bg-gradient-to-r from-slate-950/95 via-slate-900/90 to-slate-950/95 border-b border-white/10 shadow-lg backdrop-blur-xl">
+          <header className="bg-gradient-to-r from-slate-100 dark:from-slate-950/95 via-slate-50 dark:via-slate-900/90 to-slate-100 dark:to-slate-950/95 border-b border-slate-200 dark:border-white/10 shadow-lg backdrop-blur-xl">
             <div className="w-full px-4 py-4 sm:px-6 lg:px-10 xl:px-16 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => navigate('/admin-dashboard')}
-                  className="p-2 hover:bg-slate-800/60 rounded-lg transition-colors"
+                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded-lg transition-colors"
                 >
-                  <ArrowLeft className="w-5 h-5 text-slate-200" />
+                  <ArrowLeft className="w-5 h-5 text-slate-700 dark:text-slate-200" />
                 </button>
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-slate-50">User Management</h1>
-                  <p className="text-xs md:text-sm text-slate-300 mt-1">View and manage learners and their progress.</p>
+                  <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-50">User Management</h1>
+                  <p className="text-xs md:text-sm text-slate-600 dark:text-slate-300 mt-1">View and manage learners and their progress.</p>
                 </div>
               </div>
             </div>

@@ -1,13 +1,13 @@
 import React from 'react';
 import { Sparkles, Clock, TrendingUp, X, Check } from 'lucide-react';
 
-const CourseGenerationForm = ({ 
-  form, 
-  setForm, 
-  onGenerate, 
-  onCancel, 
-  isGenerating, 
-  error 
+const CourseGenerationForm = ({
+  form,
+  setForm,
+  onGenerate,
+  onCancel,
+  isGenerating,
+  error
 }) => {
 
   // --- Data Options ---
@@ -45,20 +45,20 @@ const CourseGenerationForm = ({
   };
 
   return (
-    <div className="w-full bg-slate-950/95 rounded-2xl overflow-hidden relative border border-white/10 shadow-2xl">
-      
+    <div className="w-full bg-white dark:bg-slate-950/95 rounded-2xl overflow-hidden relative border border-slate-200 dark:border-white/10 shadow-2xl">
+
       {/* Header Section (Hidden if embedded in a card with existing header, but kept for completeness) */}
       <div className="text-center mb-8">
         <div className="w-16 h-16 bg-gradient-to-br from-teal-400 to-orange-400 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-900/40">
           <Sparkles className="w-8 h-8 text-white" />
         </div>
-        <h2 className="text-2xl font-bold text-slate-50 mb-2">Customize Your Learning Path</h2>
-        <p className="text-slate-300">Let our AI architect a curriculum tailored exactly to your goals.</p>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-2">Customize Your Learning Path</h2>
+        <p className="text-slate-500 dark:text-slate-300">Let our AI architect a curriculum tailored exactly to your goals.</p>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 p-4 bg-red-900/40 border border-red-500/70 rounded-xl text-red-100 text-center text-sm font-medium">
+        <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/40 border border-red-400 dark:border-red-500/70 rounded-xl text-red-700 dark:text-red-100 text-center text-sm font-medium">
           {error}
         </div>
       )}
@@ -66,21 +66,21 @@ const CourseGenerationForm = ({
       {isGenerating ? (
         <div className="text-center py-12 animate-in fade-in">
           <div className="relative w-24 h-24 mx-auto mb-6">
-            <div className="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-gray-100 dark:border-gray-800 rounded-full"></div>
             <div className="absolute inset-0 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
             <Sparkles className="absolute inset-0 m-auto text-teal-500 w-8 h-8 animate-pulse" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Generating Your Course...</h3>
-          <p className="text-gray-500 max-w-xs mx-auto">
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Generating Your Course...</h3>
+          <p className="text-gray-500 dark:text-slate-300 max-w-xs mx-auto">
             Our AI is analyzing millions of data points to build your personalized {form.language || 'language'} curriculum! 🎨
           </p>
         </div>
       ) : (
         <div className="space-y-8">
-          
+
           {/* 1. Language Selection */}
           <div>
-            <label className="text-sm font-bold text-slate-100 mb-4 flex items-center gap-2">
+            <label className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center text-xs">1</span>
               Choose Your Language 🌍
             </label>
@@ -97,11 +97,11 @@ const CourseGenerationForm = ({
                     className={`relative p-4 rounded-2xl border-2 transition-all duration-200 hover:scale-[1.02] flex flex-col items-center gap-2 ${
                       isSelected
                         ? 'border-teal-400 bg-teal-500/20 shadow-md shadow-teal-500/40'
-                        : 'border-white/10 hover:border-teal-400/60 bg-slate-900/80'
+                        : 'border-slate-200 dark:border-white/10 hover:border-teal-400/60 bg-white dark:bg-slate-900/80'
                     }`}
                   >
                     <span className="text-3xl filter drop-shadow-sm">{lang.flag}</span>
-                    <span className={`text-sm font-medium ${isSelected ? 'text-teal-100' : 'text-slate-200'}`}>
+                    <span className={`text-sm font-medium ${isSelected ? 'text-teal-700 dark:text-teal-100' : 'text-slate-700 dark:text-slate-200'}`}>
                       {lang.label}
                     </span>
                     {isSelected && <div className="absolute top-2 right-2 w-2 h-2 bg-teal-500 rounded-full"></div>}
@@ -111,11 +111,11 @@ const CourseGenerationForm = ({
             </div>
 
             {isLearningEnglish && (
-              <div className="mt-4 p-4 rounded-2xl border-2 border-amber-400/50 bg-amber-500/10 animate-in slide-in-from-top-2">
-                <p className="text-sm font-bold text-amber-100 mb-3">
+              <div className="mt-4 p-4 rounded-2xl border-2 border-amber-400/60 bg-amber-50 dark:bg-amber-500/10 animate-in slide-in-from-top-2">
+                <p className="text-sm font-bold text-amber-800 dark:text-amber-100 mb-3">
                   Which language are you most comfortable with? 🗣️
                 </p>
-                <p className="text-xs text-amber-100/80 mb-3">
+                <p className="text-xs text-amber-700/80 dark:text-amber-100/80 mb-3">
                   We'll write explanations, translations, and exercise questions in this language, since you're still learning English.
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -128,11 +128,11 @@ const CourseGenerationForm = ({
                         className={`relative p-3 rounded-xl border-2 transition-all duration-200 hover:scale-[1.02] flex flex-col items-center gap-1 ${
                           isSelected
                             ? 'border-amber-400 bg-amber-500/25 shadow-md shadow-amber-500/40'
-                            : 'border-white/10 hover:border-amber-400/60 bg-slate-900/80'
+                            : 'border-slate-200 dark:border-white/10 hover:border-amber-400/60 bg-white dark:bg-slate-900/80'
                         }`}
                       >
                         <span className="text-2xl filter drop-shadow-sm">{lang.flag}</span>
-                        <span className={`text-xs font-medium ${isSelected ? 'text-amber-100' : 'text-slate-200'}`}>
+                        <span className={`text-xs font-medium ${isSelected ? 'text-amber-800 dark:text-amber-100' : 'text-slate-700 dark:text-slate-200'}`}>
                           {lang.label}
                         </span>
                         {isSelected && <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-400 rounded-full"></div>}
@@ -146,7 +146,7 @@ const CourseGenerationForm = ({
 
           {/* 2. Expertise Level */}
           <div>
-            <label className="text-sm font-bold text-slate-100 mb-4 flex items-center gap-2">
+            <label className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs">2</span>
               Current Expertise 📊
             </label>
@@ -160,14 +160,14 @@ const CourseGenerationForm = ({
                     className={`p-4 rounded-2xl border-2 transition-all duration-200 hover:scale-[1.02] text-left relative overflow-hidden ${
                       isSelected
                         ? 'border-orange-400 bg-orange-500/20 shadow-md shadow-orange-500/40'
-                        : 'border-white/10 hover:border-orange-300/70 bg-slate-900/80'
+                        : 'border-slate-200 dark:border-white/10 hover:border-orange-300/70 bg-white dark:bg-slate-900/80'
                     }`}
                   >
                     <div className="text-2xl mb-2">{level.icon}</div>
-                    <div className={`font-bold mb-0.5 ${isSelected ? 'text-orange-100' : 'text-slate-50'}`}>
+                    <div className={`font-bold mb-0.5 ${isSelected ? 'text-orange-800 dark:text-orange-100' : 'text-slate-900 dark:text-slate-50'}`}>
                       {level.label}
                     </div>
-                    <div className={`text-xs ${isSelected ? 'text-orange-100/90' : 'text-slate-300'}`}>
+                    <div className={`text-xs ${isSelected ? 'text-orange-700/90 dark:text-orange-100/90' : 'text-slate-500 dark:text-slate-300'}`}>
                       {level.description}
                     </div>
                     {isSelected && <Check className="absolute top-3 right-3 w-4 h-4 text-orange-500" />}
@@ -179,7 +179,7 @@ const CourseGenerationForm = ({
 
           {/* 3. Duration */}
           <div>
-            <label className="text-sm font-bold text-slate-100 mb-4 flex items-center gap-2">
+            <label className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs">3</span>
               Target Duration ⏱️
             </label>
@@ -193,11 +193,11 @@ const CourseGenerationForm = ({
                     className={`p-4 rounded-2xl border-2 transition-all duration-200 hover:scale-[1.02] flex flex-col items-center gap-1 ${
                       isSelected
                         ? 'border-purple-400 bg-purple-500/20 shadow-md shadow-purple-500/40'
-                        : 'border-white/10 hover:border-purple-300/70 bg-slate-900/80'
+                        : 'border-slate-200 dark:border-white/10 hover:border-purple-300/70 bg-white dark:bg-slate-900/80'
                     }`}
                   >
                     <span className="text-2xl">{dur.icon}</span>
-                    <span className={`text-sm font-medium ${isSelected ? 'text-purple-100' : 'text-slate-200'}`}>
+                    <span className={`text-sm font-medium ${isSelected ? 'text-purple-700 dark:text-purple-100' : 'text-slate-700 dark:text-slate-200'}`}>
                       {dur.label}
                     </span>
                   </button>
@@ -208,41 +208,41 @@ const CourseGenerationForm = ({
 
           {/* AI Features Preview (Dynamic Display) */}
           {form.language && form.expertise && form.expectedDuration && (
-            <div className="bg-gradient-to-r from-slate-900/80 via-teal-900/70 to-orange-800/70 p-6 rounded-2xl border border-teal-300/60 animate-in slide-in-from-bottom-2">
-              <h4 className="flex items-center gap-2 mb-4 font-bold text-slate-50">
+            <div className="bg-gradient-to-r from-slate-50 via-teal-50 to-orange-50 dark:from-slate-900/80 dark:via-teal-900/70 dark:to-orange-800/70 p-6 rounded-2xl border border-teal-300/60 animate-in slide-in-from-bottom-2">
+              <h4 className="flex items-center gap-2 mb-4 font-bold text-slate-900 dark:text-slate-50">
                 <Sparkles className="w-5 h-5 text-teal-500 fill-teal-100" />
                 Your AI Course Includes:
               </h4>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                <li className="flex items-center gap-2 bg-slate-900/70 p-2 rounded-lg">
+                <li className="flex items-center gap-2 bg-white/70 dark:bg-slate-900/70 p-2 rounded-lg">
                   <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
                     <span className="text-teal-600 text-xs">✓</span>
                   </div>
-                  <span className="text-slate-100">
+                  <span className="text-slate-700 dark:text-slate-100">
                     Lessons adapted for <strong>{form.expertise}s</strong>
                   </span>
                 </li>
-                <li className="flex items-center gap-2 bg-white/60 p-2 rounded-lg">
+                <li className="flex items-center gap-2 bg-white/70 dark:bg-slate-900/70 p-2 rounded-lg">
                   <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
                     <span className="text-teal-600 text-xs">✓</span>
                   </div>
-                  <span className="text-gray-700">
+                  <span className="text-slate-700 dark:text-slate-100">
                     <strong>{form.language}</strong> cultural notes
                   </span>
                 </li>
-                <li className="flex items-center gap-2 bg-white/60 p-2 rounded-lg">
+                <li className="flex items-center gap-2 bg-white/70 dark:bg-slate-900/70 p-2 rounded-lg">
                   <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
                     <span className="text-teal-600 text-xs">✓</span>
                   </div>
-                  <span className="text-gray-700">
+                  <span className="text-slate-700 dark:text-slate-100">
                     Voice practice with AI Tutor
                   </span>
                 </li>
-                <li className="flex items-center gap-2 bg-white/60 p-2 rounded-lg">
+                <li className="flex items-center gap-2 bg-white/70 dark:bg-slate-900/70 p-2 rounded-lg">
                   <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
                     <span className="text-teal-600 text-xs">✓</span>
                   </div>
-                  <span className="text-gray-700">
+                  <span className="text-slate-700 dark:text-slate-100">
                     Smart timeline: <strong>{durations.find(d => d.value === form.expectedDuration)?.label}</strong>
                   </span>
                 </li>
@@ -251,10 +251,10 @@ const CourseGenerationForm = ({
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4 border-t border-white/10">
+          <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-white/10">
             <button
               onClick={onCancel}
-              className="flex-1 py-3.5 px-6 rounded-xl border border-white/20 text-slate-200 font-medium hover:bg-white/10 transition-colors"
+              className="flex-1 py-3.5 px-6 rounded-xl border border-slate-300 dark:border-white/20 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-900/5 dark:hover:bg-white/10 transition-colors"
             >
               Cancel
             </button>
@@ -263,7 +263,7 @@ const CourseGenerationForm = ({
               disabled={!form.language || !form.expertise || !form.expectedDuration || (isLearningEnglish && !form.baseLanguage)}
               className={`flex-1 py-3.5 px-6 rounded-xl text-white font-bold shadow-lg transition-all flex items-center justify-center gap-2 ${
                 !form.language || !form.expertise || !form.expectedDuration || (isLearningEnglish && !form.baseLanguage)
-                  ? 'bg-slate-700 cursor-not-allowed shadow-none'
+                  ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed shadow-none'
                   : 'bg-gradient-to-r from-teal-500 to-orange-500 hover:from-teal-600 hover:to-orange-600 hover:scale-[1.02] hover:shadow-orange-200'
               }`}
             >

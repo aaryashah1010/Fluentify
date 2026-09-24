@@ -37,9 +37,9 @@ const UserListPage = () => {
             <div className="w-12 h-12 bg-gradient-to-br from-teal-500 via-sky-500 to-orange-400 rounded-xl flex items-center justify-center shadow-[0_0_22px_rgba(56,189,248,0.6)]">
               <Users className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-50">User Management</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-slate-50">User Management</h1>
           </div>
-          <p className="text-sm md:text-base text-slate-200">Manage learners and monitor their progress.</p>
+          <p className="text-sm md:text-base text-slate-700 dark:text-slate-200">Manage learners and monitor their progress.</p>
         </div>
 
         {/* Search Bar */}
@@ -49,29 +49,29 @@ const UserListPage = () => {
         {!searchQuery && pagination && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Total Users */}
-            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
+            <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
               <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-to-br from-teal-500/25 to-sky-500/25 rounded-full blur-2xl" />
               <div className="relative flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-teal-400 to-sky-500 rounded-xl flex items-center justify-center shadow-md">
                   <Users className="w-6 h-6 text-white" />
                 </div>
-                <Activity className="w-5 h-5 text-teal-300" />
+                <Activity className="w-5 h-5 text-teal-600 dark:text-teal-300" />
               </div>
-              <p className="text-sm font-medium text-slate-300 mb-1">Total Users</p>
-              <p className="text-3xl font-bold text-slate-50">{pagination.total}</p>
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">Total Users</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-50">{pagination.total}</p>
             </div>
 
             {/* Active Users */}
 
             {/* Current Page */}
-            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
+            <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center shadow-md">
                   <ChevronRight className="w-6 h-6 text-white" />
                 </div>
               </div>
-              <p className="text-sm font-medium text-slate-300 mb-1">Current Page</p>
-              <p className="text-3xl font-bold text-slate-50">{pagination.page} <span className="text-lg text-slate-300">of {pagination.pages}</span></p>
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">Current Page</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-50">{pagination.page} <span className="text-lg text-slate-600 dark:text-slate-300">of {pagination.pages}</span></p>
             </div>
 
             {/* Showing */}
@@ -86,7 +86,7 @@ const UserListPage = () => {
                 <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
                 <Users className="w-8 h-8 text-blue-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
               </div>
-              <p className="mt-6 text-lg font-medium text-gray-700">Loading users...</p>
+              <p className="mt-6 text-lg font-medium text-slate-700 dark:text-slate-200">Loading users...</p>
             </div>
           </div>
         )}
@@ -95,8 +95,8 @@ const UserListPage = () => {
         {!isLoading && users && users.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Learners</h2>
-              <span className="text-sm text-gray-600">{users.length} users displayed</span>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50">Learners</h2>
+              <span className="text-sm text-slate-600 dark:text-slate-300">{users.length} users displayed</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {users.map((user) => (

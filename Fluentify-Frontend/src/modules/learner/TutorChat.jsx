@@ -8,16 +8,16 @@ import ErrorMessage from '../../components/ErrorMessage';
 
 const TutorChat = ({ compact = false }) => {
   const token = localStorage.getItem('jwt');
-  const { 
-    messages, 
-    isLoading, 
-    isTyping, 
-    error, 
-    sendMessage, 
-    clearChat, 
-    clearError 
+  const {
+    messages,
+    isLoading,
+    isTyping,
+    error,
+    sendMessage,
+    clearChat,
+    clearError
   } = useChat(token);
-  
+
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
@@ -40,19 +40,19 @@ const TutorChat = ({ compact = false }) => {
   };
 
   return (
-    <div className={`flex flex-col h-full bg-slate-950/95 ${compact ? '' : 'rounded-2xl shadow-2xl border border-white/10'}`}>
+    <div className={`flex flex-col h-full bg-white/95 dark:bg-slate-950/95 ${compact ? '' : 'rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10'}`}>
       {!compact && (
-        <div className="flex items-center justify-between p-4 border-b border-white/10 bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 rounded-t-2xl">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 rounded-t-2xl">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white flex items-center justify-center text-lg shadow-md">
               🤖
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-slate-50">Fluent - AI Tutor</h2>
-              <p className="text-sm text-teal-200">🌍 Multilingual Expert • Any Language, Any Context</p>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">Fluent - AI Tutor</h2>
+              <p className="text-sm text-teal-600 dark:text-teal-200">🌍 Multilingual Expert • Any Language, Any Context</p>
             </div>
           </div>
-          
+
           {messages.length > 0 && (
             <Button
               variant="ghost"
@@ -67,21 +67,21 @@ const TutorChat = ({ compact = false }) => {
       )}
 
       {error && (
-        <div className="p-4 border-b border-red-500/40 bg-red-950/40">
-          <ErrorMessage 
-            message={error} 
+        <div className="p-4 border-b border-red-300 dark:border-red-500/40 bg-red-50 dark:bg-red-950/40">
+          <ErrorMessage
+            message={error}
             onClose={clearError}
             className="mb-0"
           />
         </div>
       )}
 
-      <div 
+      <div
         ref={chatContainerRef}
-        className={`flex-1 overflow-y-auto space-y-4 ${compact ? 'p-2' : 'p-4'} bg-slate-950/95`}
-        style={{ 
-          minHeight: compact ? '200px' : '400px', 
-          maxHeight: compact ? '300px' : '600px' 
+        className={`flex-1 overflow-y-auto space-y-4 ${compact ? 'p-2' : 'p-4'} bg-white/95 dark:bg-slate-950/95`}
+        style={{
+          minHeight: compact ? '200px' : '400px',
+          maxHeight: compact ? '300px' : '600px'
         }}
       >
         {showWelcome && (
@@ -89,19 +89,19 @@ const TutorChat = ({ compact = false }) => {
             <div className={`${compact ? 'w-12 h-12' : 'w-16 h-16'} mx-auto mb-4 rounded-full bg-gradient-to-r from-orange-400 to-teal-400 text-white flex items-center justify-center shadow-lg ${compact ? 'text-xl' : 'text-2xl'}`}>
               🤖
             </div>
-            <h3 className={`${compact ? 'text-base' : 'text-xl'} font-bold text-slate-50 mb-2`}>
+            <h3 className={`${compact ? 'text-base' : 'text-xl'} font-bold text-slate-900 dark:text-slate-50 mb-2`}>
               Welcome to Fluent - Your Multilingual AI Tutor! 🌎
             </h3>
             {!compact && (
               <>
-                <p className="text-slate-200 max-w-2xl mx-auto mb-4 font-medium">
+                <p className="text-slate-600 dark:text-slate-200 max-w-2xl mx-auto mb-4 font-medium">
                   I'm an expert polyglot ready to help you learn ANY language - from Spanish to Japanese, Arabic to French, and everything in between!
                 </p>
-                <div className="bg-slate-900/90 p-4 rounded-xl mb-4 max-w-2xl mx-auto border border-white/10">
-                  <h4 className="font-semibold text-slate-50 mb-2 flex items-center gap-2">
+                <div className="bg-slate-50 dark:bg-slate-900/90 p-4 rounded-xl mb-4 max-w-2xl mx-auto border border-slate-200 dark:border-white/10">
+                  <h4 className="font-semibold text-slate-900 dark:text-slate-50 mb-2 flex items-center gap-2">
                     <span className="text-lg">✨</span> What I Can Do:
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-slate-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-slate-600 dark:text-slate-200">
                     <div className="flex items-start gap-2">
                       <span className="text-green-500 font-bold">✓</span>
                       <span>Teach <strong>any language</strong> at any level</span>
@@ -129,26 +129,26 @@ const TutorChat = ({ compact = false }) => {
                   </div>
                 </div>
                 <div className="max-w-2xl mx-auto">
-                  <p className="text-sm text-slate-300 mb-3 font-medium">💡 Try asking me:</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-300 mb-3 font-medium">💡 Try asking me:</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                    <div className="bg-slate-900/80 p-3 rounded-lg border border-white/10 hover:border-orange-300 transition-colors">
-                      <span className="text-orange-300">"Teach me French greetings"</span>
+                    <div className="bg-white dark:bg-slate-900/80 p-3 rounded-lg border border-slate-200 dark:border-white/10 hover:border-orange-300 transition-colors">
+                      <span className="text-orange-600 dark:text-orange-300">"Teach me French greetings"</span>
                     </div>
-                    <div className="bg-slate-900/80 p-3 rounded-lg border border-white/10 hover:border-orange-300 transition-colors">
-                      <span className="text-orange-300">"How do I say 'thank you' in Japanese?"</span>
+                    <div className="bg-white dark:bg-slate-900/80 p-3 rounded-lg border border-slate-200 dark:border-white/10 hover:border-orange-300 transition-colors">
+                      <span className="text-orange-600 dark:text-orange-300">"How do I say 'thank you' in Japanese?"</span>
                     </div>
-                    <div className="bg-slate-900/80 p-3 rounded-lg border border-white/10 hover:border-orange-300 transition-colors">
-                      <span className="text-orange-300">"Explain Spanish verb conjugations"</span>
+                    <div className="bg-white dark:bg-slate-900/80 p-3 rounded-lg border border-slate-200 dark:border-white/10 hover:border-orange-300 transition-colors">
+                      <span className="text-orange-600 dark:text-orange-300">"Explain Spanish verb conjugations"</span>
                     </div>
-                    <div className="bg-slate-900/80 p-3 rounded-lg border border-white/10 hover:border-orange-300 transition-colors">
-                      <span className="text-orange-300">"Business vocabulary in German"</span>
+                    <div className="bg-white dark:bg-slate-900/80 p-3 rounded-lg border border-slate-200 dark:border-white/10 hover:border-orange-300 transition-colors">
+                      <span className="text-orange-600 dark:text-orange-300">"Business vocabulary in German"</span>
                     </div>
                   </div>
                 </div>
               </>
             )}
             {compact && (
-              <p className="text-sm text-slate-300 px-2">
+              <p className="text-sm text-slate-500 dark:text-slate-300 px-2">
                 Ask me anything about any language - I'm here to help!
               </p>
             )}
@@ -156,9 +156,9 @@ const TutorChat = ({ compact = false }) => {
         )}
 
         {messages.map((message) => (
-          <ChatMessage 
-            key={message.id} 
-            message={message} 
+          <ChatMessage
+            key={message.id}
+            message={message}
             isStreaming={message.isStreaming}
           />
         ))}
@@ -172,8 +172,8 @@ const TutorChat = ({ compact = false }) => {
         onSendMessage={handleSendMessage}
         disabled={isLoading}
         placeholder={
-          messages.length === 0 
-            ? "Ask me anything about any language... 🌍" 
+          messages.length === 0
+            ? "Ask me anything about any language... 🌍"
             : "Continue the conversation..."
         }
       />

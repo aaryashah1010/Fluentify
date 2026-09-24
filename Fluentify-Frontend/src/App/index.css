@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Toggle-driven dark mode (a .dark class on <html>), not just OS preference */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Skeleton shimmer animation */
 @keyframes shimmer {
   0% {

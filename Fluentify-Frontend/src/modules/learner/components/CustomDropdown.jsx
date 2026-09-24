@@ -27,7 +27,7 @@ const CustomDropdown = ({ options, value, onChange, placeholder, showFlags = fal
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full border border-white/15 rounded-xl px-4 py-3 flex items-center justify-between text-sm md:text-base bg-slate-900/80 shadow-md focus:ring-2 focus:ring-teal-500/60 hover:border-teal-400/70 transition-colors text-slate-50"
+        className="w-full border border-slate-200 dark:border-white/15 rounded-xl px-4 py-3 flex items-center justify-between text-sm md:text-base bg-white dark:bg-slate-900/80 shadow-md focus:ring-2 focus:ring-teal-500/60 hover:border-teal-400/70 transition-colors text-slate-900 dark:text-slate-50"
       >
         {selected ? (
           <span className="flex items-center gap-2">
@@ -38,13 +38,13 @@ const CustomDropdown = ({ options, value, onChange, placeholder, showFlags = fal
                 className="text-2xl"
               />
             )}
-            <span className="text-slate-50">{selected.name || selected}</span>
+            <span className="text-slate-900 dark:text-slate-50">{selected.name || selected}</span>
           </span>
         ) : (
-          <span className="text-slate-400">{placeholder}</span>
+          <span className="text-slate-400 dark:text-slate-400">{placeholder}</span>
         )}
         <span
-          className="text-slate-300 transition-transform text-xs md:text-sm"
+          className="text-slate-500 dark:text-slate-300 transition-transform text-xs md:text-sm"
           style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
         >
           ▼
@@ -60,12 +60,12 @@ const CustomDropdown = ({ options, value, onChange, placeholder, showFlags = fal
           />
           
           {/* Dropdown menu */}
-          <div className="absolute mt-2 w-full bg-slate-950/95 border border-white/15 rounded-xl shadow-2xl z-20 max-h-60 overflow-y-auto backdrop-blur-md">
+          <div className="absolute mt-2 w-full bg-white/95 dark:bg-slate-950/95 border border-slate-200 dark:border-white/15 rounded-xl shadow-2xl z-20 max-h-60 overflow-y-auto backdrop-blur-md">
             {options.map((opt, idx) => (
               <div
                 key={opt.code || idx}
                 onClick={() => handleSelect(opt)}
-                className="px-4 py-3 flex items-center gap-2 cursor-pointer hover:bg-slate-800/80 transition-colors text-slate-100 text-sm"
+                className="px-4 py-3 flex items-center gap-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors text-slate-800 dark:text-slate-100 text-sm"
               >
                 {showFlags && opt.code && (
                   <ReactCountryFlag

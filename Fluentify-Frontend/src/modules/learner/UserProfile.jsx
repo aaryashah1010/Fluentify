@@ -126,7 +126,7 @@ const UserProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 flex items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -134,21 +134,21 @@ const UserProfile = () => {
 
   if (error || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 flex items-center justify-center p-4">
         <ErrorMessage message="Failed to load profile. Please try again." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950">
 
-      <header className="bg-gradient-to-r from-slate-950/95 via-slate-900/90 to-slate-950/95 border-b border-white/10 sticky top-0 z-40 shadow-lg">
+      <header className="bg-gradient-to-r from-slate-100 dark:from-slate-950/95 via-slate-50 dark:via-slate-900/90 to-slate-100 dark:to-slate-950/95 border-b border-slate-200 dark:border-white/10 sticky top-0 z-40 shadow-lg">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/dashboard')}
-              className="flex items-center gap-2 text-slate-200 hover:text-orange-300 hover:bg-white/5 p-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 text-slate-700 dark:text-slate-200 hover:text-orange-600 dark:hover:text-orange-300 hover:bg-slate-900/5 dark:hover:bg-white/5 p-2 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span className="font-medium">Back to Dashboard</span>
@@ -158,45 +158,45 @@ const UserProfile = () => {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        <div className="bg-slate-900/90 rounded-3xl shadow-2xl border border-white/10 p-8">
+        <div className="bg-white dark:bg-slate-900/90 rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 p-8">
           {successMessage && (
             <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 text-green-700 font-medium">
               <p>{successMessage}</p>
             </div>
           )}
 
-          <div className="flex items-center gap-6 mb-8 pb-8 border-b border-white/10">
+          <div className="flex items-center gap-6 mb-8 pb-8 border-b border-slate-200 dark:border-white/10">
             <div className="w-20 h-20 rounded-full flex items-center justify-center bg-gradient-to-r from-orange-400 to-teal-400">
               <User className="w-10 h-10 text-white" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-slate-50 mb-1">{user.name || 'User'}</h2>
-              <p className="text-slate-300">Account Management</p>
+              <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-50 mb-1">{user.name || 'User'}</h2>
+              <p className="text-slate-600 dark:text-slate-300">Account Management</p>
             </div>
           </div>
 
           <section className="mb-10">
-            <h3 className="text-lg font-semibold text-slate-50 mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-4 flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-teal-600" />
               Statistics
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-slate-900/85 border border-teal-500/50 rounded-2xl px-5 py-4 flex items-center gap-3">
+              <div className="bg-white dark:bg-slate-900/85 border border-teal-300 dark:border-teal-500/50 rounded-2xl px-5 py-4 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-teal-500 flex items-center justify-center text-white">
                   <BookOpen className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-300">Courses</p>
-                  <p className="text-2xl font-bold text-slate-50">{totalCourses}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">Courses</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-50">{totalCourses}</p>
                 </div>
               </div>
-              <div className="bg-slate-900/85 border border-emerald-500/50 rounded-2xl px-5 py-4 flex items-center gap-3">
+              <div className="bg-white dark:bg-slate-900/85 border border-emerald-300 dark:border-emerald-500/50 rounded-2xl px-5 py-4 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white">
                   <CheckCircle className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-300">Lessons Completed</p>
-                  <p className="text-2xl font-bold text-slate-50">{formatLessonsCompleted(totalLessonsCompleted)}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">Lessons Completed</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-50">{formatLessonsCompleted(totalLessonsCompleted)}</p>
                 </div>
               </div>
             </div>
@@ -204,7 +204,7 @@ const UserProfile = () => {
 
           <div className="space-y-8">
             <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">Full Name</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Full Name</label>
               {isEditing ? (
                 <Input
                   name="name"
@@ -215,8 +215,8 @@ const UserProfile = () => {
                   required
                 />
               ) : (
-                <div className="bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3 flex justify-between items-center">
-                  <p className="text-slate-50 font-medium">{user.name || 'Not set'}</p>
+                <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 flex justify-between items-center">
+                  <p className="text-slate-900 dark:text-slate-50 font-medium">{user.name || 'Not set'}</p>
                   <Button
                     variant="ghost"
                     onClick={() => setIsEditing(true)}
@@ -229,9 +229,9 @@ const UserProfile = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                 Contest Display Name
-                <span className="text-slate-300 text-xs ml-2">(Optional - used in leaderboards)</span>
+                <span className="text-slate-600 dark:text-slate-300 text-xs ml-2">(Optional - used in leaderboards)</span>
               </label>
               {isEditing ? (
                 <Input
@@ -243,22 +243,22 @@ const UserProfile = () => {
                   maxLength={50}
                 />
               ) : (
-                <div className="bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3">
-                  <p className="text-slate-50">
+                <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3">
+                  <p className="text-slate-900 dark:text-slate-50">
                     {user.contest_name || (
-                      <span className="text-slate-300">Using full name ({user.name})</span>
+                      <span className="text-slate-600 dark:text-slate-300">Using full name ({user.name})</span>
                     )}
                   </p>
                 </div>
               )}
-              <p className="text-xs text-slate-300 mt-1">
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
                 This name will be displayed on contest leaderboards. Leave empty to use your full name.
               </p>
             </div>
 
             {courses.length > 0 && (
-              <section className="mt-10 pt-8 border-t border-white/10">
-                <h3 className="text-lg font-semibold text-slate-50 mb-4 flex items-center gap-2">
+              <section className="mt-10 pt-8 border-t border-slate-200 dark:border-white/10">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-4 flex items-center gap-2">
                   <Globe className="w-5 h-5 text-teal-600" />
                   Languages Learning
                 </h3>
@@ -268,23 +268,23 @@ const UserProfile = () => {
                     return (
                       <div
                         key={course.id}
-                        className="p-4 rounded-2xl bg-slate-900/80 border border-white/10 flex flex-col gap-3"
+                        className="p-4 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 flex flex-col gap-3"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-2xl bg-slate-800 flex items-center justify-center text-2xl">
+                          <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl">
                             {getLanguageFlag(course.language)}
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-semibold text-slate-50">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">
                               {course.language || 'Language'}
                             </p>
-                            <p className="text-xs text-slate-300 truncate">
+                            <p className="text-xs text-slate-600 dark:text-slate-300 truncate">
                               {course.title || 'AI generated course'}
                             </p>
                           </div>
                           <p className="text-sm font-semibold text-teal-600">{pct}%</p>
                         </div>
-                        <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
                           <div
                             className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
                             style={{ width: `${pct}%` }}
@@ -323,35 +323,35 @@ const UserProfile = () => {
               <ErrorMessage message={editError} />
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-200 dark:border-white/10">
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">Email Address</label>
-                <div className="flex items-center gap-3 bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3">
-                  <Mail className="w-5 h-5 text-slate-300" />
-                  <p className="text-slate-50">{user.email || 'Not set'}</p>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Email Address</label>
+                <div className="flex items-center gap-3 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3">
+                  <Mail className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                  <p className="text-slate-900 dark:text-slate-50">{user.email || 'Not set'}</p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">Member Since</label>
-                <div className="flex items-center gap-3 bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3">
-                  <Calendar className="w-5 h-5 text-slate-300" />
-                  <p className="text-slate-50">{formatDate(user.created_at)}</p>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Member Since</label>
+                <div className="flex items-center gap-3 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3">
+                  <Calendar className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                  <p className="text-slate-900 dark:text-slate-50">{formatDate(user.created_at)}</p>
                 </div>
               </div>
 
               {user.is_email_verified !== undefined && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-200 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                     Email Verification
                   </label>
-                  <div className="flex items-center gap-3 bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3">
+                  <div className="flex items-center gap-3 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3">
                     <div
                       className={`w-3 h-3 rounded-full ${
                         user.is_email_verified ? 'bg-green-500' : 'bg-red-500'
                       }`}
                     />
-                    <p className="text-slate-50 font-medium">
+                    <p className="text-slate-900 dark:text-slate-50 font-medium">
                       {user.is_email_verified ? 'Verified' : 'Not Verified'}
                     </p>
                   </div>
@@ -359,7 +359,7 @@ const UserProfile = () => {
               )}
             </div>
 
-            <div className="mt-12 pt-8 border-t border-white/10">
+            <div className="mt-12 pt-8 border-t border-slate-200 dark:border-white/10">
               <Button
                 variant="danger"
                 onClick={logout}

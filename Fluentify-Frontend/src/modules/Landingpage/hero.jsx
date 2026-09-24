@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react';
 
 export function Hero({ onNavigate }) {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-teal-50 via-orange-50 to-slate-100 dark:from-teal-900 dark:via-orange-900 dark:to-slate-950">
       {/* Overlay pattern */}
       <div className="absolute inset-0 opacity-30">
         <div
@@ -18,7 +18,7 @@ export function Hero({ onNavigate }) {
 
       <div className="container mx-auto px-6 relative z-10 pt-24 pb-16">
         <div className="max-w-5xl mx-auto text-center">
-          <h1 className="text-white text-6xl md:text-7xl lg:text-8xl mb-6">
+          <h1 className="text-slate-900 dark:text-white text-6xl md:text-7xl lg:text-8xl mb-6">
             Start Your Journey,
           </h1>
           <h2 className="text-5xl md:text-6xl lg:text-7xl mb-8">
@@ -26,7 +26,7 @@ export function Hero({ onNavigate }) {
             <span className="text-teal-500">Your Voice</span>
           </h2>
 
-          <p className="text-slate-100 text-xl md:text-2xl mb-12 max-w-2xl mx-auto">
+          <p className="text-slate-700 dark:text-slate-100 text-xl md:text-2xl mb-12 max-w-2xl mx-auto">
             Master any language with AI-powered personalized instruction
           </p>
 

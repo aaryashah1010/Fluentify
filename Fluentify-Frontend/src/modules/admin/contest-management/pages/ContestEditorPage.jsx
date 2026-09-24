@@ -267,10 +267,10 @@ const ContestEditorPage = () => {
 
   if (loadingContest) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center text-slate-100">
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 flex items-center justify-center text-slate-800 dark:text-slate-100">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-teal-500/30 border-t-teal-400 mx-auto mb-4"></div>
-          <p className="text-sm text-slate-200">Loading contest...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-teal-200 dark:border-teal-500/30 border-t-teal-400 mx-auto mb-4"></div>
+          <p className="text-sm text-slate-700 dark:text-slate-200">Loading contest...</p>
         </div>
       </div>
     );
@@ -280,10 +280,10 @@ const ContestEditorPage = () => {
   if (isEditMode && errorContest) {
     console.error('Failed to load contest details', contestError);
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center px-4 text-slate-100">
-        <div className="rounded-3xl border border-rose-500/60 bg-slate-950/95 shadow-2xl p-6 max-w-md w-full text-center">
-          <h2 className="text-lg font-semibold text-rose-100 mb-2">Unable to load contest</h2>
-          <p className="text-sm text-slate-300 mb-4">Please go back to the list and try again.</p>
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 flex items-center justify-center px-4 text-slate-800 dark:text-slate-100">
+        <div className="rounded-3xl border border-rose-300 dark:border-rose-500/60 bg-white dark:bg-slate-950/95 shadow-2xl p-6 max-w-md w-full text-center">
+          <h2 className="text-lg font-semibold text-rose-700 dark:text-rose-100 mb-2">Unable to load contest</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">Please go back to the list and try again.</p>
           <Button
             onClick={() => navigate('/admin/contests')}
             className="mt-1 bg-gradient-to-r from-teal-500 to-orange-500 text-slate-950 rounded-xl px-4 py-2 hover:from-teal-600 hover:to-orange-600"
@@ -296,16 +296,16 @@ const ContestEditorPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 text-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 text-slate-900 dark:text-slate-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-slate-950/95 via-slate-900/90 to-slate-950/95 border-b border-white/10 shadow-lg backdrop-blur-xl">
+      <header className="bg-gradient-to-r from-slate-100 dark:from-slate-950/95 via-slate-50 dark:via-slate-900/90 to-slate-100 dark:to-slate-950/95 border-b border-slate-200 dark:border-white/10 shadow-lg backdrop-blur-xl">
         <div className="w-full max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/admin/contests')}
-              className="p-2 hover:bg-slate-800/70 rounded-lg transition-colors"
+              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800/70 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-slate-200" />
+              <ArrowLeft className="w-5 h-5 text-slate-700 dark:text-slate-200" />
             </button>
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 flex items-center justify-center shadow-[0_0_30px_rgba(251,191,36,0.6)]">
@@ -314,10 +314,10 @@ const ContestEditorPage = () => {
                 </span>
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-slate-50">
+                <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-50">
                   {isEditMode ? 'Edit Contest' : 'Create New Contest'}
                 </h1>
-                <p className="text-xs md:text-sm text-slate-300 mt-1">
+                <p className="text-xs md:text-sm text-slate-600 dark:text-slate-300 mt-1">
                   {createdContestId
                     ? 'Add questions and publish when you are ready.'
                     : 'Fill in contest details to get your next challenge ready.'}
@@ -332,59 +332,59 @@ const ContestEditorPage = () => {
       <main className="w-full max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-8">
           {/* Contest Details Section */}
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-2xl p-[1px]">
-            <div className="bg-slate-950/95 rounded-[22px] border border-white/10 p-6 md:p-8">
-              <h2 className="text-xl font-bold text-slate-50 mb-4 flex items-center gap-2">Contest Details</h2>
+          <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950/90 shadow-2xl p-[1px]">
+            <div className="bg-white dark:bg-slate-950/95 rounded-[22px] border border-slate-200 dark:border-white/10 p-6 md:p-8">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50 mb-4 flex items-center gap-2">Contest Details</h2>
               <div className="space-y-4">
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-200 mb-1">Contest Title *</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Contest Title *</label>
                   <input
                     type="text"
                     value={contest.title}
                     onChange={(e) => handleContestChange('title', e.target.value)}
                     placeholder="e.g., Weekly Spanish Challenge"
-                    className={`w-full px-4 py-2 rounded-xl border bg-slate-950/70 text-slate-50 placeholder-slate-500 focus:ring-2 focus:ring-amber-400 focus:border-transparent ${
-                      errors.title ? 'border-rose-500/70' : 'border-white/15'
+                    className={`w-full px-4 py-2 rounded-xl border bg-white dark:bg-slate-950/70 text-slate-900 dark:text-slate-50 placeholder-slate-500 focus:ring-2 focus:ring-amber-400 focus:border-transparent ${
+                      errors.title ? 'border-rose-300 dark:border-rose-500/70' : 'border-slate-300 dark:border-white/15'
                     }`}
                   />
-                  {errors.title && <p className="text-rose-400 text-xs mt-1">{errors.title}</p>}
+                  {errors.title && <p className="text-rose-600 dark:text-rose-400 text-xs mt-1">{errors.title}</p>}
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-200 mb-1">Description (Optional)</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Description (Optional)</label>
                   <textarea
                     value={contest.description}
                     onChange={(e) => handleContestChange('description', e.target.value)}
                     placeholder="Brief description of the contest..."
                     rows={3}
-                    className="w-full px-4 py-2 rounded-xl border border-white/15 bg-slate-950/70 text-slate-50 placeholder-slate-500 focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+                    className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-white/15 bg-white dark:bg-slate-950/70 text-slate-900 dark:text-slate-50 placeholder-slate-500 focus:ring-2 focus:ring-amber-400 focus:border-transparent"
                   />
                 </div>
 
                 {/* Date and Time */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Start Date & Time *</label>
+                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">Start Date & Time *</label>
                     <input
                       type="datetime-local"
                       value={contest.start_time}
                       onChange={(e) => handleContestChange('start_time', e.target.value)}
                       className={`w-full px-4 py-2 border rounded-lg text-slate-950/80 bg-slate-50 datetime-on-dark focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
-                        errors.start_time ? 'border-red-500' : 'border-white/20'
+                        errors.start_time ? 'border-red-500' : 'border-slate-300 dark:border-white/20'
                       }`}
                     />
                     {errors.start_time && <p className="text-red-500 text-sm mt-1">{errors.start_time}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">End Date & Time *</label>
+                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">End Date & Time *</label>
                     <input
                       type="datetime-local"
                       value={contest.end_time}
                       onChange={(e) => handleContestChange('end_time', e.target.value)}
                       className={`w-full px-4 py-2 border rounded-lg text-slate-950/80 bg-slate-50 datetime-on-dark focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
-                        errors.end_time ? 'border-red-500' : 'border-white/20'
+                        errors.end_time ? 'border-red-500' : 'border-slate-300 dark:border-white/20'
                       }`}
                     />
                     {errors.end_time && <p className="text-red-500 text-sm mt-1">{errors.end_time}</p>}
@@ -422,21 +422,21 @@ const ContestEditorPage = () => {
             <>
               {/* Existing Questions */}
               {questions.length > 0 && (
-                <div className="rounded-3xl border border-white/10 bg-slate-950/90 shadow-2xl p-6">
-                  <h2 className="text-lg font-semibold text-slate-50 mb-4">Questions ({questions.length})</h2>
+                <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950/90 shadow-2xl p-6">
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-4">Questions ({questions.length})</h2>
                   <div className="space-y-4">
                     {questions.map((q, index) => (
                       <div
                         key={q.id || index}
-                        className="border border-white/10 rounded-2xl p-4 bg-slate-900/80"
+                        className="border border-slate-200 dark:border-white/10 rounded-2xl p-4 bg-white dark:bg-slate-900/80"
                       >
                         <div className="flex items-start justify-between mb-2">
-                          <h3 className="font-medium text-slate-50">
+                          <h3 className="font-medium text-slate-900 dark:text-slate-50">
                             {index + 1}. {q.question_text}
                           </h3>
                           <button
                             onClick={() => removeQuestion(index)}
-                            className="text-rose-300 hover:text-rose-200"
+                            className="text-rose-600 dark:text-rose-300 hover:text-rose-700 dark:hover:text-rose-200"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -447,8 +447,8 @@ const ContestEditorPage = () => {
                               key={optIndex}
                               className={`px-3 py-2 rounded-xl border ${
                                 optIndex === q.correct_option_id
-                                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-400/60'
-                                  : 'bg-slate-900/80 text-slate-200 border-white/10'
+                                  ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border-emerald-300 dark:border-emerald-400/60'
+                                  : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-white/10'
                               }`}
                             >
                               {String.fromCharCode(65 + optIndex)}.{' '}
@@ -464,24 +464,24 @@ const ContestEditorPage = () => {
               )}
 
               {/* Add New Question */}
-              <div className="rounded-3xl border border-white/10 bg-slate-950/90 shadow-2xl p-6">
-                <h2 className="text-lg font-semibold text-slate-50 mb-4">Add New Question</h2>
+              <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950/90 shadow-2xl p-6">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-4">Add New Question</h2>
                 <div className="space-y-4">
                   {/* Question Text */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-200 mb-1">Question Text *</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Question Text *</label>
                     <textarea
                       value={currentQuestion.question_text}
                       onChange={(e) => handleQuestionChange('question_text', e.target.value)}
                       placeholder="Enter your question here..."
                       rows={2}
-                      className="w-full px-4 py-2 rounded-xl border border-white/15 bg-slate-950/70 text-slate-50 placeholder-slate-500 focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-white/15 bg-white dark:bg-slate-950/70 text-slate-900 dark:text-slate-50 placeholder-slate-500 focus:ring-2 focus:ring-amber-400 focus:border-transparent"
                     />
                   </div>
 
                   {/* Options */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                       Options (at least 2 required) *
                     </label>
                     <div className="space-y-2">
@@ -492,19 +492,19 @@ const ContestEditorPage = () => {
                             name="correct_option"
                             checked={currentQuestion.correct_option_id === index}
                             onChange={() => handleQuestionChange('correct_option_id', index)}
-                            className="w-4 h-4 text-emerald-400"
+                            className="w-4 h-4 text-emerald-600 dark:text-emerald-400"
                           />
                           <input
                             type="text"
                             value={option}
                             onChange={(e) => handleOptionChange(index, e.target.value)}
                             placeholder={`Option ${String.fromCharCode(65 + index)}`}
-                            className="flex-1 px-4 py-2 rounded-xl border border-white/15 bg-slate-950/70 text-slate-50 placeholder-slate-500 focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+                            className="flex-1 px-4 py-2 rounded-xl border border-slate-300 dark:border-white/15 bg-white dark:bg-slate-950/70 text-slate-900 dark:text-slate-50 placeholder-slate-500 focus:ring-2 focus:ring-amber-400 focus:border-transparent"
                           />
                         </div>
                       ))}
                     </div>
-                    <p className="text-xs text-slate-400 mt-2">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                       Select the radio button to mark the correct answer
                     </p>
                   </div>
@@ -522,11 +522,11 @@ const ContestEditorPage = () => {
               </div>
 
               {/* Publish Button */}
-              <div className="rounded-3xl border border-white/10 bg-slate-950/90 shadow-2xl p-6">
+              <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950/90 shadow-2xl p-6">
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                   <div>
-                    <h3 className="font-semibold text-slate-50">Ready to Publish?</h3>
-                    <p className="text-sm text-slate-300 mt-1 max-w-xl">
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-50">Ready to Publish?</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-xl">
                       Publishing will make this contest visible to learners. They can participate during the
                       scheduled time.
                     </p>

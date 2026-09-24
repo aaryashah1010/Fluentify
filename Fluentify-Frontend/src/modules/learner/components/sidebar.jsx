@@ -49,9 +49,9 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="h-screen w-64 bg-slate-950/95 backdrop-blur-2xl shadow-2xl border-r border-white/10 flex flex-col text-slate-100">
+    <div className="h-screen w-64 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl shadow-2xl border-r border-slate-200 dark:border-white/10 flex flex-col text-slate-800 dark:text-slate-100">
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-white/10">
+      <div className="px-6 py-5 border-b border-slate-200 dark:border-white/10">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-teal-400 via-emerald-400 to-orange-400 text-transparent bg-clip-text">
           Fluentify
         </h1>
@@ -67,7 +67,7 @@ const Sidebar = () => {
               `flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
                 isActive
                   ? "bg-gradient-to-r from-teal-500 to-orange-500 text-white shadow-md"
-                  : "text-slate-200 hover:bg-white/10"
+                  : "text-slate-600 hover:bg-slate-900/5 dark:text-slate-200 dark:hover:bg-white/10"
               }`
             }
           >
@@ -78,10 +78,10 @@ const Sidebar = () => {
       </div>
 
       {/* Footer / Logout */}
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-slate-200 dark:border-white/10">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
+          className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-500/10 rounded-lg transition-all"
         >
           <LogOut className="w-5 h-5" />
           Logout

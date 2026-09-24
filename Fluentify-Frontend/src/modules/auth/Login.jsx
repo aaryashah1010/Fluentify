@@ -101,7 +101,7 @@ const Login = () => {
   const passwordError = getFieldError('password');
 
   return (
-    <div className="min-h-screen flex overflow-x-hidden bg-gradient-to-br from-teal-900 via-orange-900 to-teal-900">
+    <div className="min-h-screen flex overflow-x-hidden bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-teal-50 dark:to-teal-900">
       
       <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden">
         <div className="absolute inset-0">
@@ -110,10 +110,10 @@ const Login = () => {
           <div className="absolute -bottom-8 left-40 w-72 h-72 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
 
-        <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20 text-white">
+        <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20 text-slate-900 dark:text-white">
           <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <div className="flex items-center justify-start mb-8">
-              <div className="w-48 h-48 bg-white rounded-3xl shadow-2xl flex items-center justify-center ring-white/20 overflow-hidden">
+              <div className="w-48 h-48 bg-white rounded-3xl shadow-2xl flex items-center justify-center ring-slate-200 dark:ring-white/20 overflow-hidden">
                 <img
                   src={fluentifyLogo}
                   alt="Fluentify Logo"
@@ -130,40 +130,40 @@ const Login = () => {
               </span>
             </h1>
             
-            <p className="text-xl text-gray-300 mb-12 max-w-lg">
+            <p className="text-xl text-slate-600 dark:text-gray-300 mb-12 max-w-lg">
               Speak with confidence
             </p>
 
             {/* Features */}
             <div className="space-y-6">
               <div className="flex items-start gap-4 group">
-                <div className="w-12 h-12 bg-teal-500/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-teal-500/30 transition-colors">
-                  <Zap className="w-6 h-6 text-teal-400" />
+                <div className="w-12 h-12 bg-teal-100 dark:bg-teal-500/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-teal-100 dark:group-hover:bg-teal-500/30 transition-colors">
+                  <Zap className="w-6 h-6 text-teal-600 dark:text-teal-400" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-1">Interactive Learning</h3>
-                  <p className="text-gray-400">Hands-on learning powered by AI that adapts to your pace
+                  <p className="text-slate-500 dark:text-gray-400">Hands-on learning powered by AI that adapts to your pace
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-4 group">
-                <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500/30 transition-colors">
-                  <Award className="w-6 h-6 text-orange-400" />
+                <div className="w-12 h-12 bg-orange-100 dark:bg-orange-500/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-orange-100 dark:group-hover:bg-orange-500/30 transition-colors">
+                  <Award className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-1">Smart AI Instructors</h3>
-                  <p className="text-gray-400">Learn with an AI mentor that listens, correct and helps you grow naturally</p>
+                  <p className="text-slate-500 dark:text-gray-400">Learn with an AI mentor that listens, correct and helps you grow naturally</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-4 group">
-                <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/30 transition-colors">
-                  <TrendingUp className="w-6 h-6 text-amber-400" />
+                <div className="w-12 h-12 bg-amber-100 dark:bg-amber-500/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-amber-100 dark:group-hover:bg-amber-500/30 transition-colors">
+                  <TrendingUp className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-1">Track Progress</h3>
-                  <p className="text-gray-400">Visualize your journey - from beginner to fluent</p>
+                  <p className="text-slate-500 dark:text-gray-400">Visualize your journey - from beginner to fluent</p>
                 </div>
               </div>
             </div>

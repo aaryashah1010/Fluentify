@@ -14,14 +14,14 @@ const TypingIndicator = () => {
         </div>
         
         {/* Typing Animation */}
-        <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3">
+        <div className="bg-slate-100 dark:bg-gray-800 rounded-2xl rounded-bl-md px-4 py-3">
           <div className="flex items-center gap-1">
             <div className="flex gap-1">
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <div className="w-2 h-2 bg-slate-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <div className="w-2 h-2 bg-slate-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <div className="w-2 h-2 bg-slate-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
-            <span className="text-xs text-gray-500 ml-2">Fluent is typing...</span>
+            <span className="text-xs text-slate-500 dark:text-gray-400 ml-2">Fluent is typing...</span>
           </div>
         </div>
       </div>

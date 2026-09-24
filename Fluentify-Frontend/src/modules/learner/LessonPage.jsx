@@ -50,11 +50,11 @@ const LessonPage = () => {
   const lessonProgress = data?.data?.progress;
 
   // Use useMemo to ensure stable reference for arrays
-  const exercises = useMemo(() => 
-    Array.isArray(lesson?.exercises) ? lesson.exercises : [], 
+  const exercises = useMemo(() =>
+    Array.isArray(lesson?.exercises) ? lesson.exercises : [],
     [lesson?.exercises]
   );
-  
+
   const grammarPoints = useMemo(() => (
     Array.isArray(lesson?.grammarPoints)
     ? lesson.grammarPoints
@@ -246,7 +246,7 @@ const LessonPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 relative">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-orange-50 to-slate-100 dark:from-teal-900 dark:via-orange-900 dark:to-slate-950 relative">
       <main className="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <button
           onClick={() => navigate(`/course/${courseId}`)}
@@ -255,7 +255,7 @@ const LessonPage = () => {
           <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-sm border border-gray-200">
             ←
           </span>
-          <span className="font-medium text-white">Back to Course</span>
+          <span className="font-medium text-slate-900 dark:text-white">Back to Course</span>
         </button>
 
         <div className="bg-gradient-to-r from-teal-500 to-orange-400 rounded-3xl p-6 md:p-8 text-white shadow-xl mb-8">
@@ -321,7 +321,7 @@ const LessonPage = () => {
           </div>
         </div>
         {lessonJustCompleted && (
-          <div className="bg-slate-950/90 border border-green-500/60 rounded-2xl p-6 mb-6 shadow-xl">
+          <div className="bg-white/90 dark:bg-slate-950/90 border border-green-400 dark:border-green-500/60 rounded-2xl p-6 mb-6 shadow-xl">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
                 <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
@@ -329,10 +329,10 @@ const LessonPage = () => {
                 </div>
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-slate-50 mb-2">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-50 mb-2">
                   🎉 Lesson Completed Successfully!
                 </h3>
-                <p className="text-emerald-100 mb-4">
+                <p className="text-emerald-700 dark:text-emerald-100 mb-4">
                   Great job! You've mastered this lesson with a score of{' '}
                   {exerciseResults?.correctCount}/{exerciseResults?.totalCount}.
                   {completeLessonMutation.data?.data?.unitCompleted
@@ -343,7 +343,7 @@ const LessonPage = () => {
                 <div className="flex flex-wrap gap-3">
                   <Button
                     onClick={() => navigate(`/course/${courseId}`)}
-                    className="bg-slate-900/90 border border-white/15 text-slate-50"
+                    className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-white/15 text-slate-900 dark:text-slate-50"
                     variant="primary"
                     icon={<BookOpen className="w-4 h-4" />}
                   >
@@ -360,7 +360,7 @@ const LessonPage = () => {
                   </Button>
                   <Button
                     onClick={() => window.location.reload()}
-                    className="bg-slate-900/90 border border-white/15 text-slate-50"
+                    className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-white/15 text-slate-900 dark:text-slate-50"
                     variant="secondary"
                     icon={<RotateCcw className="w-4 h-4" />}
                   >
@@ -376,14 +376,14 @@ const LessonPage = () => {
           !lessonJustCompleted &&
           !showResults &&
           exercises.length > 0 && (
-            <div className="bg-slate-950/90 border border-blue-500/60 rounded-2xl p-4 mb-6">
+            <div className="bg-white/90 dark:bg-slate-950/90 border border-blue-300 dark:border-blue-500/60 rounded-2xl p-4 mb-6">
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-blue-300 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-300 mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-blue-100 mb-1">
+                  <h4 className="font-semibold text-blue-800 dark:text-blue-100 mb-1">
                     Complete Exercises to Unlock Lesson
                   </h4>
-                  <p className="text-sm text-blue-200">
+                  <p className="text-sm text-blue-700 dark:text-blue-200">
                     You must answer at least 3 out of 5 exercises correctly to
                     complete this lesson and unlock the next one. Go to the
                     Exercises section to get started!
@@ -396,14 +396,14 @@ const LessonPage = () => {
         {!isLessonCompleted() &&
           !lessonJustCompleted &&
           exercises.length === 0 && (
-            <div className="bg-slate-950/90 border border-amber-400/60 rounded-2xl p-4 mb-6">
+            <div className="bg-white/90 dark:bg-slate-950/90 border border-amber-300 dark:border-amber-400/60 rounded-2xl p-4 mb-6">
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-300 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-300 mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-amber-100 mb-1">
+                  <h4 className="font-semibold text-amber-800 dark:text-amber-100 mb-1">
                     Exercises Need to be Generated
                   </h4>
-                  <p className="text-sm text-amber-200">
+                  <p className="text-sm text-amber-700 dark:text-amber-200">
                     This lesson requires exercises to be completed. Use the
                     Exercises unit below and tap "Generate Exercises" to begin.
                   </p>
@@ -414,7 +414,7 @@ const LessonPage = () => {
 
         {/* Lesson Units for AI-generated courses */}
         <section className="mb-8">
-          <h2 className="text-sm font-semibold text-slate-100 mb-3">
+          <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-100 mb-3">
             Lesson Units
           </h2>
           <div className="space-y-4">
@@ -439,29 +439,29 @@ const LessonPage = () => {
                   key={section.key}
                   type="button"
                   onClick={() => setCurrentSection(section.key)}
-                  className={`w-full flex items-center justify-between rounded-2xl bg-slate-900/80 px-5 py-4 shadow-md border transition-all hover:shadow-lg ${
-                    isActive ? 'border-teal-400' : 'border-white/10'
+                  className={`w-full flex items-center justify-between rounded-2xl bg-white/90 dark:bg-slate-900/80 px-5 py-4 shadow-md border transition-all hover:shadow-lg ${
+                    isActive ? 'border-teal-400' : 'border-slate-200 dark:border-white/10'
                   }`}
                 >
                   <div className="flex items-center gap-4">
                     <div
                       className={`flex items-center justify-center w-9 h-9 rounded-full text-sm font-semibold ${
                         isCompleted
-                          ? 'bg-emerald-500/25 text-emerald-100'
-                          : 'bg-slate-800 text-teal-200'
+                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/25 dark:text-emerald-100'
+                          : 'bg-slate-100 text-teal-700 dark:bg-slate-800 dark:text-teal-200'
                       }`}
                     >
                       {isCompleted ? <CheckCircle className="w-4 h-4" /> : index + 1}
                     </div>
                     <div className="text-left">
-                      <p className="font-medium text-slate-50">{section.title}</p>
-                      <p className="text-xs text-slate-300">{section.subtitle}</p>
+                      <p className="font-medium text-slate-900 dark:text-slate-50">{section.title}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-300">{section.subtitle}</p>
                     </div>
                   </div>
                   <span
                     className={`inline-flex items-center gap-1 text-sm font-medium px-4 py-1 rounded-full ${
                       isCompleted
-                        ? 'bg-slate-800 text-slate-100'
+                        ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-100'
                         : 'bg-gradient-to-r from-teal-500 to-orange-400 text-white'
                     }`}
                   >
@@ -473,10 +473,10 @@ const LessonPage = () => {
           </div>
         </section>
 
-        <section className="bg-slate-950/90 rounded-2xl shadow-2xl border border-white/15 mb-8 p-6">
+        <section className="bg-white/90 dark:bg-slate-950/90 rounded-2xl shadow-2xl border border-slate-200 dark:border-white/15 mb-8 p-6">
           {currentSection === 'dialogue' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold mb-4 text-slate-50">
+              <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-50">
                 Conversation Practice
               </h3>
               {dialogue.length > 0 ? (
@@ -492,20 +492,20 @@ const LessonPage = () => {
                         <div
                           className={`rounded-2xl px-4 py-3 max-w-[85%] border shadow-lg ${
                             isSecondSpeaker
-                              ? 'bg-orange-500/15 border-orange-400/40'
-                              : 'bg-teal-500/15 border-teal-400/40'
+                              ? 'bg-orange-100 border-orange-300 dark:bg-orange-500/15 dark:border-orange-400/40'
+                              : 'bg-teal-100 border-teal-300 dark:bg-teal-500/15 dark:border-teal-400/40'
                           }`}
                         >
                           <p
                             className={`text-xs font-semibold uppercase tracking-wide mb-1 ${
-                              isSecondSpeaker ? 'text-orange-200' : 'text-teal-200'
+                              isSecondSpeaker ? 'text-orange-700 dark:text-orange-200' : 'text-teal-700 dark:text-teal-200'
                             }`}
                           >
                             {turn.speaker}
                           </p>
-                          <p className="text-slate-50 font-medium">{turn.text}</p>
+                          <p className="text-slate-900 dark:text-slate-50 font-medium">{turn.text}</p>
                           {turn.translation && (
-                            <p className="text-sm text-slate-400 italic mt-1">
+                            <p className="text-sm text-slate-500 dark:text-slate-400 italic mt-1">
                               {turn.translation}
                             </p>
                           )}
@@ -515,7 +515,7 @@ const LessonPage = () => {
                   })}
                 </div>
               ) : (
-                <p className="text-slate-300">
+                <p className="text-slate-500 dark:text-slate-300">
                   No dialogue available for this lesson.
                 </p>
               )}
@@ -524,27 +524,27 @@ const LessonPage = () => {
 
           {currentSection === 'vocabulary' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold mb-4 text-slate-50">Vocabulary</h3>
+              <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-50">Vocabulary</h3>
               {vocabulary.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {vocabulary.map((item, index) => (
                     <div
                       key={index}
-                      className="border border-slate-700 rounded-2xl p-4 bg-slate-900/90 shadow-lg"
+                      className="border border-slate-200 dark:border-slate-700 rounded-2xl p-4 bg-white dark:bg-slate-900/90 shadow-lg"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-semibold text-lg text-slate-50">{item.word}</span>
-                        <span className="text-sm text-slate-300">
+                        <span className="font-semibold text-lg text-slate-900 dark:text-slate-50">{item.word}</span>
+                        <span className="text-sm text-slate-500 dark:text-slate-300">
                           [{item.pronunciation}]
                         </span>
                       </div>
-                      <p className="text-slate-200 mb-2">{item.translation}</p>
-                      <p className="text-sm text-slate-400 italic">{item.example}</p>
+                      <p className="text-slate-600 dark:text-slate-200 mb-2">{item.translation}</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 italic">{item.example}</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-slate-300">
+                <p className="text-slate-500 dark:text-slate-300">
                   No vocabulary items for this lesson.
                 </p>
               )}
@@ -553,25 +553,25 @@ const LessonPage = () => {
 
           {currentSection === 'grammar' && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold mb-4 text-slate-50">Grammar Points</h3>
+              <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-50">Grammar Points</h3>
               {grammarPoints.length > 0 ? (
                 grammarPoints.map((point, index) => (
                   <div
                     key={index}
-                    className="border border-slate-700 rounded-2xl p-4 bg-slate-900/90 shadow-lg"
+                    className="border border-slate-200 dark:border-slate-700 rounded-2xl p-4 bg-white dark:bg-slate-900/90 shadow-lg"
                   >
-                    <h4 className="font-semibold mb-2">
+                    <h4 className="font-semibold mb-2 text-slate-900 dark:text-slate-50">
                       {point.topic || point.title}
                     </h4>
-                    <p className="text-slate-200 mb-3">{point.explanation}</p>
+                    <p className="text-slate-600 dark:text-slate-200 mb-3">{point.explanation}</p>
                     {point.examples && point.examples.length > 0 && (
                       <div>
-                        <h5 className="font-medium text-sm text-slate-200 mb-2">
+                        <h5 className="font-medium text-sm text-slate-600 dark:text-slate-200 mb-2">
                           Examples:
                         </h5>
                         <ul className="space-y-1">
                           {point.examples.map((example, idx) => (
-                            <li key={idx} className="text-sm text-slate-300">
+                            <li key={idx} className="text-sm text-slate-500 dark:text-slate-300">
                               - {example}
                             </li>
                           ))}
@@ -581,7 +581,7 @@ const LessonPage = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-600">
+                <p className="text-slate-500 dark:text-slate-400">
                   No grammar points for this lesson.
                 </p>
               )}
@@ -591,7 +591,7 @@ const LessonPage = () => {
           {currentSection === 'exercises' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between mb-4 overflow-visible">
-                <h3 className="text-lg font-semibold text-white">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                   Exercises (Need 3/5 Correct to Pass)
                 </h3>
 
@@ -626,8 +626,8 @@ const LessonPage = () => {
                 <div
                   className={`p-4 rounded-2xl border-2 ${
                     exerciseResults.passed
-                      ? 'bg-emerald-900/40 border-2 border-emerald-400'
-                      : 'bg-red-900/40 border-2 border-red-500'
+                      ? 'bg-emerald-100 border-emerald-400 dark:bg-emerald-900/40 dark:border-emerald-400'
+                      : 'bg-red-100 border-red-500 dark:bg-red-900/40 dark:border-red-500'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
@@ -639,8 +639,8 @@ const LessonPage = () => {
                     <span
                       className={`font-bold text-lg ${
                         exerciseResults.passed
-                          ? 'text-emerald-100'
-                          : 'text-red-100'
+                          ? 'text-emerald-800 dark:text-emerald-100'
+                          : 'text-red-800 dark:text-red-100'
                       }`}
                     >
                       {exerciseResults.passed ? 'Passed!' : 'Failed'} - Score:{' '}
@@ -649,7 +649,7 @@ const LessonPage = () => {
                   </div>
                   <p
                     className={
-                      exerciseResults.passed ? 'text-emerald-100' : 'text-red-200'
+                      exerciseResults.passed ? 'text-emerald-700 dark:text-emerald-100' : 'text-red-700 dark:text-red-200'
                     }
                   >
                     {exerciseResults.passed
@@ -674,13 +674,13 @@ const LessonPage = () => {
                           className={`border-2 rounded-2xl p-4 transition-all ${
                             showResults
                               ? result?.isCorrect
-                                ? 'bg-emerald-900/40 border-2 border-emerald-400'
-                                : 'bg-red-900/40 border-2 border-red-500'
-                              : 'bg-slate-900 border border-slate-700'
+                                ? 'bg-emerald-100 border-emerald-400 dark:bg-emerald-900/40 dark:border-emerald-400'
+                                : 'bg-red-100 border-red-500 dark:bg-red-900/40 dark:border-red-500'
+                              : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700'
                           }`}
                         >
                           <div className="flex items-start justify-between mb-3">
-                            <span className="font-medium">
+                            <span className="font-medium text-slate-900 dark:text-white">
                               Question {index + 1}
                             </span>
                             {showResults && (
@@ -703,7 +703,7 @@ const LessonPage = () => {
                               </span>
                             )}
                           </div>
-                          <p className="text-slate-100 mb-3 font-medium">
+                          <p className="text-slate-800 dark:text-slate-100 mb-3 font-medium">
                             {exercise.question}
                           </p>
                           <div className="space-y-2">
@@ -724,13 +724,13 @@ const LessonPage = () => {
                                     className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors border ${
                                       showResults
                                         ? isCorrectAnswer
-                                          ? 'bg-emerald-900/40 border-2 border-emerald-400'
+                                          ? 'bg-emerald-100 border-emerald-400 dark:bg-emerald-900/40 dark:border-emerald-400'
                                           : isWrongSelection
-                                          ? 'bg-red-900/40 border-2 border-red-500'
-                                          : 'bg-slate-900 border border-slate-700'
+                                          ? 'bg-red-100 border-red-500 dark:bg-red-900/40 dark:border-red-500'
+                                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700'
                                         : isSelected
-                                        ? 'bg-sky-900/50 border-2 border-sky-500'
-                                        : 'bg-slate-900 border border-slate-700 hover:bg-slate-800'
+                                        ? 'bg-sky-100 border-sky-500 dark:bg-sky-900/50 dark:border-sky-500'
+                                        : 'bg-white hover:bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 dark:hover:bg-slate-800'
                                     }`}
                                   >
                                     <input
@@ -743,7 +743,7 @@ const LessonPage = () => {
                                       disabled={showResults}
                                       className="text-blue-600"
                                     />
-                                    <span className="text-sm flex-1 text-slate-100">
+                                    <span className="text-sm flex-1 text-slate-700 dark:text-slate-100">
                                       {option}
                                     </span>
                                     {showResults && isCorrectAnswer && (
@@ -757,8 +757,8 @@ const LessonPage = () => {
                               })}
                           </div>
                           {showResults && exercise.explanation && (
-                            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                              <p className="text-sm text-blue-100">
+                            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg">
+                              <p className="text-sm text-blue-900 dark:text-blue-100">
                                 <strong>Explanation:</strong>{' '}
                                 {exercise.explanation}
                               </p>
@@ -783,7 +783,7 @@ const LessonPage = () => {
                         Submit Answers
                       </Button>
                       {Object.keys(userAnswers).length !== exercises.length && (
-                        <span className="text-sm text-gray-600 flex items-center gap-1">
+                        <span className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-1">
                           <AlertCircle className="w-4 h-4" />
                           Answer all {exercises.length} questions to submit
                         </span>
@@ -800,10 +800,10 @@ const LessonPage = () => {
                     </div>
                   </div>
                   <div className="text-center">
-                    <h4 className="text-lg font-semibold text-slate-100 mb-2">
+                    <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
                       Generating Exercises...
                     </h4>
-                    <p className="text-sm text-slate-300 max-w-sm">
+                    <p className="text-sm text-slate-500 dark:text-slate-300 max-w-sm">
                       Our AI is creating personalized exercises for you. This
                       should only take a moment!
                     </p>
@@ -811,7 +811,7 @@ const LessonPage = () => {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-slate-300 mb-4">
+                  <p className="text-slate-500 dark:text-slate-300 mb-4">
                     No exercises available for this lesson.
                   </p>
                   <Button
@@ -830,12 +830,12 @@ const LessonPage = () => {
 
         {/* Complete Lesson section */}
         {!isLessonCompleted() && (
-          <div className="bg-slate-950/90 border border-amber-400/60 rounded-2xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="bg-white/90 dark:bg-slate-950/90 border border-amber-300 dark:border-amber-400/60 rounded-2xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h3 className="text-sm font-semibold text-slate-50">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
                 Complete this lesson
               </h3>
-              <p className="text-xs text-slate-300 mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-300 mt-1">
                 Finish all units and pass the exercises to earn XP for this
                 lesson.
               </p>

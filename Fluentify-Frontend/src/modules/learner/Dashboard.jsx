@@ -30,8 +30,9 @@ import {
 import { useLogout, useUserProfile } from "../../hooks/useAuth";
 import { useCourses } from "../../hooks/useCourses";
 import { useStreaming } from "../../contexts/StreamingContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { useProgressReport } from "../../hooks/useProgress";
-import { VoiceAIModal, FloatingChatWidget } from "../../components";
+import { VoiceAIModal, FloatingChatWidget, ThemeToggle } from "../../components";
 import fluentifyLogo from "../../assets/fluentify_logo.jpg";
 import CourseGenerationForm from "./components/CourseGenerationForm";
 import Sidebar from "./components/sidebar";
@@ -56,16 +57,16 @@ const getLanguageFlag = (language) => {
 
 const Header = ({ onMenuClick, onLogoClick, streakDays, onSettingsClick }) => {
   return (
-    <header className="bg-gradient-to-r from-slate-950/95 via-slate-900/90 to-slate-950/95 backdrop-blur-xl border-b border-white/10 sticky top-0 z-40 shadow-lg">
+    <header className="bg-gradient-to-r from-white/95 via-slate-50/90 to-white/95 dark:from-slate-950/95 dark:via-slate-900/90 dark:to-slate-950/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 sticky top-0 z-40 shadow-lg">
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3 sm:gap-4 text-slate-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3 sm:gap-4 text-slate-900 dark:text-slate-50">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <button
             onClick={onMenuClick}
-            className="p-2 hover:bg-gray-100/10 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-900/5 dark:hover:bg-gray-100/10 rounded-lg transition-colors"
             aria-label="Open navigation menu"
           >
-            <Menu className="w-6 h-6 text-slate-200" />
+            <Menu className="w-6 h-6 text-slate-600 dark:text-slate-200" />
           </button>
 
           <button
@@ -81,22 +82,24 @@ const Header = ({ onMenuClick, onLogoClick, streakDays, onSettingsClick }) => {
         </div>
 
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="bg-white/5 px-4 py-2 rounded-xl flex items-center gap-2 border border-white/15 shadow-sm">
-            <Flame className="w-5 h-5 text-orange-300" />
+          <div className="bg-slate-900/5 dark:bg-white/5 px-4 py-2 rounded-xl flex items-center gap-2 border border-slate-200 dark:border-white/15 shadow-sm">
+            <Flame className="w-5 h-5 text-orange-500 dark:text-orange-300" />
             <div>
-              <p className="text-xs text-slate-200">Streak</p>
-              <p className="text-orange-200 font-bold">
+              <p className="text-xs text-slate-600 dark:text-slate-200">Streak</p>
+              <p className="text-orange-600 dark:text-orange-200 font-bold">
                 {streakDays} {streakDays === 1 ? 'day' : 'days'}
               </p>
             </div>
           </div>
 
+          <ThemeToggle />
+
           <button
             onClick={onSettingsClick}
-            className="p-2 hover:bg-gray-100/10 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-900/5 dark:hover:bg-gray-100/10 rounded-lg transition-colors"
             aria-label="Open settings"
           >
-            <Settings className="w-6 h-6 text-slate-200" />
+            <Settings className="w-6 h-6 text-slate-600 dark:text-slate-200" />
           </button>
         </div>
       </div>
@@ -107,7 +110,8 @@ const Header = ({ onMenuClick, onLogoClick, streakDays, onSettingsClick }) => {
 const LearnerDashboard = () => {
   const navigate = useNavigate();
   const logout = useLogout();
-  
+  const { theme } = useTheme();
+
   const { data: courses = [] } = useCourses();
   const { generateCourse: startStreamGeneration, state: streamState } = useStreaming();
   const { data: profileData, isLoading } = useUserProfile();
@@ -134,7 +138,7 @@ const LearnerDashboard = () => {
   });
 
   const coursesSectionRef = useRef(null);
-  
+
   const totalLessonsCompleted = courses.reduce(
     (acc, course) => acc + (course.progress?.lessonsCompleted || 0),
     0
@@ -148,7 +152,7 @@ const LearnerDashboard = () => {
     (max, course) => Math.max(max, course.progress?.currentStreak || 0),
     0
   );
-  
+
   const completedLanguageSet = new Set(
     courses
       .filter((course) => (course.progress?.progressPercentage || 0) >= 100)
@@ -225,10 +229,10 @@ const LearnerDashboard = () => {
       : courses.slice(0, 3)
     : [];
   const canToggleCourseView = courses.length > 3;
-  
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-teal-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-orange-50 to-slate-100 dark:from-teal-900 dark:via-orange-900 dark:to-teal-900 flex items-center justify-center">
         <div className="relative w-16 h-16 animate-spin">
           <div className="w-full h-full border-4 border-orange-200 border-t-teal-500 rounded-full"></div>
           <Sparkles className="w-6 h-6 text-teal-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
@@ -238,13 +242,13 @@ const LearnerDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 relative overflow-x-hidden">
-      
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-orange-50 to-slate-100 dark:from-teal-900 dark:via-orange-900 dark:to-slate-950 relative overflow-x-hidden">
+
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-20 right-20 text-7xl opacity-20 animate-bounce" style={{ animationDuration: '3s' }}>📚</div>
-        <div className="absolute top-40 left-20 text-6xl opacity-20 animate-bounce" style={{ animationDuration: '4s', animationDelay: '0.5s' }}>🌍</div>
-        <div className="absolute bottom-40 right-40 text-7xl opacity-20 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '1s' }}>✨</div>
-        <div className="absolute top-1/2 left-1/3 text-6xl opacity-10 animate-bounce" style={{ animationDuration: '4.5s', animationDelay: '1.5s' }}>🎓</div>
+        <div className="absolute top-20 right-20 text-7xl opacity-10 dark:opacity-20 animate-bounce" style={{ animationDuration: '3s' }}>📚</div>
+        <div className="absolute top-40 left-20 text-6xl opacity-10 dark:opacity-20 animate-bounce" style={{ animationDuration: '4s', animationDelay: '0.5s' }}>🌍</div>
+        <div className="absolute bottom-40 right-40 text-7xl opacity-10 dark:opacity-20 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '1s' }}>✨</div>
+        <div className="absolute top-1/2 left-1/3 text-6xl opacity-5 dark:opacity-10 animate-bounce" style={{ animationDuration: '4.5s', animationDelay: '1.5s' }}>🎓</div>
       </div>
 
       <Header
@@ -272,14 +276,14 @@ const LearnerDashboard = () => {
             className="fixed inset-0 bg-black/20 z-40"
             onClick={() => setShowSettingsPanel(false)}
           />
-          <div className="fixed top-20 right-4 z-50 w-56 bg-slate-950/95 border border-white/15 rounded-2xl shadow-2xl p-4 space-y-3 min-h-[150px]">
+          <div className="fixed top-20 right-4 z-50 w-56 bg-white/95 dark:bg-slate-950/95 border border-slate-200 dark:border-white/15 rounded-2xl shadow-2xl p-4 space-y-3 min-h-[150px]">
             <button
               type="button"
               onClick={() => {
                 setShowSettingsPanel(false);
                 navigate('/profile');
               }}
-              className="w-full px-3 py-2 rounded-xl text-sm text-slate-50 bg-slate-800/80 hover:bg-slate-700 flex items-center gap-2"
+              className="w-full px-3 py-2 rounded-xl text-sm text-slate-900 dark:text-slate-50 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-2"
             >
               <User className="w-4 h-4" />
               <span>Profile</span>
@@ -290,7 +294,7 @@ const LearnerDashboard = () => {
                 setShowSettingsPanel(false);
                 logout();
               }}
-              className="w-full px-3 py-2 rounded-xl text-sm text-red-100 bg-red-600/80 hover:bg-red-700 flex items-center gap-2"
+              className="w-full px-3 py-2 rounded-xl text-sm text-red-700 dark:text-red-100 bg-red-100 dark:bg-red-600/80 hover:bg-red-200 dark:hover:bg-red-700 flex items-center gap-2"
             >
               <LogOut className="w-4 h-4" />
               <span>Logout</span>
@@ -302,23 +306,23 @@ const LearnerDashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10 relative z-10">
 
         <div className="mb-10">
-          <h1 className="text-3xl md:text-5xl font-bold text-slate-50 drop-shadow-md mb-2">
+          <h1 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-slate-50 drop-shadow-md mb-2">
             Welcome, {userName.split(' ')[0]}! 👋
           </h1>
         </div>
 
         {showGenerateForm && (
             <div className="mb-12 animate-in fade-in slide-in-from-top-4">
-                <div className="bg-slate-950/90 rounded-3xl p-1 shadow-2xl border border-white/10">
-                    <div className="bg-slate-950/95 rounded-[20px] p-6 md:p-8 border border-white/10">
+                <div className="bg-white/90 dark:bg-slate-950/90 rounded-3xl p-1 shadow-2xl border border-slate-200 dark:border-white/10">
+                    <div className="bg-white/95 dark:bg-slate-950/95 rounded-[20px] p-6 md:p-8 border border-slate-200 dark:border-white/10">
                         <div className="flex justify-between items-center mb-6">
-                             <h3 className="text-xl font-bold text-slate-50 flex items-center gap-2">
+                             <h3 className="text-xl font-bold text-slate-900 dark:text-slate-50 flex items-center gap-2">
                                 <Sparkles className="w-5 h-5 text-orange-500" />
                                 Generate New Course
                              </h3>
                              <button
                                onClick={() => setShowGenerateForm(false)}
-                               className="p-2 hover:bg-white/10 rounded-full text-slate-300 transition-colors"
+                               className="p-2 hover:bg-slate-900/5 dark:hover:bg-white/10 rounded-full text-slate-500 dark:text-slate-300 transition-colors"
                              >
                                <X className="w-5 h-5" />
                              </button>
@@ -335,23 +339,23 @@ const LearnerDashboard = () => {
                 </div>
             </div>
         )}
-        
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
 
           <div className="space-y-6 md:col-span-3">
-            <div 
+            <div
               onClick={() => navigate('/progress')}
-              className="relative overflow-hidden rounded-3xl border border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 group cursor-pointer bg-slate-900/85 h-[360px] lg:h-[460px]"
+              className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 group cursor-pointer bg-white/90 dark:bg-slate-900/85 h-[360px] lg:h-[460px]"
             >
-              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-purple-500/20 to-orange-500/20 rounded-full blur-3xl" />
-              
+              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-purple-300/20 to-orange-300/20 dark:from-purple-500/20 dark:to-orange-500/20 rounded-full blur-3xl" />
+
               <div className="relative p-6 flex flex-col h-full">
                 <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp className="h-6 w-6 text-orange-300" />
-                  <h2 className="text-2xl text-slate-50 font-bold">My Progress</h2>
+                  <TrendingUp className="h-6 w-6 text-orange-500 dark:text-orange-300" />
+                  <h2 className="text-2xl text-slate-900 dark:text-slate-50 font-bold">My Progress</h2>
                 </div>
 
-                <p className="text-slate-300 text-sm mb-6">
+                <p className="text-slate-500 dark:text-slate-300 text-sm mb-6">
                   See your learning milestones and skill breakdown.
                 </p>
 
@@ -362,7 +366,7 @@ const LearnerDashboard = () => {
                         cx="64"
                         cy="64"
                         r="56"
-                        stroke="#1f2937"
+                        stroke={theme === 'dark' ? '#1f2937' : '#e2e8f0'}
                         strokeWidth="8"
                         fill="none"
                       />
@@ -388,27 +392,27 @@ const LearnerDashboard = () => {
                       </defs>
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <div className="text-3xl text-slate-50 font-bold">{overallProgressPercent}%</div>
-                      <div className="text-xs text-slate-300">Complete</div>
+                      <div className="text-3xl text-slate-900 dark:text-slate-50 font-bold">{overallProgressPercent}%</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-300">Complete</div>
                     </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-6 font-medium text-center">
-                    <div className="bg-slate-900/80 rounded-xl p-3 border border-slate-700 shadow-sm">
-                      <div className="text-2xl text-orange-300">{totalXPOverall}</div>
-                      <div className="text-xs text-slate-200">Total XP</div>
+                    <div className="bg-slate-50 dark:bg-slate-900/80 rounded-xl p-3 border border-slate-200 dark:border-slate-700 shadow-sm">
+                      <div className="text-2xl text-orange-600 dark:text-orange-300">{totalXPOverall}</div>
+                      <div className="text-xs text-slate-600 dark:text-slate-200">Total XP</div>
                     </div>
-                    <div className="bg-slate-900/80 rounded-xl p-3 border border-slate-700 shadow-sm">
-                      <div className="text-2xl text-purple-300">{lessonsCompletedOverall}</div>
-                      <div className="text-xs text-slate-200">Lessons</div>
+                    <div className="bg-slate-50 dark:bg-slate-900/80 rounded-xl p-3 border border-slate-200 dark:border-slate-700 shadow-sm">
+                      <div className="text-2xl text-purple-600 dark:text-purple-300">{lessonsCompletedOverall}</div>
+                      <div className="text-xs text-slate-600 dark:text-slate-200">Lessons</div>
                     </div>
                 </div>
 
                 <div className="mt-auto">
                   <button
                     onClick={(e) => { e.stopPropagation(); navigate('/progress'); }}
-                    className="w-full bg-gray-900 hover:bg-gray-800 text-white px-4 py-3 rounded-xl shadow-lg font-medium flex items-center justify-center group"
+                    className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-gray-900 dark:hover:bg-gray-800 text-white px-4 py-3 rounded-xl shadow-lg font-medium flex items-center justify-center group"
                   >
                     View Full Report
                     <ChevronRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -420,36 +424,36 @@ const LearnerDashboard = () => {
 
           <div className="space-y-6 md:col-span-1">
             <div
-              className="w-full h-full text-left rounded-3xl border border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 group hover:scale-[1.005] cursor-pointer bg-slate-900/85 h-[360px] lg:h-[460px]"
+              className="w-full h-full text-left rounded-3xl border border-slate-200 dark:border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 group hover:scale-[1.005] cursor-pointer bg-white/90 dark:bg-slate-900/85 h-[360px] lg:h-[460px]"
               onClick={() => setShowVoiceAiModal(true)}
             >
               <div className="relative overflow-hidden p-6 flex flex-col h-full">
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                                <div className="p-2 bg-purple-500/20 rounded-lg">
-                                    <Bot className="h-6 w-6 text-purple-200" />
+                                <div className="p-2 bg-purple-100 dark:bg-purple-500/20 rounded-lg">
+                                    <Bot className="h-6 w-6 text-purple-600 dark:text-purple-200" />
                                 </div>
-                                <h3 className="text-2xl text-slate-50 font-bold">Talk with AI</h3>
+                                <h3 className="text-2xl text-slate-900 dark:text-slate-50 font-bold">Talk with AI</h3>
                             </div>
-                            <p className="text-slate-300 text-sm mb-4">
+                            <p className="text-slate-500 dark:text-slate-300 text-sm mb-4">
                                 Practice live with AI, ask quick questions, and build speaking confidence.
                             </p>
-                            <div className="grid grid-cols-1 gap-2 text-xs text-slate-300">
+                            <div className="grid grid-cols-1 gap-2 text-xs text-slate-500 dark:text-slate-300">
                               <div className="flex items-center gap-2">
-                                <Sparkles className="w-3 h-3 text-teal-300" />
+                                <Sparkles className="w-3 h-3 text-teal-600 dark:text-teal-300" />
                                 <span>Clarify grammar instantly.</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Sparkles className="w-3 h-3 text-orange-300" />
+                                <Sparkles className="w-3 h-3 text-orange-600 dark:text-orange-300" />
                                 <span>Check understanding.</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Sparkles className="w-3 h-3 text-emerald-300" />
+                                <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-300" />
                                 <span>Real‑life speaking drills.</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Sparkles className="w-3 h-3 text-purple-300" />
+                                <Sparkles className="w-3 h-3 text-purple-600 dark:text-purple-300" />
                                 <span>Interview warm-ups.</span>
                               </div>
                             </div>
@@ -470,12 +474,12 @@ const LearnerDashboard = () => {
             </div>
           </div>
         </div>
-       
+
 
         <section className="mt-10" ref={coursesSectionRef}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-            <h2 className="text-slate-50 font-bold text-xl flex items-center gap-2">
-              <Brain className="w-5 h-5 text-purple-300" />
+            <h2 className="text-slate-900 dark:text-slate-50 font-bold text-xl flex items-center gap-2">
+              <Brain className="w-5 h-5 text-purple-600 dark:text-purple-300" />
               Your Courses
             </h2>
             <button
@@ -489,9 +493,9 @@ const LearnerDashboard = () => {
           </div>
 
           {courses.length === 0 && !pendingGeneratedCourse ? (
-            <div className="p-6 text-center bg-slate-900/80 rounded-2xl border border-dashed border-slate-600">
-              <BookOpen className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-200 text-sm mb-4">
+            <div className="p-6 text-center bg-slate-50 dark:bg-slate-900/80 rounded-2xl border border-dashed border-slate-300 dark:border-slate-600">
+              <BookOpen className="w-10 h-10 text-slate-500 dark:text-slate-300 mx-auto mb-3" />
+              <p className="text-slate-600 dark:text-slate-200 text-sm mb-4">
                 No active courses yet. Create your first AI-powered course to begin.
               </p>
               <button
@@ -530,7 +534,7 @@ const LearnerDashboard = () => {
                   <button
                     type="button"
                     onClick={() => setShowAllCourses((prev) => !prev)}
-                    className="text-xs sm:text-sm font-medium text-teal-200 hover:text-orange-200 underline-offset-2 hover:underline"
+                    className="text-xs sm:text-sm font-medium text-teal-700 dark:text-teal-200 hover:text-orange-600 dark:hover:text-orange-200 underline-offset-2 hover:underline"
                   >
                     {showAllCourses
                       ? "Show fewer courses"
@@ -544,13 +548,12 @@ const LearnerDashboard = () => {
       </main>
 
       <FloatingChatWidget position="right" />
-      
+
       <VoiceAIModal
         isOpen={showVoiceAiModal}
         onClose={() => setShowVoiceAiModal(false)}
         courses={courses}
       />
-
     </div>
   );
 };

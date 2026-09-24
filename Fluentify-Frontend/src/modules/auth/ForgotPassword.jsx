@@ -158,7 +158,7 @@ const ForgotPassword = () => {
   }, [resendTimer]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-900 via-orange-900 to-teal-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-teal-50 dark:to-teal-900 p-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-lg rounded-2xl p-8">
         
         {step === 1 && (

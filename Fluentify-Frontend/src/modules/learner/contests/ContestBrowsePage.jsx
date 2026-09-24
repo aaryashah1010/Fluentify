@@ -23,10 +23,10 @@ const ContestBrowsePage = () => {
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center">
+			<div className="min-h-screen bg-gradient-to-br from-teal-50 via-orange-50 to-slate-100 dark:from-teal-900 dark:via-orange-900 dark:to-slate-950 flex items-center justify-center">
 				<div className="text-center">
 					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-					<p className="text-slate-200">Loading contests...</p>
+					<p className="text-slate-600 dark:text-slate-200">Loading contests...</p>
 				</div>
 			</div>
 		);
@@ -34,13 +34,13 @@ const ContestBrowsePage = () => {
 
 	if (isError) {
 		return (
-			<div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center px-4">
-				<div className="bg-slate-900/80 border border-white/10 rounded-2xl shadow-xl p-6 max-w-md w-full text-center text-slate-100">
+			<div className="min-h-screen bg-gradient-to-br from-teal-50 via-orange-50 to-slate-100 dark:from-teal-900 dark:via-orange-900 dark:to-slate-950 flex items-center justify-center px-4">
+				<div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl p-6 max-w-md w-full text-center text-slate-900 dark:text-slate-100">
 					<h2 className="text-lg font-semibold mb-2">Unable to load contests</h2>
-					<p className="text-sm text-slate-300 mb-4">Please try again later.</p>
+					<p className="text-sm text-slate-500 dark:text-slate-300 mb-4">Please try again later.</p>
 					<Button
 						onClick={() => navigate('/dashboard')}
-						className="mt-2 inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-slate-50"
+						className="mt-2 inline-flex items-center gap-2 bg-slate-900/5 hover:bg-slate-900/10 border border-slate-300 dark:bg-white/10 dark:hover:bg-white/20 dark:border-white/20 text-slate-900 dark:text-slate-50"
 					>
 						<ArrowLeft className="w-4 h-4" />
 						<span>Back to Dashboard</span>
@@ -51,7 +51,7 @@ const ContestBrowsePage = () => {
 	}
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 text-white relative overflow-hidden">
+		<div className="min-h-screen bg-gradient-to-br from-teal-50 via-orange-50 to-slate-100 dark:from-teal-900 dark:via-orange-900 dark:to-slate-950 text-slate-900 dark:text-white relative overflow-hidden">
 			{/* Background glow elements */}
 			<div className="absolute inset-0 pointer-events-none overflow-hidden">
 				<div className="absolute -top-40 -right-40 w-72 h-72 bg-purple-500/25 rounded-full blur-3xl" />
@@ -64,18 +64,18 @@ const ContestBrowsePage = () => {
 					<Button
 						variant="secondary"
 						onClick={() => navigate('/dashboard')}
-						className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/15 text-slate-50"
+						className="flex items-center gap-2 bg-slate-900/5 hover:bg-slate-900/10 border border-slate-300 dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/15 text-slate-900 dark:text-slate-50"
 					>
 						<ArrowLeft className="w-4 h-4" />
 						<span>Back to Dashboard</span>
 					</Button>
-					<h1 className="text-2xl sm:text-3xl font-semibold text-white">
+					<h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-white">
 						Contests &amp; Competitions
 					</h1>
 				</div>
 
 				{/* Hero section */}
-				<section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-teal-600/80 via-emerald-500/80 to-orange-500/80 shadow-xl">
+				<section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-teal-600/80 via-emerald-500/80 to-orange-500/80 shadow-xl text-white">
 					<div className="absolute inset-0 bg-gradient-to-br from-transparent via-black/30 to-black/40" />
 					<div className="relative px-6 sm:px-10 py-8 sm:py-10 flex flex-col gap-6">
 						<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -115,9 +115,9 @@ const ContestBrowsePage = () => {
 				{/* Contests grid / empty state */}
 				<main className="space-y-6">
 					{contests.length === 0 ? (
-						<section className="bg-slate-900/80 border border-white/10 rounded-3xl p-10 text-center shadow-lg">
+						<section className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-3xl p-10 text-center shadow-lg">
 							<svg
-								className="w-16 h-16 text-slate-400 mx-auto mb-4"
+								className="w-16 h-16 text-slate-400 dark:text-slate-400 mx-auto mb-4"
 								viewBox="0 0 24 24"
 								fill="none"
 								stroke="currentColor"
@@ -130,14 +130,14 @@ const ContestBrowsePage = () => {
 								/>
 							</svg>
 							<h2 className="text-xl font-semibold mb-2">No contests available</h2>
-							<p className="text-sm text-slate-300">
+							<p className="text-sm text-slate-500 dark:text-slate-300">
 								New contests will appear here once they are published. Please check back later.
 							</p>
 						</section>
 					) : (
 						<section className="space-y-4">
 							<div className="flex items-center gap-2">
-								<Sparkles className="h-5 w-5 text-purple-300" />
+								<Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-300" />
 								<h2 className="text-lg sm:text-xl font-semibold">Available Contests</h2>
 							</div>
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
