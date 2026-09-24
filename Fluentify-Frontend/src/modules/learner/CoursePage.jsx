@@ -163,7 +163,7 @@ const CoursePage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 flex items-center justify-center">
         <div className="animate-spin h-14 w-14 rounded-full border-4 border-cyan-200 border-t-cyan-500"></div>
       </div>
     );
@@ -171,14 +171,14 @@ const CoursePage = () => {
 
   if (error || !course) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-900 via-red-800 to-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 dark:from-red-900 via-red-100 dark:via-red-800 to-slate-100 dark:to-slate-950 text-slate-900 dark:text-white">
         Failed to load course.
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 relative overflow-hidden">
 
     
       <div className="absolute top-20 right-16 text-7xl opacity-30 animate-bounce pointer-events-none" style={{ animationDuration: "3s" }}>
@@ -276,23 +276,23 @@ const CoursePage = () => {
 
         </div>
 
-        <div className="bg-slate-950/90 backdrop-blur-sm rounded-3xl border border-white/15 shadow-2xl p-8 mb-8">
+        <div className="bg-white dark:bg-slate-950/90 backdrop-blur-sm rounded-3xl border border-slate-300 dark:border-white/15 shadow-2xl p-8 mb-8">
 
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-2xl font-bold text-slate-50">Course Progress</h2>
-              <p className="text-slate-300 text-sm mt-1">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">Course Progress</h2>
+              <p className="text-slate-600 dark:text-slate-300 text-sm mt-1">
                 {lessonsCompleted} completed • {unitsCompleted} units finished
               </p>
             </div>
 
-            <span className="text-3xl font-semibold text-teal-300">
+            <span className="text-3xl font-semibold text-teal-600 dark:text-teal-300">
               { progressPercent.toFixed(1)}%
             </span>
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden mb-6">
+          <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-6">
             <div
               className="h-full bg-gradient-to-r from-teal-400 to-orange-300 transition-all duration-700"
               style={{ width: `${progressPercent}%` }}
@@ -329,11 +329,11 @@ const CoursePage = () => {
 
         {/* Course Lessons header (like the mock) */}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-6">
-          <div className="flex items-center gap-2 text-gray-800">
+          <div className="flex items-center gap-2 text-slate-800 dark:text-slate-100">
             <BookOpen className="w-5 h-5 text-teal-600" />
             <h2 className="text-lg font-semibold">Course Lessons</h2>
           </div>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-slate-500 dark:text-slate-300">
             {lessonsCompleted} / {totalLessons} lessons completed
           </p>
         </div>
@@ -347,34 +347,34 @@ const CoursePage = () => {
             const isCurrentUnit = currentUnitId === unitId;
 
             const containerClasses = `
-              bg-slate-950/90 
+              bg-white dark:bg-slate-950/90 
               backdrop-blur-sm 
               rounded-3xl 
               shadow-xl 
               border 
               transition-all 
-              ${isCurrentUnit ? "border-teal-400" : "border-slate-700"}
+              ${isCurrentUnit ? "border-teal-400" : "border-slate-200 dark:border-slate-700"}
             `;
 
             return (
               <section key={unitId} className={containerClasses}>
 
                 {/* Unit Header */}
-                <div className="px-4 sm:px-6 md:px-8 py-6 border-b border-white/10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="px-4 sm:px-6 md:px-8 py-6 border-b border-slate-200 dark:border-white/10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="w-2.5 h-2.5 bg-teal-500 rounded-full"></span>
-                      <h2 className="text-2xl font-semibold text-slate-50">
+                      <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">
                         {unit.title}
                       </h2>
                     </div>
 
                     {unit.description && (
-                      <p className="text-sm text-slate-300">{unit.description}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-300">{unit.description}</p>
                     )}
                   </div>
 
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-600 dark:text-slate-300">
                     {
                       lessonList.filter((l) => getLessonStatus(l) === "completed")
                         .length
@@ -398,7 +398,7 @@ const CoursePage = () => {
                   const lessonCardClasses = `
                     rounded-3xl 
                     p-6 
-                    bg-slate-900/90
+                    bg-white dark:bg-slate-900/90
                     shadow-lg 
                     border 
                     transition-all 
@@ -409,7 +409,7 @@ const CoursePage = () => {
                         ? "border-emerald-400 ring-1 ring-emerald-400/40"
                         : status === "active"
                         ? "border-teal-400 ring-1 ring-teal-400/40"
-                        : "border-slate-700 opacity-60 cursor-not-allowed"
+                        : "border-slate-200 dark:border-slate-700 opacity-60 cursor-not-allowed"
                     }
                   `;
 
@@ -418,7 +418,7 @@ const CoursePage = () => {
 
                       {/* Title + Badge */}
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-slate-50">
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50">
                           {lesson.title}
                         </h3>
                         <LessonStatusBadge status={status} />
@@ -426,13 +426,13 @@ const CoursePage = () => {
 
                       {/* Description */}
                       {lesson.description && (
-                        <p className="text-sm text-slate-300 mb-4">
+                        <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
                           {lesson.description}
                         </p>
                       )}
 
                       {/* Time + XP */}
-                      <div className="flex items-center gap-4 text-xs text-slate-300 mb-5">
+                      <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-300 mb-5">
                         <span className="inline-flex items-center gap-1">
                           <Clock className="w-4 h-4" />
                           {lesson.duration || "30 min"}
@@ -490,7 +490,7 @@ const CoursePage = () => {
                       )}
 
                       {status === "locked" && (
-                        <p className="text-xs text-gray-600 mt-auto italic">
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-auto italic">
                           Complete previous lessons to unlock.
                         </p>
                       )}

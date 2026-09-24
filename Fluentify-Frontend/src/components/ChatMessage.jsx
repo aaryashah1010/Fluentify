@@ -35,7 +35,7 @@ const ChatMessage = ({ message, isStreaming = false }) => {
                 return (
                   <code 
                     key={partIndex} 
-                    className="bg-slate-800 text-teal-200 px-2 py-0.5 rounded text-sm font-mono border border-teal-500/30"
+                    className="bg-slate-100 dark:bg-slate-800 text-teal-700 dark:text-teal-200 px-2 py-0.5 rounded text-sm font-mono border border-teal-300 dark:border-teal-500/30"
                   >
                     {part.slice(1, -1)}
                   </code>
@@ -56,7 +56,7 @@ const ChatMessage = ({ message, isStreaming = false }) => {
           <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
             isUser 
               ? 'bg-gradient-to-r from-orange-400 to-teal-400 text-white' 
-              : 'bg-slate-800 text-teal-200 border border-white/10'
+              : 'bg-slate-100 text-teal-700 border border-slate-200 dark:bg-slate-800 dark:text-teal-200 dark:border-white/10'
           }`}>
             {isUser ? 'U' : '🤖'}
           </div>
@@ -65,7 +65,7 @@ const ChatMessage = ({ message, isStreaming = false }) => {
           <div className={`rounded-2xl px-4 py-3 ${
             isUser 
               ? 'bg-gradient-to-r from-orange-400 to-teal-400 text-white rounded-br-md' 
-              : 'bg-slate-900 text-slate-100 rounded-bl-md border border-white/10'
+              : 'bg-white text-slate-800 rounded-bl-md border border-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:border-white/10'
           }`}>
             <div className="text-sm leading-relaxed">
               {renderText(text)}
@@ -77,7 +77,7 @@ const ChatMessage = ({ message, isStreaming = false }) => {
             {/* Timestamp */}
             {timestamp && !isStreaming && (
               <div className={`text-xs mt-2 opacity-70 ${
-                isUser ? 'text-teal-50' : 'text-slate-300'
+                isUser ? 'text-teal-50' : 'text-slate-500 dark:text-slate-300'
               }`}>
                 {formatTime(timestamp)}
               </div>

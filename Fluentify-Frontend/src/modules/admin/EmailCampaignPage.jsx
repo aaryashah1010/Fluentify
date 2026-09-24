@@ -109,7 +109,7 @@ const EmailCampaignPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 text-slate-50 relative overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 text-slate-900 dark:text-slate-50 relative overflow-x-hidden">
       {/* Floating decorative elements */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div
@@ -140,24 +140,24 @@ const EmailCampaignPage = () => {
 
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header */}
-        <header className="bg-slate-950/95 backdrop-blur-xl border-b border-white/10 shadow-lg sticky top-0 z-20">
+        <header className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 shadow-lg sticky top-0 z-20">
           <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => navigate('/admin-dashboard')}
-                  className="p-2 hover:bg-slate-800/60 rounded-lg transition-colors"
+                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded-lg transition-colors"
                 >
-                  <ArrowLeft className="w-5 h-5 text-slate-200" />
+                  <ArrowLeft className="w-5 h-5 text-slate-700 dark:text-slate-200" />
                 </button>
                 <div>
-                  <h1 className="text-3xl font-bold text-slate-50 flex items-center gap-3">
-                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-slate-900/80 border border-white/10">
-                      <Mail className="w-5 h-5 text-teal-300" />
+                  <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-50 flex items-center gap-3">
+                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10">
+                      <Mail className="w-5 h-5 text-teal-600 dark:text-teal-300" />
                     </span>
                     Email Campaign
                   </h1>
-                  <p className="text-sm text-slate-300 mt-1">
+                  <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
                     Append learners who will receive the email campaign
                   </p>
                 </div>
@@ -166,12 +166,12 @@ const EmailCampaignPage = () => {
                 <button
                   onClick={handleExportCSV}
                   disabled={exporting || learners.length === 0}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-slate-800/80 text-slate-200 rounded-xl border border-white/10 hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {exporting ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-slate-200" />
+                    <Loader2 className="w-4 h-4 animate-spin text-slate-700 dark:text-slate-200" />
                   ) : (
-                    <Download className="w-4 h-4 text-slate-200" />
+                    <Download className="w-4 h-4 text-slate-700 dark:text-slate-200" />
                   )}
                   Export CSV
                 </button>
@@ -196,14 +196,14 @@ const EmailCampaignPage = () => {
         <main className="w-full px-4 py-8 sm:px-6 lg:px-10 xl:px-16 2xl:px-24">
           {/* Success Message */}
           {success && (
-            <div className="mb-6 rounded-3xl border border-emerald-400/60 bg-emerald-950/60 p-4 flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 text-emerald-300 flex-shrink-0 mt-0.5" />
+            <div className="mb-6 rounded-3xl border border-emerald-300 dark:border-emerald-400/60 bg-emerald-100 dark:bg-emerald-950/60 p-4 flex items-start gap-3">
+              <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-300 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-emerald-100">{success}</p>
+                <p className="text-sm font-medium text-emerald-700 dark:text-emerald-100">{success}</p>
               </div>
               <button
                 onClick={() => setSuccess(null)}
-                className="text-emerald-200 hover:text-emerald-50"
+                className="text-emerald-700 dark:text-emerald-200 hover:text-emerald-50"
               >
                 ×
               </button>
@@ -212,14 +212,14 @@ const EmailCampaignPage = () => {
 
           {/* Error Message */}
           {error && (
-            <div className="mb-6 rounded-3xl border border-rose-500/60 bg-rose-950/70 p-4 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-rose-300 flex-shrink-0 mt-0.5" />
+            <div className="mb-6 rounded-3xl border border-rose-300 dark:border-rose-500/60 bg-rose-100 dark:bg-rose-950/70 p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-300 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-rose-100">{error}</p>
+                <p className="text-sm font-medium text-rose-700 dark:text-rose-100">{error}</p>
               </div>
               <button
                 onClick={() => setError(null)}
-                className="text-rose-200 hover:text-rose-50"
+                className="text-rose-700 dark:text-rose-200 hover:text-rose-50"
               >
                 ×
               </button>
@@ -227,72 +227,72 @@ const EmailCampaignPage = () => {
           )}
 
           {/* Stats Card */}
-          <div className="rounded-3xl border border-white/10 bg-slate-950/90 shadow-2xl p-6 mb-6">
+          <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950/90 shadow-2xl p-6 mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-slate-900/90 border border-white/10 rounded-2xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-teal-300" />
+              <div className="w-12 h-12 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 rounded-2xl flex items-center justify-center">
+                <Users className="w-6 h-6 text-teal-600 dark:text-teal-300" />
               </div>
               <div>
-                <p className="text-sm text-slate-300">Total Learners</p>
-                <p className="text-3xl font-bold text-slate-50">{learners.length}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Total Learners</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-slate-50">{learners.length}</p>
               </div>
             </div>
           </div>
 
           {/* Learners Table */}
-          <div className="rounded-3xl border border-white/10 bg-slate-950/90 shadow-2xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-white/10 bg-slate-900/80">
-              <h2 className="text-lg font-semibold text-slate-50">Learner List</h2>
-              <p className="text-sm text-slate-300 mt-1">
+          <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950/90 shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/80">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">Learner List</h2>
+              <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
                 All learners who will receive the email campaign
               </p>
             </div>
 
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-teal-400" />
+                <Loader2 className="w-8 h-8 animate-spin text-teal-600 dark:text-teal-400" />
               </div>
             ) : learners.length === 0 ? (
-              <div className="text-center py-12 text-slate-200">
-                <Users className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                <p className="text-sm text-slate-300">No learners found</p>
+              <div className="text-center py-12 text-slate-700 dark:text-slate-200">
+                <Users className="w-12 h-12 text-slate-500 dark:text-slate-400 mx-auto mb-4" />
+                <p className="text-sm text-slate-600 dark:text-slate-300">No learners found</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-slate-900/80">
+                  <thead className="bg-white dark:bg-slate-900/80">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                         #
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                         Name
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                         Email
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                         Joined Date
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-slate-950/90 divide-y divide-slate-800">
+                  <tbody className="bg-white dark:bg-slate-950/90 divide-y divide-slate-200 dark:divide-slate-800">
                     {learners.map((learner, index) => (
-                      <tr key={index} className="hover:bg-slate-900/80 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                      <tr key={index} className="hover:bg-white dark:hover:bg-slate-900/80 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                           {index + 1}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-slate-50">
+                          <div className="text-sm font-medium text-slate-900 dark:text-slate-50">
                             {learner.name}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-slate-300">
+                          <div className="text-sm text-slate-600 dark:text-slate-300">
                             {learner.email}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                           {learner.created_at
                             ? new Date(learner.created_at).toLocaleDateString()
                             : 'N/A'}

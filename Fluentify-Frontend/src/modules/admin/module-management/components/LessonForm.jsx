@@ -189,7 +189,7 @@ const LessonForm = ({
           onChange={handleChange}
           required
           disabled={loading}
-          className="w-full px-3 py-2 rounded-xl bg-slate-900/70 border border-white/10 text-slate-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-900/40"
+          className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-slate-900/40"
         >
           <option value="">Select Lesson Type</option>
           <option value="pdf">PDF Document</option>
@@ -368,14 +368,14 @@ const LessonForm = ({
 
       {/* Media URL Display */}
       {lessonData.media_url && (
-        <div className="bg-slate-800 rounded-lg p-3">
-          <label className="block text-xs text-slate-400 mb-1">Media URL</label>
+        <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3">
+          <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Media URL</label>
           <div className="flex items-center gap-2">
             <input
               type="text"
               value={lessonData.media_url}
               readOnly
-              className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-200"
+              className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200"
             />
             <button
               type="button"
@@ -460,7 +460,7 @@ const LessonForm = ({
             value={vocabKey}
             onChange={(e) => setVocabKey(e.target.value)}
             disabled={loading}
-            className="flex-1 px-3 py-2 rounded-xl bg-slate-900/70 border border-white/10 text-slate-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-900/40"
+            className="flex-1 px-3 py-2 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-slate-900/40"
             placeholder="English word"
           />
           <input
@@ -469,7 +469,7 @@ const LessonForm = ({
             onChange={(e) => setVocabValue(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addVocabulary())}
             disabled={loading}
-            className="flex-1 px-3 py-2 rounded-xl bg-slate-900/70 border border-white/10 text-slate-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-900/40"
+            className="flex-1 px-3 py-2 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-slate-900/40"
             placeholder="Translation"
           />
           <button
@@ -485,7 +485,7 @@ const LessonForm = ({
           {Object.entries(lessonData.vocabulary || {}).map(([key, value]) => (
             <div
               key={key}
-              className="flex items-center justify-between px-3 py-2 bg-slate-900/80 border border-white/10 rounded-xl text-slate-100"
+              className="flex items-center justify-between px-3 py-2 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-100"
             >
               <span className="text-sm">
                 <strong>{key}:</strong> {value}

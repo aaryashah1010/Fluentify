@@ -6,6 +6,8 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tool
 import { getAnalytics } from '../../api/admin';
 import { useAdminContests } from '../../hooks/useContest';
 import { useModuleManagement } from '../../hooks/useModuleManagement';
+import { useTheme } from '../../contexts/ThemeContext';
+import { ThemeToggle } from '../../components';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -14,6 +16,9 @@ const AdminDashboard = () => {
   const [analyticsError, setAnalyticsError] = useState(null);
   const { data: contests = [] } = useAdminContests() || {};
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { theme } = useTheme();
+  const chartGridStroke = theme === 'dark' ? '#1E293B' : '#E2E8F0';
+  const chartAxisStroke = theme === 'dark' ? '#CBD5F5' : '#64748B';
 
   const {
     languages,
@@ -145,7 +150,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 text-slate-50 relative overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 text-slate-900 dark:text-slate-50 relative overflow-x-hidden">
       {/* Floating background elements for layered depth */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div
@@ -177,7 +182,7 @@ const AdminDashboard = () => {
       <div className="flex min-h-screen relative z-10">
         {/* Sidebar */}
         <aside
-          className={`hidden md:flex flex-col bg-slate-950/95 border-r border-teal-500/30 shadow-[0_0_30px_rgba(45,212,191,0.25)] transition-all duration-300 ${
+          className={`hidden md:flex flex-col bg-white dark:bg-slate-950/95 border-r border-teal-200 dark:border-teal-500/30 shadow-[0_0_30px_rgba(45,212,191,0.25)] transition-all duration-300 ${
             sidebarCollapsed ? 'w-16' : 'w-60'
           }`}
         >
@@ -185,7 +190,7 @@ const AdminDashboard = () => {
             <button
               type="button"
               onClick={() => setSidebarCollapsed((prev) => !prev)}
-              className="inline-flex flex-col items-center justify-center gap-0.5 rounded-xl border border-teal-500/50 bg-slate-900/80 px-2 py-1 text-teal-200 hover:bg-slate-800 hover:border-teal-300 transition-colors"
+              className="inline-flex flex-col items-center justify-center gap-0.5 rounded-xl border border-teal-300 dark:border-teal-500/50 bg-white dark:bg-slate-900/80 px-2 py-1 text-teal-700 dark:text-teal-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-teal-300 transition-colors"
             >
               <span className="block h-0.5 w-4 rounded-full bg-teal-400" />
               <span className="block h-0.5 w-4 rounded-full bg-emerald-400" />
@@ -193,8 +198,8 @@ const AdminDashboard = () => {
             </button>
             {!sidebarCollapsed && (
               <div className="ml-2">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-teal-300/80">Admin</p>
-                <p className="text-xs font-semibold text-slate-50">Control Center</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-teal-600 dark:text-teal-300/80">Admin</p>
+                <p className="text-xs font-semibold text-slate-900 dark:text-slate-50">Control Center</p>
               </div>
             )}
           </div>
@@ -209,16 +214,16 @@ const AdminDashboard = () => {
                   onClick={item.onClick}
                   className={`group flex w-full items-center ${
                     sidebarCollapsed ? 'justify-center px-0' : 'justify-start px-2'
-                  } gap-3 rounded-2xl border bg-slate-950/85 py-2 text-xs font-medium transition-all ${
+                  } gap-3 rounded-2xl border bg-white dark:bg-slate-950/85 py-2 text-xs font-medium transition-all ${
                     isLogout
-                      ? 'border-rose-500/60 text-rose-100 hover:bg-rose-600/20 hover:border-rose-400'
-                      : 'border-slate-700/60 text-slate-100 hover:border-teal-400 hover:bg-slate-900/95'
+                      ? 'border-rose-300 dark:border-rose-500/60 text-rose-700 dark:text-rose-100 hover:bg-rose-100 dark:hover:bg-rose-600/20 hover:border-rose-400'
+                      : 'border-slate-200 dark:border-slate-700/60 text-slate-800 dark:text-slate-100 hover:border-teal-400 hover:bg-white dark:hover:bg-slate-900/95'
                   }`}
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900/90 border border-slate-600/70 shadow-[0_0_16px_rgba(15,23,42,0.9)]">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-600/70 shadow-[0_0_16px_rgba(15,23,42,0.9)]">
                     <Icon
                       className={`h-4 w-4 ${
-                        isLogout ? 'text-rose-300' : 'text-teal-300 group-hover:text-emerald-300'
+                        isLogout ? 'text-rose-600 dark:text-rose-300' : 'text-teal-600 dark:text-teal-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-300'
                       } transition-colors`}
                     />
                   </span>
@@ -232,30 +237,31 @@ const AdminDashboard = () => {
         {/* Main column */}
         <div className="flex-1 flex flex-col">
           {/* Header */}
-          <header className="bg-gradient-to-r from-slate-950/95 via-slate-900/90 to-slate-950/95 border-b border-white/10 shadow-lg backdrop-blur-xl">
+          <header className="bg-gradient-to-r from-slate-100 dark:from-slate-950/95 via-slate-50 dark:via-slate-900/90 to-slate-100 dark:to-slate-950/95 border-b border-slate-200 dark:border-white/10 shadow-lg backdrop-blur-xl">
             <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between">
               <div>
                 <h1
-                  className="text-2xl md:text-3xl font-bold text-slate-50 cursor-pointer tracking-tight"
+                  className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-50 cursor-pointer tracking-tight"
                   onClick={() => navigate('/admin-dashboard')}
                 >
                   Admin Dashboard
                 </h1>
-                <p className="text-xs md:text-sm text-slate-300 mt-1">
+                <p className="text-xs md:text-sm text-slate-600 dark:text-slate-300 mt-1">
                   Analytic control center for your learning platform.
                 </p>
               </div>
               <div className="flex items-center gap-3">
+                <ThemeToggle />
                 <button
                   onClick={() => navigate('/admin/profile')}
-                  className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-medium text-slate-100 bg-slate-900/70 hover:bg-slate-800/90 rounded-xl border border-white/10 shadow-sm transition-colors"
+                  className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-medium text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900/70 hover:bg-slate-100 dark:hover:bg-slate-800/90 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm transition-colors"
                 >
                   <User className="w-4 h-4" />
                   Profile
                 </button>
                 <button
                   onClick={logout}
-                  className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-medium text-slate-100 bg-slate-900/70 hover:bg-slate-800/90 rounded-xl border border-white/10 shadow-sm transition-colors"
+                  className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-medium text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900/70 hover:bg-slate-100 dark:hover:bg-slate-800/90 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   Logout
@@ -268,19 +274,19 @@ const AdminDashboard = () => {
           <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 relative z-10">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-teal-300/80 mb-1">
+                <p className="text-xs uppercase tracking-[0.2em] text-teal-600 dark:text-teal-300/80 mb-1">
                   Overview
                 </p>
-                <h2 className="text-3xl md:text-4xl font-semibold text-slate-50 mb-1">
+                <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 dark:text-slate-50 mb-1">
                   Welcome, Admin!
                 </h2>
-                <p className="text-sm text-slate-300">
+                <p className="text-sm text-slate-600 dark:text-slate-300">
                   Monitor users, courses, contests, and system health at a glance.
                 </p>
               </div>
             </div>
             {analyticsError && (
-              <div className="mb-4 rounded-2xl border border-rose-500/40 bg-rose-950/60 px-4 py-2 text-[11px] text-rose-100">
+              <div className="mb-4 rounded-2xl border border-rose-300 dark:border-rose-500/40 bg-rose-100 dark:bg-rose-950/60 px-4 py-2 text-[11px] text-rose-700 dark:text-rose-100">
                 {analyticsError}
               </div>
             )}
@@ -288,24 +294,24 @@ const AdminDashboard = () => {
         {/* Top analytics row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Analytics panel */}
-          <section className="relative overflow-hidden rounded-3xl lg:col-span-2 border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all duration-300">
+          <section className="relative overflow-hidden rounded-3xl lg:col-span-2 border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all duration-300">
             <div className="absolute -top-24 -right-24 w-72 h-72 bg-gradient-to-br from-orange-500/20 via-teal-400/10 to-transparent rounded-full blur-3xl" />
             <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-gradient-to-tr from-teal-500/25 via-purple-500/10 to-transparent rounded-full blur-3xl" />
 
             <div className="relative p-6 md:p-8 space-y-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
-                  <h3 className="text-lg md:text-xl font-semibold text-slate-50 flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5 text-teal-300" />
+                  <h3 className="text-lg md:text-xl font-semibold text-slate-900 dark:text-slate-50 flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-teal-600 dark:text-teal-300" />
                     Analytics Dashboard
                   </h3>
-                  <p className="text-xs md:text-sm text-slate-300 mt-1">
+                  <p className="text-xs md:text-sm text-slate-600 dark:text-slate-300 mt-1">
                     Analytic overview and engagement insights.
                   </p>
                 </div>
                 <button
                   onClick={() => navigate('/admin/analytics')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-xl border border-teal-400/60 bg-teal-500/15 text-teal-100 hover:bg-teal-500/25 hover:border-teal-300 transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-xl border border-teal-300 dark:border-teal-400/60 bg-teal-50 dark:bg-teal-500/15 text-teal-700 dark:text-teal-100 hover:bg-teal-100 dark:hover:bg-teal-500/25 hover:border-teal-300 transition-colors"
                 >
                   <BarChart3 className="w-4 h-4" />
                   Open full analytics
@@ -314,67 +320,67 @@ const AdminDashboard = () => {
 
               {/* Key stats */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="rounded-2xl bg-slate-900/80 border border-white/10 px-4 py-3 flex flex-col justify-between">
+                <div className="rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 px-4 py-3 flex flex-col justify-between">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs text-slate-300">Active learners</p>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-orange-500/20 text-orange-200 border border-orange-400/40">
+                    <p className="text-xs text-slate-600 dark:text-slate-300">Active learners</p>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-200 border border-orange-300 dark:border-orange-400/40">
                       Analytics
                     </span>
                   </div>
-                  <p className="text-2xl font-semibold text-slate-50">{totalActiveUsers}</p>
-                  <p className="text-[11px] text-emerald-300 mt-1">
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-slate-50">{totalActiveUsers}</p>
+                  <p className="text-[11px] text-emerald-600 dark:text-emerald-300 mt-1">
                     Avg {avgLessonsPerUserDisplay} lessons per user
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-slate-900/80 border border-white/10 px-4 py-3 flex flex-col justify-between">
+                <div className="rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 px-4 py-3 flex flex-col justify-between">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs text-slate-300">Lessons completed</p>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-teal-500/20 text-teal-100 border border-teal-400/50">
+                    <p className="text-xs text-slate-600 dark:text-slate-300">Lessons completed</p>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-teal-100 dark:bg-teal-500/20 text-teal-700 dark:text-teal-100 border border-teal-300 dark:border-teal-400/50">
                       Total
                     </span>
                   </div>
-                  <p className="text-2xl font-semibold text-slate-50">{totalLessons}</p>
-                  <p className="text-[11px] text-teal-200 mt-1">Most popular: {popularLanguage}</p>
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-slate-50">{totalLessons}</p>
+                  <p className="text-[11px] text-teal-700 dark:text-teal-200 mt-1">Most popular: {popularLanguage}</p>
                 </div>
 
-                <div className="rounded-2xl bg-slate-900/80 border border-white/10 px-4 py-3 flex flex-col justify-between">
+                <div className="rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 px-4 py-3 flex flex-col justify-between">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs text-slate-300">AI generations</p>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-500/20 text-purple-200 border border-purple-400/50">
+                    <p className="text-xs text-slate-600 dark:text-slate-300">AI generations</p>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-200 border border-purple-300 dark:border-purple-400/50">
                       Platform
                     </span>
                   </div>
-                  <p className="text-2xl font-semibold text-slate-50">{totalAIGenerations}</p>
-                  <p className="text-[11px] text-purple-200 mt-1">Success rate {aiSuccessRate}</p>
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-slate-50">{totalAIGenerations}</p>
+                  <p className="text-[11px] text-purple-700 dark:text-purple-200 mt-1">Success rate {aiSuccessRate}</p>
                 </div>
               </div>
 
               {/* Contest engagement pseudo-chart */}
               <div className="mt-2">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-slate-100">Contest Engagement</p>
-                  <span className="text-[11px] text-slate-300">Participants over time</span>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Contest Engagement</p>
+                  <span className="text-[11px] text-slate-600 dark:text-slate-300">Participants over time</span>
                 </div>
                 {contestEngagementSeries.length === 0 ? (
-                  <div className="h-32 rounded-2xl bg-slate-950/80 border border-teal-500/20 flex items-center justify-center text-[11px] text-slate-400">
+                  <div className="h-32 rounded-2xl bg-white dark:bg-slate-950/80 border border-teal-200 dark:border-teal-500/20 flex items-center justify-center text-[11px] text-slate-500 dark:text-slate-400">
                     No contest participation data yet. Once learners join contests, engagement over time will appear here.
                   </div>
                 ) : (
-                  <div className="h-40 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-teal-500/20 overflow-hidden px-2 pt-2 pb-3">
+                  <div className="h-40 rounded-2xl bg-gradient-to-br from-slate-100 dark:from-slate-950 via-slate-50 dark:via-slate-900 to-slate-100 dark:to-slate-950 border border-teal-200 dark:border-teal-500/20 overflow-hidden px-2 pt-2 pb-3">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={contestEngagementSeries} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
+                        <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
                         <XAxis
                           dataKey="date"
                           tickFormatter={(value) => new Date(value).toLocaleDateString('en-IN', {
                             month: 'short',
                             day: 'numeric',
                           })}
-                          stroke="#CBD5F5"
+                          stroke={chartAxisStroke}
                           tick={{ fontSize: 10 }}
                         />
-                        <YAxis stroke="#CBD5F5" tick={{ fontSize: 10 }} allowDecimals={false} />
+                        <YAxis stroke={chartAxisStroke} tick={{ fontSize: 10 }} allowDecimals={false} />
                         <Tooltip
                           labelFormatter={(value) => new Date(value).toLocaleString('en-IN')}
                           formatter={(val) => [`${val} participants`, 'Participants']}
@@ -398,33 +404,33 @@ const AdminDashboard = () => {
           {/* Right side widgets */}
           <div className="space-y-6">
             {/* User management */}
-            <section className="rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all duration-300 p-5">
+            <section className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all duration-300 p-5">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-                    <Users className="w-4 h-4 text-emerald-300" />
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <Users className="w-4 h-4 text-emerald-600 dark:text-emerald-300" />
                     User Management
                   </h3>
-                  <p className="text-[11px] text-slate-300 mt-1">Quick overview of your learners.</p>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1">Quick overview of your learners.</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 mb-4">
 
-                <div className="rounded-2xl bg-slate-900/80 border border-white/10 px-3 py-2">
-                  <p className="text-[11px] text-slate-300">Avg lessons per user</p>
-                  <p className="text-lg font-semibold text-emerald-300">{avgLessonsPerUserDisplay}</p>
+                <div className="rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 px-3 py-2">
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300">Avg lessons per user</p>
+                  <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-300">{avgLessonsPerUserDisplay}</p>
                 </div>
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => navigate('/admin/users')}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] font-medium bg-slate-900/80 border border-emerald-400/50 text-emerald-100 hover:bg-emerald-500/15 hover:border-emerald-300 transition-colors"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] font-medium bg-white dark:bg-slate-900/80 border border-emerald-300 dark:border-emerald-400/50 text-emerald-700 dark:text-emerald-100 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 hover:border-emerald-300 transition-colors"
                 >
                   User Search
                 </button>
                 <button
                   onClick={() => navigate('/admin/users')}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] font-medium bg-emerald-500/20 border border-emerald-400/60 text-emerald-50 hover:bg-emerald-500/30 hover:border-emerald-300 transition-colors"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] font-medium bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-400/60 text-emerald-800 dark:text-emerald-50 hover:bg-emerald-100 dark:hover:bg-emerald-500/30 hover:border-emerald-300 transition-colors"
                 >
                   User Table
                 </button>
@@ -432,33 +438,33 @@ const AdminDashboard = () => {
             </section>
 
             {/* Contest management */}
-            <section className="rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all duration-300 p-5">
+            <section className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all duration-300 p-5">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-orange-300" />
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-orange-600 dark:text-orange-300" />
                     Contest Management
                   </h3>
-                  <p className="text-[11px] text-slate-300 mt-1">Monitor active contests and launch new ones.</p>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1">Monitor active contests and launch new ones.</p>
                 </div>
               </div>
-              <div className="rounded-2xl bg-slate-900/80 border border-white/10 px-3 py-3 mb-4 flex items-center justify-between">
+              <div className="rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 px-3 py-3 mb-4 flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] text-slate-300">Active Contests</p>
-                  <p className="text-xl font-semibold text-slate-50">{activeContests}</p>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300">Active Contests</p>
+                  <p className="text-xl font-semibold text-slate-900 dark:text-slate-50">{activeContests}</p>
                 </div>
-                <span className="text-[11px] text-slate-400">Upcoming (scheduled): {upcomingContests}</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">Upcoming (scheduled): {upcomingContests}</span>
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => navigate('/admin/contests')}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] font-medium bg-slate-900/80 border border-teal-400/60 text-teal-100 hover:bg-teal-500/20 hover:border-teal-300 transition-colors"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] font-medium bg-white dark:bg-slate-900/80 border border-teal-300 dark:border-teal-400/60 text-teal-700 dark:text-teal-100 hover:bg-teal-100 dark:hover:bg-teal-500/20 hover:border-teal-300 transition-colors"
                 >
                   + Create New
                 </button>
                 <button
                   onClick={() => navigate('/admin/contests')}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] font-medium bg-slate-900/80 border border-orange-400/60 text-orange-100 hover:bg-orange-500/25 hover:border-orange-300 transition-colors"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] font-medium bg-white dark:bg-slate-900/80 border border-orange-300 dark:border-orange-400/60 text-orange-700 dark:text-orange-100 hover:bg-orange-100 dark:hover:bg-orange-500/25 hover:border-orange-300 transition-colors"
                 >
                   Contest List
                 </button>
@@ -470,24 +476,24 @@ const AdminDashboard = () => {
         {/* Bottom row: module management & activity */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Module Management - language list */}
-          <section className="relative overflow-hidden rounded-3xl lg:col-span-2 border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all duration-300 p-6 md:p-8">
+          <section className="relative overflow-hidden rounded-3xl lg:col-span-2 border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all duration-300 p-6 md:p-8">
             <div className="absolute -top-24 right-0 w-64 h-64 bg-gradient-to-bl from-emerald-500/25 via-teal-400/15 to-transparent blur-3xl" />
             <div className="relative">
               <div className="flex items-center justify-between mb-5 gap-3">
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-50 flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-emerald-300" />
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50 flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-300" />
                     Module Management
                   </h3>
-                  <p className="text-xs md:text-sm text-slate-300 mt-1">
+                  <p className="text-xs md:text-sm text-slate-600 dark:text-slate-300 mt-1">
                     Curated language catalog for your courses.
                   </p>
-                  <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-200/90">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-900/80 border border-emerald-400/40 text-emerald-200">
+                  <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-700/90 dark:text-slate-200/90">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white dark:bg-slate-900/80 border border-emerald-300 dark:border-emerald-400/40 text-emerald-700 dark:text-emerald-200">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                       {totalLanguages} languages
                     </span>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-900/80 border border-teal-400/40 text-teal-200">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white dark:bg-slate-900/80 border border-teal-300 dark:border-teal-400/40 text-teal-700 dark:text-teal-200">
                       <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
                       {totalCoursesAcrossLanguages} total courses
                     </span>
@@ -505,25 +511,25 @@ const AdminDashboard = () => {
 
               <div className="space-y-4">
                 {languagesLoading ? (
-                  <div className="flex items-center gap-3 text-xs text-slate-200">
-                    <Loader2 className="w-4 h-4 text-emerald-300 animate-spin" />
+                  <div className="flex items-center gap-3 text-xs text-slate-700 dark:text-slate-200">
+                    <Loader2 className="w-4 h-4 text-emerald-600 dark:text-emerald-300 animate-spin" />
                     <span>Loading curated languages...</span>
                   </div>
                 ) : languagesError ? (
-                  <div className="rounded-2xl border border-rose-500/50 bg-rose-950/50 px-4 py-3 text-[11px] text-rose-100">
+                  <div className="rounded-2xl border border-rose-300 dark:border-rose-500/50 bg-rose-100 dark:bg-rose-950/50 px-4 py-3 text-[11px] text-rose-700 dark:text-rose-100">
                     <p className="font-medium mb-1">Could not load languages.</p>
                     <p className="opacity-90">{languagesError}</p>
                   </div>
                 ) : totalLanguages === 0 ? (
-                  <div className="rounded-2xl border border-slate-700/70 bg-slate-950/80 px-4 py-6 text-center text-sm text-slate-200">
+                  <div className="rounded-2xl border border-slate-200 dark:border-slate-700/70 bg-white dark:bg-slate-950/80 px-4 py-6 text-center text-sm text-slate-700 dark:text-slate-200">
                     <p className="mb-2 font-medium">No languages configured yet.</p>
-                    <p className="text-[11px] text-slate-400 mb-4">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4">
                       Start by creating your first course. A language entry will appear here automatically.
                     </p>
                     <button
                       type="button"
                       onClick={() => navigate('/admin/modules/course/new')}
-                      className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/60 bg-emerald-500/20 px-4 py-2 text-xs font-semibold text-emerald-50 hover:bg-emerald-500/30 hover:border-emerald-300 transition-colors"
+                      className="inline-flex items-center gap-2 rounded-xl border border-emerald-300 dark:border-emerald-400/60 bg-emerald-100 dark:bg-emerald-500/20 px-4 py-2 text-xs font-semibold text-emerald-800 dark:text-emerald-50 hover:bg-emerald-100 dark:hover:bg-emerald-500/30 hover:border-emerald-300 transition-colors"
                     >
                       <BookOpen className="w-4 h-4" />
                       Create First Course
@@ -536,28 +542,28 @@ const AdminDashboard = () => {
                         key={lang.language}
                         type="button"
                         onClick={() => navigate(`/admin/modules/${lang.language}`)}
-                        className="group relative overflow-hidden rounded-2xl border border-emerald-400/40 bg-slate-950/85 px-4 py-3 text-left text-xs shadow-[0_0_20px_rgba(16,185,129,0.25)] hover:border-emerald-300 hover:shadow-[0_0_26px_rgba(16,185,129,0.5)] transition-all"
+                        className="group relative overflow-hidden rounded-2xl border border-emerald-300 dark:border-emerald-400/40 bg-white dark:bg-slate-950/85 px-4 py-3 text-left text-xs shadow-[0_0_20px_rgba(16,185,129,0.25)] hover:border-emerald-300 hover:shadow-[0_0_26px_rgba(16,185,129,0.5)] transition-all"
                       >
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <div className="flex items-center gap-2">
                             <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-emerald-500/30 via-teal-400/20 to-sky-400/20 flex items-center justify-center">
-                              <BookOpen className="w-4 h-4 text-emerald-100" />
+                              <BookOpen className="w-4 h-4 text-emerald-700 dark:text-emerald-100" />
                             </div>
                             <div>
-                              <p className="text-[13px] font-semibold text-slate-50 truncate">{lang.language}</p>
-                              <p className="text-[11px] text-slate-300">
+                              <p className="text-[13px] font-semibold text-slate-900 dark:text-slate-50 truncate">{lang.language}</p>
+                              <p className="text-[11px] text-slate-600 dark:text-slate-300">
                                 {lang.course_count}{' '}
                                 {String(lang.course_count) === '1' ? 'course' : 'courses'}
                               </p>
                             </div>
                           </div>
                         </div>
-                        <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400">
+                        <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400">
                           <span className="inline-flex items-center gap-1">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 group-hover:bg-emerald-300" />
                             Manage courses
                           </span>
-                          <span className="text-teal-300 group-hover:text-emerald-200">View details</span>
+                          <span className="text-teal-600 dark:text-teal-300 group-hover:text-emerald-700 dark:group-hover:text-emerald-200">View details</span>
                         </div>
                       </button>
                     ))}
@@ -568,15 +574,15 @@ const AdminDashboard = () => {
           </section>
 
           {/* Recent Activity */}
-          <section className="rounded-3xl border border-white/10 bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all duration-300 p-6 flex flex-col">
+          <section className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/85 shadow-xl hover:shadow-2xl transition-all duration-300 p-6 flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-sm font-semibold text-slate-100">Recent Activity</h3>
-                <p className="text-[11px] text-slate-300 mt-1">Daily learner activity based on learning logs.</p>
+                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Recent Activity</h3>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1">Daily learner activity based on learning logs.</p>
               </div>
             </div>
             {recentActivityItems.length === 0 ? (
-              <div className="text-[11px] text-slate-400">
+              <div className="text-[11px] text-slate-500 dark:text-slate-400">
                 No recent analytics activity yet.
               </div>
             ) : (
@@ -584,17 +590,17 @@ const AdminDashboard = () => {
                 {recentActivityItems.map((entry, index) => (
                   <div
                     key={entry.date || index}
-                    className="flex items-start gap-3 rounded-2xl bg-slate-900/85 border border-white/10 px-3 py-2"
+                    className="flex items-start gap-3 rounded-2xl bg-white dark:bg-slate-900/85 border border-slate-200 dark:border-white/10 px-3 py-2"
                   >
                     <div className="mt-1 h-6 w-6 rounded-full bg-gradient-to-br from-orange-500/70 via-amber-400/70 to-teal-400/70 flex items-center justify-center text-[10px] text-slate-950 font-bold">
                       ⚙
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs font-medium text-slate-100">Learning activity snapshot</p>
-                      <p className="text-[11px] text-slate-300">
+                      <p className="text-xs font-medium text-slate-800 dark:text-slate-100">Learning activity snapshot</p>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300">
                         {`Learning events logged: ${entry.total_activities || 0}, unique active learners: ${entry.active_users || 0}.`}
                       </p>
-                      <p className="text-[10px] text-slate-400 mt-1">
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                         {entry.date
                           ? new Date(entry.date).toLocaleString('en-IN', {
                               day: 'numeric',

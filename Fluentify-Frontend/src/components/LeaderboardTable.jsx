@@ -28,11 +28,11 @@ const LeaderboardTable = ({ leaderboard, currentUserId = null }) => {
   const getRankColor = (rank) => {
     switch (rank) {
       case 1:
-        return 'bg-yellow-50 border-yellow-200';
+        return 'bg-yellow-50 border-yellow-200 dark:bg-yellow-500/10 dark:border-yellow-500/30';
       case 2:
-        return 'bg-gray-50 border-gray-200';
+        return 'bg-slate-50 border-slate-200 dark:bg-slate-500/10 dark:border-slate-500/30';
       case 3:
-        return 'bg-orange-50 border-orange-200';
+        return 'bg-orange-50 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/30';
       default:
         return '';
     }
@@ -41,52 +41,52 @@ const LeaderboardTable = ({ leaderboard, currentUserId = null }) => {
   if (!leaderboard || leaderboard.length === 0) {
     return (
       <div className="text-center py-12">
-        <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-16 h-16 mx-auto text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-        <p className="text-gray-500 text-lg">No participants yet</p>
-        <p className="text-gray-400 text-sm mt-2">Be the first to participate in this contest!</p>
+        <p className="text-slate-500 dark:text-slate-300 text-lg">No participants yet</p>
+        <p className="text-slate-400 dark:text-slate-400 text-sm mt-2">Be the first to participate in this contest!</p>
       </div>
     );
   }
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+        <thead className="bg-slate-50 dark:bg-slate-800/60">
           <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
               Rank
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
               Name
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
               Score
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
               Time Taken
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
               Submitted At
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white dark:bg-transparent divide-y divide-slate-200 dark:divide-slate-700">
           {leaderboard.map((entry) => {
             const isCurrentUser = currentUserId && entry.learner_id === currentUserId;
             return (
               <tr
                 key={entry.learner_id}
-                className={`${getRankColor(entry.rank)} ${isCurrentUser ? 'border-2 border-blue-500 bg-blue-50' : ''} transition-colors`}
+                className={`${getRankColor(entry.rank)} ${isCurrentUser ? 'border-2 border-blue-500 bg-blue-50 dark:bg-blue-500/15' : ''} transition-colors`}
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <span className="text-2xl font-bold text-gray-900">
+                    <span className="text-2xl font-bold text-slate-900 dark:text-slate-50">
                       {getRankBadge(entry.rank)}
                     </span>
                     {isCurrentUser && (
-                      <span className="ml-2 px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-100 rounded-full">
+                      <span className="ml-2 px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-100 dark:text-blue-200 dark:bg-blue-500/25 rounded-full">
                         You
                       </span>
                     )}
@@ -100,23 +100,23 @@ const LeaderboardTable = ({ leaderboard, currentUserId = null }) => {
                       </div>
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-slate-900 dark:text-slate-50">
                         {entry.display_name}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-semibold text-gray-900">
+                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-50">
                     {entry.score} points
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
+                  <div className="text-sm text-slate-900 dark:text-slate-100">
                     {formatTime(entry.time_taken_ms)}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-300">
                   {new Date(entry.submitted_at).toLocaleString('en-US', {
                     month: 'short',
                     day: 'numeric',

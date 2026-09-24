@@ -17,6 +17,7 @@ import {
 
 import { useProgressReport } from '../../hooks/useProgress';
 import { useCourses } from '../../hooks/useCourses';
+import { useTheme } from '../../contexts/ThemeContext';
 
 import {
   AreaChart,
@@ -32,6 +33,18 @@ import {
 
 const ProgressPage = () => {
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const chartGridStroke = isDark ? '#1f2933' : '#E2E8F0';
+  const chartAxisStroke = isDark ? '#9ca3af' : '#64748B';
+  const tooltipStyle = {
+    backgroundColor: isDark ? '#020617' : '#FFFFFF',
+    border: isDark ? '1px solid rgba(148,163,184,0.4)' : '1px solid #E2E8F0',
+    borderRadius: '12px',
+    boxShadow: isDark ? '0 10px 25px -5px rgba(15,23,42,0.8)' : '0 10px 25px -5px rgba(15,23,42,0.15)',
+    padding: '10px 12px',
+    color: isDark ? '#e5e7eb' : '#0F172A'
+  };
   const [timeRange, setTimeRange] = useState('all');
   const [selectedCourse, setSelectedCourse] = useState(null);
 
@@ -65,14 +78,14 @@ const ProgressPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 flex items-center justify-center">
         <div className="text-center">
           <div className="relative">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-orange-200 border-t-teal-400 mx-auto"></div>
             <TrendingUp className="w-8 h-8 text-orange-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
           </div>
-          <p className="mt-6 text-lg font-medium text-gray-700">Loading your progress...</p>
-          <p className="mt-2 text-sm text-gray-500">Preparing your learning insights</p>
+          <p className="mt-6 text-lg font-medium text-slate-700 dark:text-slate-200">Loading your progress...</p>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Preparing your learning insights</p>
         </div>
       </div>
     );
@@ -80,13 +93,13 @@ const ProgressPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center">
-        <div className="text-center bg-white rounded-2xl shadow-xl p-8 max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 flex items-center justify-center">
+        <div className="text-center bg-white dark:bg-slate-900/90 rounded-2xl shadow-xl p-8 max-w-md">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Activity className="w-8 h-8 text-red-600" />
           </div>
-          <h2 className="text-xl font-bold text-slate-50 mb-2">Unable to Load Progress</h2>
-          <p className="text-slate-300 mb-6">We couldn't fetch your progress. Please try again.</p>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50 mb-2">Unable to Load Progress</h2>
+          <p className="text-slate-600 dark:text-slate-300 mb-6">We couldn't fetch your progress. Please try again.</p>
           <button
             onClick={() => navigate('/dashboard')}
             className="px-6 py-3 bg-gradient-to-r from-orange-400 to-teal-400 text-white rounded-xl hover:opacity-90 transition-all shadow-lg"
@@ -100,7 +113,7 @@ const ProgressPage = () => {
 
   if (summary.lessons_completed === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950">
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <button
             onClick={() => navigate('/dashboard')}
@@ -110,12 +123,12 @@ const ProgressPage = () => {
             Back to Dashboard
           </button>
 
-          <div className="bg-slate-900/90 rounded-3xl shadow-2xl p-12 text-center border border-white/10">
+          <div className="bg-white dark:bg-slate-900/90 rounded-3xl shadow-2xl p-12 text-center border border-slate-200 dark:border-white/10">
             <div className="w-24 h-24 bg-gradient-to-br from-orange-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-6">
               <TrendingUp className="w-12 h-12 text-white" />
             </div>
-            <h2 className="text-3xl font-bold text-slate-50 mb-3">Your Journey Begins Here</h2>
-            <p className="text-lg text-slate-300 mb-8 max-w-md mx-auto">
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-50 mb-3">Your Journey Begins Here</h2>
+            <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-md mx-auto">
               Complete your first lesson to unlock your personalized progress dashboard!
             </p>
             <button
@@ -131,7 +144,7 @@ const ProgressPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 relative overflow-hidden">
     
       <div className="absolute top-20 right-20 text-7xl opacity-30 pointer-events-none animate-bounce" style={{ animationDuration: '3s' }}>
         ⭐
@@ -168,17 +181,17 @@ const ProgressPage = () => {
               <TrendingUp className="w-7 h-7 text-white" />
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-50 drop-shadow-md">Your Progress Report</h1>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-slate-50 drop-shadow-md">Your Progress Report</h1>
           </div>
 
-          <p className="text-slate-200 text-lg ml-1">
+          <p className="text-slate-700 dark:text-slate-200 text-lg ml-1">
             Track your learning journey and celebrate achievements
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
           <div className="hidden sm:block">
-            <p className="text-sm text-slate-200/90">
+            <p className="text-sm text-slate-700/90 dark:text-slate-200/90">
               Use filters to view your progress for specific courses and time ranges.
             </p>
           </div>
@@ -229,44 +242,44 @@ const ProgressPage = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 max-w-5xl">
-          <div className="relative p-8 bg-slate-900/90 border border-amber-400/60 rounded-2xl shadow-xl overflow-hidden">
+          <div className="relative p-8 bg-white dark:bg-slate-900/90 border border-amber-300 dark:border-amber-400/60 rounded-2xl shadow-xl overflow-hidden">
             <div className="absolute top-4 right-4 text-2xl opacity-20">⚡</div>
             <div className="flex items-center justify-between mb-5">
               <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-md">
                 <Award className="w-7 h-7 text-white" />
               </div>
-              <Star className="w-6 h-6 text-amber-300 opacity-80" />
+              <Star className="w-6 h-6 text-amber-600 dark:text-amber-300 opacity-80" />
             </div>
-            <p className="text-sm text-slate-300 mb-2">Total XP</p>
-            <p className="text-4xl font-semibold text-slate-50 mb-1">
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-2">Total XP</p>
+            <p className="text-4xl font-semibold text-slate-900 dark:text-slate-50 mb-1">
               {summary.total_xp || 0}
             </p>
           </div>
 
-          <div className="relative p-8 bg-slate-900/90 border border-teal-400/60 rounded-2xl shadow-xl overflow-hidden">
+          <div className="relative p-8 bg-white dark:bg-slate-900/90 border border-teal-300 dark:border-teal-400/60 rounded-2xl shadow-xl overflow-hidden">
             <div className="absolute top-4 right-4 text-2xl opacity-10">📚</div>
             <div className="flex items-center justify-between mb-5">
               <div className="w-14 h-14 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-2xl flex items-center justify-center shadow-md">
                 <BookOpen className="w-7 h-7 text-white" />
               </div>
-              <BookOpen className="w-6 h-6 text-teal-400 opacity-70" />
+              <BookOpen className="w-6 h-6 text-teal-600 dark:text-teal-400 opacity-70" />
             </div>
-            <p className="text-sm text-slate-300 mb-2">Lessons Completed</p>
-            <p className="text-4xl font-semibold text-slate-50 mb-1">
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-2">Lessons Completed</p>
+            <p className="text-4xl font-semibold text-slate-900 dark:text-slate-50 mb-1">
               {summary.lessons_completed || 0}
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-          <div className="bg-slate-900/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-white/10">
+          <div className="bg-white dark:bg-slate-900/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-slate-200 dark:border-white/10">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-xl flex items-center justify-center shadow-md">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-50">Learning Activity</h3>
-                <p className="text-sm text-slate-300">Lessons completed over time</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">Learning Activity</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Lessons completed over time</p>
               </div>
             </div>
 
@@ -287,18 +300,11 @@ const ProgressPage = () => {
                       <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.1} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1f2933" />
-                  <XAxis dataKey="date" stroke="#9ca3af" />
-                  <YAxis stroke="#9ca3af" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                  <XAxis dataKey="date" stroke={chartAxisStroke} />
+                  <YAxis stroke={chartAxisStroke} />
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#020617',
-                      border: '1px solid rgba(148,163,184,0.4)',
-                      borderRadius: '12px',
-                      boxShadow: '0 10px 25px -5px rgba(15,23,42,0.8)',
-                      padding: '10px 12px',
-                      color: '#e5e7eb'
-                    }}
+                    contentStyle={tooltipStyle}
                   />
                   <Area
                     type="monotone"
@@ -311,20 +317,20 @@ const ProgressPage = () => {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-64 flex items-center justify-center text-gray-400">
+              <div className="h-64 flex items-center justify-center text-slate-400">
                 <p>No activity data yet</p>
               </div>
             )}
           </div>
 
-          <div className="bg-slate-900/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-white/10">
+          <div className="bg-white dark:bg-slate-900/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-slate-200 dark:border-white/10">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-md">
                 <Activity className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-50">Fluency Score Trend</h3>
-                <p className="text-sm text-slate-300">Average lesson scores over time</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">Fluency Score Trend</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Average lesson scores over time</p>
               </div>
             </div>
 
@@ -345,18 +351,11 @@ const ProgressPage = () => {
                       <stop offset="95%" stopColor="#6366f1" stopOpacity={0.1} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1f2933" />
-                  <XAxis dataKey="date" stroke="#9ca3af" />
-                  <YAxis domain={[0, 100]} stroke="#9ca3af" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                  <XAxis dataKey="date" stroke={chartAxisStroke} />
+                  <YAxis domain={[0, 100]} stroke={chartAxisStroke} />
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#020617',
-                      border: '1px solid rgba(148,163,184,0.4)',
-                      borderRadius: '12px',
-                      boxShadow: '0 10px 25px -5px rgba(15,23,42,0.8)',
-                      padding: '10px 12px',
-                      color: '#e5e7eb'
-                    }}
+                    contentStyle={tooltipStyle}
                   />
                   <Line
                     type="monotone"
@@ -370,7 +369,7 @@ const ProgressPage = () => {
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-64 flex items-center justify-center text-gray-400">
+              <div className="h-64 flex items-center justify-center text-slate-400">
                 <p>No score data yet</p>
               </div>
             )}
@@ -378,53 +377,53 @@ const ProgressPage = () => {
         </div>
 
         {recentActivity.length > 0 && (
-          <div className="bg-slate-900/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-white/10 mt-4 mb-20">
+          <div className="bg-white dark:bg-slate-900/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-slate-200 dark:border-white/10 mt-4 mb-20">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center shadow-md">
                 <Calendar className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-50">Recent Activity</h3>
-                <p className="text-sm text-slate-300">Your latest completed lessons</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">Recent Activity</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Your latest completed lessons</p>
               </div>
             </div>
 
             <div className="overflow-x-auto rounded-xl">
               <table className="min-w-full rounded-xl overflow-hidden">
                 <thead>
-                  <tr className="border-b border-white/10 bg-slate-900/80">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  <tr className="border-b border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/80">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                       Lesson
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                       Course
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                       Score
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                       XP
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                       Date
                     </th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-slate-200 dark:divide-white/10">
                   {recentActivity.map((activity, index) => (
                     <tr
                       key={index}
-                      className="hover:bg-gradient-to-r hover:from-slate-900 hover:to-slate-800 transition-all"
+                      className="hover:bg-gradient-to-r hover:from-slate-50 dark:hover:from-slate-900 hover:to-slate-100 dark:hover:to-slate-800 transition-all"
                     >
-                      <td className="px-4 py-4 text-sm font-medium text-slate-50">
+                      <td className="px-4 py-4 text-sm font-medium text-slate-900 dark:text-slate-50">
                         {activity.lesson_title}
                       </td>
 
-                      <td className="px-4 py-4 text-sm text-slate-200">
+                      <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-200">
                         <div className="flex flex-col">
                           <span className="font-medium">{activity.course_title}</span>
-                          <span className="text-xs text-gray-500">{activity.language}</span>
+                          <span className="text-xs text-slate-500 dark:text-slate-400">{activity.language}</span>
                         </div>
                       </td>
 
@@ -432,10 +431,10 @@ const ProgressPage = () => {
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-semibold ${
                             activity.score >= 80
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/60'
+                              ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-400/60'
                               : activity.score >= 60
-                              ? 'bg-amber-500/20 text-amber-300 border border-amber-400/60'
-                              : 'bg-rose-500/20 text-rose-300 border border-rose-400/60'
+                              ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-300 dark:border-amber-400/60'
+                              : 'bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-300 dark:border-rose-400/60'
                           }`}
                         >
                           {activity.score}%
@@ -443,13 +442,13 @@ const ProgressPage = () => {
                       </td>
 
                       <td className="px-4 py-4 text-sm">
-                        <span className="inline-flex items-center gap-1 text-amber-300 font-semibold">
+                        <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-300 font-semibold">
                           <Trophy className="w-4 h-4" />
                           {activity.xp_earned}
                         </span>
                       </td>
 
-                      <td className="px-4 py-4 text-sm text-gray-600">
+                      <td className="px-4 py-4 text-sm text-slate-600 dark:text-slate-300">
                         {new Date(activity.completion_time).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',

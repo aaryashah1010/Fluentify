@@ -106,10 +106,10 @@ const ContestParticipatePage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-orange-50 to-slate-100 dark:from-teal-900 dark:via-orange-900 dark:to-slate-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-slate-200">Loading contest...</p>
+          <p className="text-slate-600 dark:text-slate-200">Loading contest...</p>
         </div>
       </div>
     );
@@ -117,13 +117,13 @@ const ContestParticipatePage = () => {
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center px-4">
-        <div className="bg-slate-900/80 rounded-2xl shadow-xl border border-white/10 p-6 max-w-md w-full text-center text-slate-100">
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-orange-50 to-slate-100 dark:from-teal-900 dark:via-orange-900 dark:to-slate-950 flex items-center justify-center px-4">
+        <div className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 p-6 max-w-md w-full text-center text-slate-900 dark:text-slate-100">
           <h2 className="text-lg font-semibold mb-2">Unable to load contest</h2>
-          <p className="text-sm text-slate-300 mb-4">Please go back and try again.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-300 mb-4">Please go back and try again.</p>
           <Button
             onClick={() => navigate('/contests')}
-            className="mt-2 inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-slate-50"
+            className="mt-2 inline-flex items-center gap-2 bg-slate-900/5 hover:bg-slate-900/10 border border-slate-300 dark:bg-white/10 dark:hover:bg-white/20 dark:border-white/20 text-slate-900 dark:text-slate-50"
           >
             <span>Back to Contests</span>
           </Button>
@@ -133,7 +133,7 @@ const ContestParticipatePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 text-white relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-orange-50 to-slate-100 dark:from-teal-900 dark:via-orange-900 dark:to-slate-950 text-slate-900 dark:text-white relative overflow-hidden">
       {/* Background glow elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-40 -right-40 w-72 h-72 bg-purple-500/25 rounded-full blur-3xl" />
@@ -144,7 +144,7 @@ const ContestParticipatePage = () => {
         {/* Header with title, timer, back button */}
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-1">
-            <p className="text-xs font-semibold tracking-wide uppercase text-slate-300/80">Contest</p>
+            <p className="text-xs font-semibold tracking-wide uppercase text-slate-500 dark:text-slate-300/80">Contest</p>
             <h1 className="text-2xl sm:text-3xl font-semibold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
               {contest?.title || 'Contest'}
             </h1>
@@ -154,8 +154,8 @@ const ContestParticipatePage = () => {
               <div
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm shadow-md ${
                   timeRemaining < 300
-                    ? 'bg-red-500/15 text-red-200 border border-red-500/40'
-                    : 'bg-blue-500/15 text-blue-200 border border-blue-500/40'
+                    ? 'bg-red-100 text-red-700 border border-red-300 dark:bg-red-500/15 dark:text-red-200 dark:border-red-500/40'
+                    : 'bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-500/15 dark:text-blue-200 dark:border-blue-500/40'
                   }
                 `}
               >
@@ -166,7 +166,7 @@ const ContestParticipatePage = () => {
             <Button
               variant="secondary"
               onClick={() => navigate('/contests')}
-              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/15 text-slate-50"
+              className="flex items-center gap-2 bg-slate-900/5 hover:bg-slate-900/10 border border-slate-300 dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/15 text-slate-900 dark:text-slate-50"
             >
               <span>Back</span>
             </Button>
@@ -176,7 +176,7 @@ const ContestParticipatePage = () => {
         {/* Questions */}
         <main className="space-y-6">
           {questions.length === 0 ? (
-            <div className="bg-slate-900/85 border border-slate-700/70 rounded-2xl shadow-xl p-6 text-center text-slate-200">
+            <div className="bg-white/90 dark:bg-slate-900/85 border border-slate-200 dark:border-slate-700/70 rounded-2xl shadow-xl p-6 text-center text-slate-600 dark:text-slate-200">
               No questions available.
             </div>
           ) : (
@@ -184,9 +184,9 @@ const ContestParticipatePage = () => {
               {questions.map((q, qi) => (
                 <div
                   key={q.id ?? qi}
-                  className="bg-slate-900/85 border border-slate-700/70 rounded-2xl shadow-md p-6"
+                  className="bg-white/90 dark:bg-slate-900/85 border border-slate-200 dark:border-slate-700/70 rounded-2xl shadow-md p-6"
                 >
-                  <h3 className="font-semibold text-slate-50 mb-3">
+                  <h3 className="font-semibold text-slate-900 dark:text-slate-50 mb-3">
                     {qi + 1}. {q.question_text}
                   </h3>
                   <div className="space-y-2">
@@ -198,8 +198,8 @@ const ContestParticipatePage = () => {
                           key={oi}
                           className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
                             isSelected
-                              ? 'border-emerald-400 bg-emerald-500/10'
-                              : 'border-slate-700 bg-slate-900/60 hover:border-slate-500'
+                              ? 'border-emerald-400 bg-emerald-100 dark:bg-emerald-500/10'
+                              : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/60 hover:border-slate-400 dark:hover:border-slate-500'
                             }
                           `}
                         >
@@ -210,7 +210,7 @@ const ContestParticipatePage = () => {
                             onChange={() => handleSelect(qi, oi)}
                             className="w-4 h-4 text-emerald-500"
                           />
-                          <span className="text-slate-100">{label}</span>
+                          <span className="text-slate-800 dark:text-slate-100">{label}</span>
                         </label>
                       );
                     })}

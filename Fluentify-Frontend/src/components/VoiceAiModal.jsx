@@ -72,7 +72,7 @@ const VoiceAIModal = ({ isOpen, onClose, courses = [] }) => {
     try {
       // Get agent ID from environment
       const agentId = import.meta.env.VITE_RETELL_AGENT_ID;
-      
+
       // Validate agent ID is configured
       if (!agentId) {
         throw {
@@ -80,28 +80,28 @@ const VoiceAIModal = ({ isOpen, onClose, courses = [] }) => {
           message: '⚠️ Retell Agent ID is not configured. Please add VITE_RETELL_AGENT_ID to your .env file.'
         };
       }
-      
+
       // Step 1: Get access token from backend
       const response = await createRetellCall(agentId, selectedCourseId);
-      
+
       if (!response.success || !response.data.accessToken) {
         throw new Error('Failed to get access token');
       }
-      
+
       const { accessToken } = response.data;
-      
+
       // Step 2: Start call with access token
       await retellClientRef.current.startCall({
         accessToken: accessToken,
         sampleRate: 24000,
       });
-      
+
     } catch (err) {
       console.error('Failed to start conversation:', err);
-      
+
       // Handle specific error cases
       let errorMessage = 'Failed to connect. Please try again.';
-      
+
       if (err.status === 500 && err.message?.includes('not configured')) {
         errorMessage = '⚠️ Retell AI is not configured. Please contact administrator.';
       } else if (err.status === 401) {
@@ -111,7 +111,7 @@ const VoiceAIModal = ({ isOpen, onClose, courses = [] }) => {
       } else if (err.message) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
       setIsConnecting(false);
     }
@@ -146,19 +146,19 @@ const VoiceAIModal = ({ isOpen, onClose, courses = [] }) => {
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-950/95 rounded-3xl shadow-2xl max-w-md w-full p-8 relative border border-white/10">
+      <div className="bg-white dark:bg-slate-950/95 rounded-3xl shadow-2xl max-w-md w-full p-8 relative border border-slate-200 dark:border-white/10">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-100 rounded-full hover:bg-white/10 transition-colors"
+          className="absolute top-4 right-4 p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-900/5 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-white/10 rounded-full transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-slate-50 mb-2">AI Tutor</h2>
-          <p className="text-sm text-slate-300">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-2">AI Tutor</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-300">
             {isConnected ? 'Connected - Start speaking!' : 'Connect to start your conversation'}
           </p>
         </div>
@@ -166,7 +166,7 @@ const VoiceAIModal = ({ isOpen, onClose, courses = [] }) => {
         {needsCourseSelection && !selectedCourseId ? (
           /* Course picker - only shown when the learner has more than one active course */
           <div className="mb-2">
-            <p className="text-sm text-slate-300 text-center mb-4">
+            <p className="text-sm text-slate-500 dark:text-slate-300 text-center mb-4">
               Which language do you want to practice today?
             </p>
             <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -174,7 +174,7 @@ const VoiceAIModal = ({ isOpen, onClose, courses = [] }) => {
                 <button
                   key={course.id}
                   onClick={() => setSelectedCourseId(course.id)}
-                  className="w-full text-left px-4 py-3 rounded-xl border border-white/10 bg-slate-900/80 hover:border-teal-400/60 hover:bg-teal-500/10 transition-colors text-slate-100 font-medium"
+                  className="w-full text-left px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/80 hover:border-teal-400/60 hover:bg-teal-50 dark:hover:bg-teal-500/10 transition-colors text-slate-800 dark:text-slate-100 font-medium"
                 >
                   {course.language}
                 </button>
@@ -218,20 +218,20 @@ const VoiceAIModal = ({ isOpen, onClose, courses = [] }) => {
             {/* Status Text */}
             <div className="text-center mb-6">
               {isConnecting && (
-                <p className="text-sm text-slate-300 animate-pulse">Connecting to AI tutor...</p>
+                <p className="text-sm text-slate-500 dark:text-slate-300 animate-pulse">Connecting to AI tutor...</p>
               )}
               {isConnected && !isAgentSpeaking && (
-                <p className="text-sm text-emerald-300 font-medium">🎙️ Listening...</p>
+                <p className="text-sm text-emerald-600 dark:text-emerald-300 font-medium">🎙️ Listening...</p>
               )}
               {isAgentSpeaking && (
-                <p className="text-sm text-cyan-300 font-medium animate-pulse">🗣️ AI is speaking...</p>
+                <p className="text-sm text-cyan-600 dark:text-cyan-300 font-medium animate-pulse">🗣️ AI is speaking...</p>
               )}
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="mb-4 p-3 bg-red-900/40 border border-red-500/60 rounded-lg">
-                <p className="text-sm text-red-200 text-center">{error}</p>
+              <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/40 border border-red-400 dark:border-red-500/60 rounded-lg">
+                <p className="text-sm text-red-700 dark:text-red-200 text-center">{error}</p>
               </div>
             )}
 
@@ -254,7 +254,7 @@ const VoiceAIModal = ({ isOpen, onClose, courses = [] }) => {
                     className={`p-4 rounded-full transition-all shadow-lg ${
                       isMuted
                         ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                        : 'bg-slate-800 hover:bg-slate-700 text-slate-100'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-100'
                     }`}
                     title={isMuted ? 'Unmute' : 'Mute'}
                   >
@@ -274,8 +274,8 @@ const VoiceAIModal = ({ isOpen, onClose, courses = [] }) => {
             </div>
 
             {/* Info Text */}
-            <div className="mt-6 p-4 bg-slate-900/80 rounded-lg border border-white/10">
-              <p className="text-xs text-slate-200 text-center">
+            <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-900/80 rounded-lg border border-slate-200 dark:border-white/10">
+              <p className="text-xs text-slate-600 dark:text-slate-200 text-center">
                 💡 Practice speaking naturally. Your AI tutor will help you improve pronunciation, fluency, and confidence.
               </p>
             </div>

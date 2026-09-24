@@ -15,10 +15,10 @@ const ContestLeaderboardPage = () => {
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center">
+			<div className="min-h-screen bg-gradient-to-br from-teal-50 via-orange-50 to-slate-100 dark:from-teal-900 dark:via-orange-900 dark:to-slate-950 flex items-center justify-center">
 				<div className="text-center">
 					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-					<p className="text-slate-200">Loading leaderboard...</p>
+					<p className="text-slate-600 dark:text-slate-200">Loading leaderboard...</p>
 				</div>
 			</div>
 		);
@@ -26,13 +26,13 @@ const ContestLeaderboardPage = () => {
 
 	if (isError) {
 		return (
-			<div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center px-4">
-				<div className="bg-slate-900/80 rounded-2xl shadow-xl border border-white/10 p-6 max-w-md w-full text-center text-slate-100">
+			<div className="min-h-screen bg-gradient-to-br from-teal-50 via-orange-50 to-slate-100 dark:from-teal-900 dark:via-orange-900 dark:to-slate-950 flex items-center justify-center px-4">
+				<div className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 p-6 max-w-md w-full text-center text-slate-900 dark:text-slate-100">
 					<h2 className="text-lg font-semibold mb-2">Unable to load leaderboard</h2>
-					<p className="text-sm text-slate-300 mb-4">Please try again later.</p>
+					<p className="text-sm text-slate-500 dark:text-slate-300 mb-4">Please try again later.</p>
 					<Button
 						onClick={() => navigate('/contests')}
-						className="mt-2 inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-slate-50"
+						className="mt-2 inline-flex items-center gap-2 bg-slate-900/5 hover:bg-slate-900/10 border border-slate-300 dark:bg-white/10 dark:hover:bg-white/20 dark:border-white/20 text-slate-900 dark:text-slate-50"
 					>
 						<ArrowLeft className="w-4 h-4" />
 						<span>Back to Contests</span>
@@ -43,7 +43,7 @@ const ContestLeaderboardPage = () => {
 	}
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 text-white relative overflow-hidden">
+		<div className="min-h-screen bg-gradient-to-br from-teal-50 via-orange-50 to-slate-100 dark:from-teal-900 dark:via-orange-900 dark:to-slate-950 text-slate-900 dark:text-white relative overflow-hidden">
 			{/* Background glow elements */}
 			<div className="absolute inset-0 pointer-events-none overflow-hidden">
 				<div className="absolute -top-40 -right-40 w-72 h-72 bg-purple-500/25 rounded-full blur-3xl" />
@@ -54,7 +54,7 @@ const ContestLeaderboardPage = () => {
 				{/* Header with title and back button */}
 				<div className="flex items-center justify-between gap-4">
 					<div className="space-y-1">
-						<p className="text-xs font-semibold tracking-wide uppercase text-slate-300/80">Leaderboard</p>
+						<p className="text-xs font-semibold tracking-wide uppercase text-slate-500 dark:text-slate-300/80">Leaderboard</p>
 						<h1 className="text-2xl sm:text-3xl font-semibold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
 							{contest?.title || 'Contest Leaderboard'}
 						</h1>
@@ -62,7 +62,7 @@ const ContestLeaderboardPage = () => {
 					<Button
 						variant="secondary"
 						onClick={() => navigate('/contests')}
-						className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/15 text-slate-50"
+						className="flex items-center gap-2 bg-slate-900/5 hover:bg-slate-900/10 border border-slate-300 dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/15 text-slate-900 dark:text-slate-50"
 					>
 						<ArrowLeft className="w-4 h-4" />
 						<span>Back</span>
@@ -70,12 +70,12 @@ const ContestLeaderboardPage = () => {
 				</div>
 
 				{/* Leaderboard card */}
-				<section className="bg-slate-900/85 backdrop-blur-xl border border-slate-700/70 rounded-2xl shadow-2xl overflow-hidden">
-					<div className="bg-gradient-to-r from-purple-900/70 to-pink-900/70 px-6 py-4 border-b border-slate-700/70 flex items-center gap-2">
-						<Trophy className="h-5 w-5 text-yellow-400" />
-						<h2 className="text-lg font-semibold text-white">Rankings</h2>
-						<Sparkles className="h-4 w-4 text-yellow-300 animate-pulse ml-1" />
-						<span className="ml-auto text-xs text-slate-200/80">
+				<section className="bg-white/90 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200 dark:border-slate-700/70 rounded-2xl shadow-2xl overflow-hidden">
+					<div className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/70 dark:to-pink-900/70 px-6 py-4 border-b border-slate-200 dark:border-slate-700/70 flex items-center gap-2">
+						<Trophy className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
+						<h2 className="text-lg font-semibold text-slate-900 dark:text-white">Rankings</h2>
+						<Sparkles className="h-4 w-4 text-yellow-500 dark:text-yellow-300 animate-pulse ml-1" />
+						<span className="ml-auto text-xs text-slate-500 dark:text-slate-200/80">
 							{leaderboard.length} participant{leaderboard.length === 1 ? '' : 's'}
 						</span>
 					</div>

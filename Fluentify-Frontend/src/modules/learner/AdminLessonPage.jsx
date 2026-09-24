@@ -88,9 +88,9 @@ const AdminLessonPage = () => {
 
   if (error || !lesson) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 flex items-center justify-center">
-        <div className="text-center bg-slate-900/90 p-8 rounded-2xl max-w-md">
-          <p className="text-red-400 mb-4">{error || 'Lesson not found'}</p>
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 flex items-center justify-center">
+        <div className="text-center bg-white dark:bg-slate-900/90 p-8 rounded-2xl max-w-md">
+          <p className="text-red-600 dark:text-red-400 mb-4">{error || 'Lesson not found'}</p>
           <button 
             onClick={() => navigate(`/module-course/${courseId}`)}
             className="px-6 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition"
@@ -103,7 +103,7 @@ const AdminLessonPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-orange-900 to-slate-950 relative">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 dark:from-teal-900 via-orange-50 dark:via-orange-900 to-slate-100 dark:to-slate-950 relative">
       <main className="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <button
           onClick={() => navigate(`/module-course/${courseId}`)}
@@ -112,7 +112,7 @@ const AdminLessonPage = () => {
           <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-sm border border-gray-200">
             ←
           </span>
-          <span className="font-medium text-white">Back to Course</span>
+          <span className="font-medium text-slate-900 dark:text-white">Back to Course</span>
         </button>
 
         <div className="bg-gradient-to-r from-teal-500 to-orange-400 rounded-3xl p-6 md:p-8 text-white shadow-xl mb-8">
@@ -143,7 +143,7 @@ const AdminLessonPage = () => {
         {/* Media Content Section (PDF, Audio, Video) */}
         {mediaUrls.length > 0 && (
           <section className="mb-8">
-            <h2 className="text-sm font-semibold text-slate-100 mb-3">
+            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">
               Lesson Content {mediaUrls.length > 1 && `(${mediaUrls.length} files)`}
             </h2>
             <div className="space-y-4">
@@ -160,9 +160,9 @@ const AdminLessonPage = () => {
         )}
 
         {mediaUrls.length === 0 && (
-          <div className="bg-slate-900/90 border border-white/10 rounded-2xl p-12 text-center">
-            <BookOpen className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-            <p className="text-slate-300">No content files available for this lesson.</p>
+          <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 rounded-2xl p-12 text-center">
+            <BookOpen className="w-12 h-12 text-slate-500 dark:text-slate-400 mx-auto mb-4" />
+            <p className="text-slate-600 dark:text-slate-300">No content files available for this lesson.</p>
           </div>
         )}
       </main>

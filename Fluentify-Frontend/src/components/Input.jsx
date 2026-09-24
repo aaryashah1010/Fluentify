@@ -24,7 +24,7 @@ const Input = React.forwardRef(({
       )}
       <div className="relative">
         {icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
             {icon}
           </div>
         )}
@@ -33,8 +33,8 @@ const Input = React.forwardRef(({
           className={`w-full rounded-lg ${icon ? 'pl-10' : 'pl-3'} pr-3 py-2 transition-colors focus:outline-none focus:ring-2 ${
             error
               ? 'border border-red-500 focus:ring-red-400 focus:border-red-400'
-              : 'border border-white/15 focus:ring-teal-400/80 focus:border-teal-400/80'
-          } bg-slate-900/80 text-slate-50 placeholder-slate-500 ${className}`}
+              : 'border border-slate-300 dark:border-white/15 focus:ring-teal-400/80 focus:border-teal-400/80'
+          } bg-white dark:bg-slate-900/80 text-slate-900 dark:text-slate-50 placeholder-slate-400 dark:placeholder-slate-500 ${className}`}
           {...props}
         />
       </div>

@@ -16,6 +16,7 @@ export { default as LeaderboardTable } from './LeaderboardTable';
 export { default as McqQuestion } from './McqQuestion';
 export { default as ContestTimer } from './ContestTimer';
 export { default as MediaViewer } from './MediaViewer';
+export { default as ThemeToggle } from './ThemeToggle';
 export { 
   Skeleton, 
   SkeletonText, 
