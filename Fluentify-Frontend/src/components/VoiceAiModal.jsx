@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Mic, MicOff, Phone, X, Volume2, Loader } from 'lucide-react';
 import { RetellWebClient } from 'retell-client-js-sdk';
 import { createRetellCall } from '../api/retell';
@@ -12,7 +12,21 @@ const VoiceAIModal = ({ isOpen, onClose, courses = [] }) => {
   const [selectedCourseId, setSelectedCourseId] = useState(null);
 
   const retellClientRef = useRef(null);
-  const needsCourseSelection = courses.length > 1;
+
+  // One entry per language - if the learner has multiple courses in the same
+  // language, practice against whichever of those they created most recently.
+  const languageOptions = useMemo(() => {
+    const byLanguage = new Map();
+    for (const course of courses) {
+      const existing = byLanguage.get(course.language);
+      if (!existing || new Date(course.createdAt) > new Date(existing.createdAt)) {
+        byLanguage.set(course.language, course);
+      }
+    }
+    return Array.from(byLanguage.values());
+  }, [courses]);
+
+  const needsCourseSelection = languageOptions.length > 1;
 
   // Reset the picker each time the modal reopens
   useEffect(() => {
@@ -170,7 +184,7 @@ const VoiceAIModal = ({ isOpen, onClose, courses = [] }) => {
               Which language do you want to practice today?
             </p>
             <div className="space-y-2 max-h-64 overflow-y-auto">
-              {courses.map((course) => (
+              {languageOptions.map((course) => (
                 <button
                   key={course.id}
                   onClick={() => setSelectedCourseId(course.id)}
