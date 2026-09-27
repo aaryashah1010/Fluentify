@@ -120,7 +120,12 @@ class OpenAIService {
 
 User's Current Level: ${expertise}
 
-This should be a professional, Duolingo-quality curriculum designed for someone who is currently at ${expertise} level. Start from their current knowledge level and build upon it.
+Level definitions - use these literally, do not assume the learner knows more than this:
+- Beginner: has little to no prior knowledge of ${language}. Assume they know close to ZERO vocabulary, grammar or idioms in ${language} at the very start of Unit 1.
+- Intermediate: already knows basic vocabulary, simple present/past tense, and can hold short simple conversations, but struggles with complex grammar, idioms and nuance.
+- Advanced: is fluent in everyday use and is refining nuance, idiom, register and cultural depth.
+
+This should be a professional, Duolingo-quality curriculum designed for someone who is currently at ${expertise} level. The FIRST unit must match that starting point exactly - never open with content meant for a higher level than ${expertise}.
 Do NOT include any explanations, markdown, or text outside of JSON.
 Respond with ONLY valid JSON in this exact format:
 {
@@ -138,14 +143,15 @@ Respond with ONLY valid JSON in this exact format:
 }
 
 Requirements:
-- Create 6 units with progressive difficulty starting from ${expertise} level
-- If user is Beginner: Start with basics and progress to Elementary/Intermediate
-- If user is Intermediate: Start with review and advance to upper-Intermediate/Advanced concepts
+- Create 6 units with difficulty that genuinely progresses, starting exactly at ${expertise} level
+- If user is Beginner: Unit 1 MUST cover true fundamentals only - greetings, introducing yourself, numbers, everyday nouns, simple present-tense sentences and pronunciation. Do NOT make Unit 1 (or any early unit) a "review"/"reinforcement of intermediate concepts" unit, and do NOT lead with idioms, complex tenses, or conversational fillers - those belong later, once basics are covered. Progress unit-by-unit toward Elementary, then Intermediate by unit 6.
+- If user is Intermediate: Start with a quick review of basics, then advance to upper-Intermediate/Advanced concepts
 - If user is Advanced: Focus on mastery, nuanced expressions, and cultural depth
+- Each unit's "difficulty" field must reflect real progression across the 6 units (e.g. for a Beginner course: Beginner, Beginner, Elementary, Elementary, Intermediate, Intermediate) - never label an early unit with a difficulty above ${expertise}
 - Each unit should have 6 lessons
 - Topics should be practical and relevant to real-world communication
 - Cover: vocabulary, grammar, conversation, pronunciation, and cultural context
-- Build upon previous units logically`;
+- Build upon previous units logically, never introducing a concept before its prerequisite`;
 
     const text = await this.generateText(prompt, { maxTokens: 2048, temperature: 0.7 });
 
@@ -168,10 +174,12 @@ Unit Info:
 - Topics: ${unitOutline.topics.join(', ')}
 - Number of lessons: ${unitOutline.lessonCount}
 
-The user is currently at ${expertise} level. Adjust vocabulary difficulty, grammar complexity, and exercise difficulty accordingly.
-- If Beginner: Use simple vocabulary, basic grammar structures, and clear explanations
-- If Intermediate: Use more complex vocabulary, intermediate grammar, assume basic knowledge
-- If Advanced: Use sophisticated vocabulary, advanced grammar, focus on nuance and mastery
+This unit's own difficulty (from the course outline) is: ${unitOutline.difficulty}. Calibrate vocabulary, grammar complexity, and exercise difficulty to THIS value, not just the learner's overall starting level below - later units in the same course are meant to be genuinely harder than earlier ones.
+- If this unit's difficulty is Beginner: use only simple, everyday vocabulary and basic grammar (present tense, simple sentence structure). If this is Unit 1, assume the learner may be encountering ${language} for the very first time - no idioms, no complex tenses, no assumed prior vocabulary.
+- If this unit's difficulty is Elementary: build on basic vocabulary with slightly longer sentences, common irregular verbs, and everyday topics.
+- If this unit's difficulty is Intermediate: use more complex vocabulary, a wider range of tenses, and assume solid basic knowledge from earlier units.
+- If this unit's difficulty is Advanced: use sophisticated vocabulary, advanced grammar, and focus on nuance and mastery.
+The learner's overall starting level for this course is ${expertise} - so if this is an early unit in a ${expertise}-level course, keep it genuinely simple even though later units in the same course will get harder.
 
 Respond with ONLY valid JSON in this exact format:
 {
