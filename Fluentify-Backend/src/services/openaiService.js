@@ -159,101 +159,216 @@ Requirements:
   }
 
   /**
-   * Generate a single unit with all its lessons
+   * Generate a single unit. Plans the unit's lessons first, then generates each
+   * lesson on its own call and checks it against the content contract.
    */
   async generateUnit(language, unitOutline, unitNumber, expertise = 'Beginner', baseLanguage = 'English') {
-    const prompt = `Generate detailed lessons for Unit ${unitNumber} of a ${language} course.
+    const plan = await this.generateLessonPlan(language, unitOutline, unitNumber, expertise);
 
-User's Current Level: ${expertise}
-User's Base Language (the language they already speak fluently - use this for ALL explanations, translations, and exercise questions): ${baseLanguage}
-
-Unit Info:
-- Title: ${unitOutline.title}
-- Description: ${unitOutline.description}
-- Difficulty: ${unitOutline.difficulty}
-- Topics: ${unitOutline.topics.join(', ')}
-- Number of lessons: ${unitOutline.lessonCount}
-
-This unit's own difficulty (from the course outline) is: ${unitOutline.difficulty}. Calibrate vocabulary, grammar complexity, and exercise difficulty to THIS value, not just the learner's overall starting level below - later units in the same course are meant to be genuinely harder than earlier ones.
-- If this unit's difficulty is Beginner: use only simple, everyday vocabulary and basic grammar (present tense, simple sentence structure). If this is Unit 1, assume the learner may be encountering ${language} for the very first time - no idioms, no complex tenses, no assumed prior vocabulary.
-- If this unit's difficulty is Elementary: build on basic vocabulary with slightly longer sentences, common irregular verbs, and everyday topics.
-- If this unit's difficulty is Intermediate: use more complex vocabulary, a wider range of tenses, and assume solid basic knowledge from earlier units.
-- If this unit's difficulty is Advanced: use sophisticated vocabulary, advanced grammar, and focus on nuance and mastery.
-The learner's overall starting level for this course is ${expertise} - so if this is an early unit in a ${expertise}-level course, keep it genuinely simple even though later units in the same course will get harder.
-
-Respond with ONLY valid JSON in this exact format:
-{
-  "id": ${unitNumber},
-  "title": "${unitOutline.title}",
-  "description": "${unitOutline.description}",
-  "difficulty": "${unitOutline.difficulty}",
-  "estimatedTime": "${unitOutline.estimatedTime}",
-  "lessons": [
-    {
-      "id": 1,
-      "title": "Lesson Title",
-      "type": "vocabulary|grammar|conversation|review",
-      "description": "What the lesson covers",
-      "keyPhrases": ["phrase 1", "phrase 2", "phrase 3", "phrase 4"],
-      "dialogue": [
-        {
-          "speaker": "Role name fitting the scenario (e.g. Traveler, Local, Waiter, Customer)",
-          "text": "Line of dialogue in ${language} (the language being learned)",
-          "translation": "${baseLanguage} translation of that exact line"
-        }
-      ],
-      "vocabulary": [
-        {
-          "word": "word or phrase in ${language} (the language being learned)",
-          "translation": "translation in ${baseLanguage} (the user's base language)",
-          "pronunciation": "phonetic pronunciation, written so a ${baseLanguage} speaker can read it aloud",
-          "example": "example sentence in ${language}, showing the word used naturally"
-        }
-      ],
-      "grammarPoints": [
-        {
-          "topic": "grammar topic",
-          "explanation": "explanation written in ${baseLanguage}, clear enough for a ${baseLanguage} speaker to understand",
-          "examples": ["example sentence in ${language} 1", "example sentence in ${language} 2"]
-        }
-      ],
-      "exercises": [
-        {
-          "type": "multiple_choice",
-          "question": "A question written entirely in ${baseLanguage} that gives a ${baseLanguage} definition, context, or translation prompt for ONE specific ${language} word or phrase from this lesson (e.g. \\"Which word means 'water'?\\" or \\"How do you say 'water'?\\", phrased in ${baseLanguage}). The question text itself must contain NO ${language} words other than proper nouns.",
-          "options": ["4 candidate words/phrases, ALL written in ${language} - these are what the learner picks between"],
-          "correctAnswer": 0
-        }
-      ],
-      "estimatedDuration": 15,
-      "xpReward": 50
+    const lessons = [];
+    for (let i = 0; i < plan.length; i++) {
+      const lesson = await this.generateLesson(language, unitOutline, unitNumber, plan[i], i + 1, expertise, baseLanguage);
+      lessons.push(lesson);
     }
-  ]
+
+    return {
+      id: unitNumber,
+      title: unitOutline.title,
+      description: unitOutline.description,
+      difficulty: unitOutline.difficulty,
+      estimatedTime: unitOutline.estimatedTime,
+      lessons,
+    };
+  }
+
+  /**
+   * Plan the lesson titles and types for one unit (small call, no lesson content yet)
+   */
+  async generateLessonPlan(language, unitOutline, unitNumber, expertise) {
+    const count = unitOutline.lessonCount || 6;
+
+    const prompt = `Plan the ${count} lessons for Unit ${unitNumber} of a ${language} course for a learner at ${expertise} level.
+
+Unit: ${unitOutline.title}
+Description: ${unitOutline.description}
+Topics: ${unitOutline.topics.join(', ')}
+Unit difficulty: ${unitOutline.difficulty}
+
+Respond with ONLY valid JSON in this format:
+{ "lessons": [ { "title": "Lesson title", "type": "vocabulary|grammar|conversation|review", "description": "What this lesson covers" } ] }
+
+Rules:
+- Exactly ${count} lessons
+- At least 2 lessons of type "vocabulary", at least 1 of type "grammar", at least 1 of type "conversation"
+- The LAST lesson must be type "review" covering this unit's topics
+- Respect the ${expertise} level: a Beginner unit only uses basic, everyday material - no idioms, no complex tenses
+- Each lesson builds on the one before it`;
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      const parsed = await this.retryWithBackoff(async () =>
+        this.parseJSON(await this.generateText(prompt, { maxTokens: 1024, temperature: 0.5 }))
+      );
+      const lessons = Array.isArray(parsed.lessons) ? parsed.lessons.slice(0, count) : [];
+      if (lessons.length === count) return lessons;
+      console.warn(`Unit ${unitNumber} plan attempt ${attempt} returned ${lessons.length}/${count} lessons`);
+    }
+    throw new Error(`Could not plan ${count} lessons for unit ${unitNumber}`);
+  }
+
+  /**
+   * Generate one lesson, validate it against the content contract, and retry once
+   * with the specific problems listed if anything is missing or thin.
+   */
+  async generateLesson(language, unitOutline, unitNumber, planned, lessonNumber, expertise, baseLanguage) {
+    const basePrompt = this.buildLessonPrompt(language, unitOutline, unitNumber, planned, expertise, baseLanguage);
+    const maxAttempts = 3;
+
+    let lesson = null;
+    let problems = ['no response yet'];
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const prompt = attempt === 1 || problems.length === 0
+        ? basePrompt
+        : `${basePrompt}\n\nYOUR PREVIOUS ATTEMPT HAD THESE PROBLEMS - FIX ALL OF THEM:\n${problems.map((p) => `- ${p}`).join('\n')}`;
+      // Lower temperature on later attempts - fewer malformed responses
+      const temperature = attempt === 1 ? 0.7 : 0.4;
+
+      try {
+        lesson = await this.retryWithBackoff(async () =>
+          this.parseJSON(await this.generateText(prompt, { maxTokens: 6000, temperature }))
+        );
+        problems = this.validateLesson(lesson, planned.type);
+      } catch (error) {
+        lesson = null;
+        problems = [`response was not valid JSON (${error.message})`];
+      }
+
+      if (problems.length === 0) break;
+      console.warn(`Unit ${unitNumber} lesson ${lessonNumber} attempt ${attempt} incomplete:`, problems);
+    }
+
+    // Never let one bad lesson fail the whole course. If every attempt failed, save a
+    // clearly-marked placeholder so the rest of the course still generates.
+    if (!lesson) {
+      console.error(`Unit ${unitNumber} lesson ${lessonNumber} failed after ${maxAttempts} attempts - saving placeholder`);
+      return {
+        id: lessonNumber,
+        title: planned.title,
+        type: planned.type,
+        description: planned.description,
+        keyPhrases: [],
+        dialogue: [],
+        vocabulary: [],
+        grammarPoints: [],
+        exercises: [],
+        pronunciation: [],
+        commonMistakes: [],
+        culture: '',
+        reading: { passage: '', questions: [] },
+        speakingPrompts: [],
+        recall: [],
+        estimatedDuration: 20,
+        xpReward: 50,
+        contentComplete: false,
+        contentWarnings: problems,
+      };
+    }
+
+    lesson.id = lessonNumber;
+    lesson.title = planned.title;
+    lesson.type = planned.type;
+    lesson.contentComplete = problems.length === 0;
+    if (problems.length > 0) lesson.contentWarnings = problems;
+    return lesson;
+  }
+
+  /**
+   * Content contract: every lesson must have these sections. Returns a list of
+   * human-readable problems (empty list = lesson is complete).
+   */
+  validateLesson(lesson, type) {
+    const problems = [];
+    const arr = (v) => (Array.isArray(v) ? v : []);
+    const vocab = arr(lesson.vocabulary);
+    const grammar = arr(lesson.grammarPoints);
+    const dialogue = arr(lesson.dialogue);
+    const exercises = arr(lesson.exercises);
+    const pronunciation = arr(lesson.pronunciation);
+    const mistakes = arr(lesson.commonMistakes);
+    const speaking = arr(lesson.speakingPrompts);
+    const recall = arr(lesson.recall);
+    const reading = lesson.reading || {};
+    const readingQuestions = arr(reading.questions);
+
+    if (type === 'vocabulary' && vocab.length < 10) problems.push(`vocabulary has ${vocab.length} items, needs at least 10`);
+    if (type !== 'vocabulary' && vocab.length < 3) problems.push(`vocabulary has ${vocab.length} items, needs at least 3 key terms`);
+    if (type === 'grammar' && grammar.length < 2) problems.push(`grammarPoints has ${grammar.length}, needs 2-3`);
+    if (type !== 'grammar' && type !== 'review' && grammar.length < 1) problems.push('grammarPoints is empty, needs at least 1');
+    if (type === 'conversation' && dialogue.length < 6) problems.push(`dialogue has ${dialogue.length} turns, needs 6-8`);
+
+    if (exercises.length !== 5) problems.push(`exercises has ${exercises.length}, needs exactly 5`);
+    exercises.forEach((ex, i) => {
+      if (!Array.isArray(ex.options) || ex.options.length !== 4) problems.push(`exercise ${i + 1} must have exactly 4 options`);
+      if (!(Number.isInteger(ex.correctAnswer) && ex.correctAnswer >= 0 && ex.correctAnswer <= 3)) problems.push(`exercise ${i + 1} correctAnswer must be 0-3`);
+    });
+
+    if (pronunciation.length < 2) problems.push(`pronunciation has ${pronunciation.length}, needs at least 2 tips`);
+    if (mistakes.length < 2) problems.push(`commonMistakes has ${mistakes.length}, needs at least 2`);
+    if (!lesson.culture || typeof lesson.culture !== 'string') problems.push('culture note is missing');
+    if (!reading.passage || readingQuestions.length < 2) problems.push('reading needs a passage and at least 2 questions');
+    if (speaking.length < 3) problems.push(`speakingPrompts has ${speaking.length}, needs 3`);
+    if (recall.length < 3) problems.push(`recall has ${recall.length}, needs 3`);
+
+    return problems;
+  }
+
+  /**
+   * Prompt for ONE lesson. Language rules and level calibration are kept from the
+   * previous unit prompt - only the scope is now a single lesson.
+   */
+  buildLessonPrompt(language, unitOutline, unitNumber, planned, expertise, baseLanguage) {
+    return `Write the full content for ONE lesson of a ${language} course.
+
+Lesson: "${planned.title}" (type: ${planned.type})
+Lesson description: ${planned.description}
+Unit ${unitNumber}: ${unitOutline.title} - ${unitOutline.description}
+Unit difficulty: ${unitOutline.difficulty}
+Learner's overall starting level: ${expertise}
+Learner's base language (already spoken fluently - used for ALL explanations, translations, and exercise questions): ${baseLanguage}
+
+LEVEL: calibrate vocabulary and grammar to THIS lesson's unit difficulty (${unitOutline.difficulty}). A Beginner lesson uses only simple, everyday words and basic grammar. Do not assume knowledge the learner would not have yet.
+
+LANGUAGE RULE (critical):
+- Material being taught (vocabulary words, example sentences, dialogue lines, passage text, speaking targets, exercise answer options) is in ${language}.
+- Everything that explains, translates, or asks about that material (translations, pronunciation guides, grammar explanations, culture note, exercise questions, reading questions, recall questions, speaking prompt instructions) is in ${baseLanguage}.
+- This applies the same way when ${language} is English: check which variable each field belongs to before writing it.
+
+Respond with ONLY valid JSON in exactly this shape:
+{
+  "description": "one sentence on what this lesson covers",
+  "keyPhrases": ["4-6 key phrases in ${language}"],
+  "dialogue": [ { "speaker": "role name fitting the scenario", "text": "line in ${language}", "translation": "line in ${baseLanguage}" } ],
+  "vocabulary": [ { "word": "in ${language}", "translation": "in ${baseLanguage}", "pronunciation": "readable by a ${baseLanguage} speaker", "example": "sentence in ${language}" } ],
+  "grammarPoints": [ { "topic": "grammar topic", "explanation": "in ${baseLanguage}", "examples": ["sentence in ${language}", "sentence in ${language}", "sentence in ${language}"], "commonMistake": "a mistake learners make with this point, in ${baseLanguage}, and the correct form" } ],
+  "pronunciation": [ { "sound": "a sound or pattern that is hard for a ${baseLanguage} speaker", "tip": "how to produce it, in ${baseLanguage}", "examples": ["words in ${language}"] } ],
+  "commonMistakes": [ { "mistake": "what learners typically say, in ${language}", "correction": "the correct version in ${language}", "why": "short reason, in ${baseLanguage}" } ],
+  "culture": "one practical cultural note about using this language in real life, in ${baseLanguage}",
+  "reading": { "passage": "short passage (4-6 sentences) in ${language} using this lesson's words", "questions": [ { "question": "in ${baseLanguage}", "options": ["4 options in ${language}"], "correctAnswer": 0 } ] },
+  "speakingPrompts": ["3 instructions in ${baseLanguage} asking the learner to say something specific in ${language}, e.g. 'Introduce yourself using Me llamo...'"],
+  "recall": [ { "question": "question in ${baseLanguage} to test this lesson's content later", "answer": "answer in ${language}" } ],
+  "exercises": [ { "type": "multiple_choice", "question": "in ${baseLanguage}", "options": ["4 options in ${language}"], "correctAnswer": 0 } ],
+  "estimatedDuration": 20,
+  "xpReward": 50
 }
 
-IMPORTANT:
-- Create exactly ${unitOutline.lessonCount} lessons
-- At least 1-2 lessons in this unit MUST be type "conversation"
-- Every lesson of type "conversation" MUST have a "dialogue" array with 6-8 turns, alternating between exactly 2 speakers with role names that fit a realistic scenario tied to the unit's topics (e.g. a traveler ordering food, checking into a hotel, asking for directions) - not generic "Person A / Person B" labels. Each turn's "text" must be in ${language}, and "translation" must be in ${baseLanguage}.
-- Lessons that are NOT type "conversation" should have "dialogue": [] (empty array)
-- LANGUAGE RULE (critical, applies to every lesson): the material being taught (vocabulary words, example sentences, dialogue lines, exercise answer options) is always in ${language}. Everything that explains, translates, or asks about that material (translations, pronunciation guides, grammar explanations, exercise questions) is always in ${baseLanguage}. Never write an exercise question in ${language} - the learner is still acquiring ${language}, so questions must be in ${baseLanguage} they already understand, while the options/answers they pick from must be in ${language} to test what they're learning.
-- This rule applies exactly the same way even when ${language} is "English": the learner is acquiring English, ${baseLanguage} is what they already speak fluently. Do NOT default to writing exercise options in English out of habit - the "vocabulary"/"options"/example-sentence language is whichever value ${language} holds (which may itself be "English"), and the "question"/"translation"/"explanation" language is whichever value ${baseLanguage} holds (which may be a language other than English). Before writing each field, check which of the two variables it belongs to.
-- HARD FLOOR: any lesson with "type": "vocabulary" MUST have AT LEAST 10 items in its "vocabulary" array. This is not optional and not a suggestion - count the items before finalizing your response and add more if you have fewer than 10. If the topic is a complete, enumerable set (the alphabet, days of the week, months, numbers 1-20, etc.), include EVERY item in that set even if that's more than 10 - e.g. a lesson on the alphabet must teach all 26+ letters, never stop partway through. If the topic is open-ended (greetings, common verbs, travel phrases), still include at least 10 well-chosen items - "Greetings and Farewells" for example needs more than just hola/adiós/buenos días: add variations, informal vs formal forms, and related everyday phrases until you reach 10+. Never truncate a bounded or open-ended vocabulary lesson early just to hit a small round number like 4 or 5.
-- Lessons of type "grammar", "conversation" or "review" are not held to that floor - their vocabulary array can be shorter (driven by grammarPoints/dialogue instead), but include the key terms actually used in that lesson's examples/dialogue.
-- Each grammar lesson MUST have 2-4 comprehensive grammar points with multiple examples
-- Include EXACTLY 5 multiple choice questions (MCQ) per lesson
-- ALL exercises MUST be type "multiple_choice" with exactly 4 options
-- Exercises should test understanding, not just memorization
-- Include practical, real-world examples in all content
-- Last lesson MUST be type "review" covering all unit topics
-- Ensure all JSON arrays and objects are properly closed
-- Make content engaging and progressively challenging`;
-
-    // Use retry with backoff to handle rate limits
-    return await this.retryWithBackoff(async () => {
-      const text = await this.generateText(prompt, { maxTokens: 16384, temperature: 0.7 });
-      return this.parseJSON(text);
-    });
+REQUIREMENTS:
+- vocabulary: ${planned.type === 'vocabulary' ? 'AT LEAST 10 items. For an enumerable set (numbers, days, alphabet) include every item in the set.' : 'at least 3 key terms used in this lesson'}
+- grammarPoints: ${planned.type === 'grammar' ? 'exactly 2-3 points, each with 3 examples' : 'at least 1 point the lesson relies on'}
+- dialogue: ${planned.type === 'conversation' ? '6-8 turns alternating between exactly 2 speakers in a realistic scenario' : 'empty array []'}
+- exercises: EXACTLY 5 multiple_choice questions with 4 options each. Test understanding, not just memorisation.
+- pronunciation: at least 2 tips. commonMistakes: at least 2. speakingPrompts: exactly 3. recall: exactly 3. reading: a passage plus exactly 2 questions.
+- JSON SAFETY: never put a double quote character inside a text value. For any quoted word inside text, use single quotes instead (e.g. 'Good morning').
+- Use practical, real-world content. Ensure all JSON is valid and closed.`;
   }
 
   /**
