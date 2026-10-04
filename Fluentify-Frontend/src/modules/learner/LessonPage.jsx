@@ -75,6 +75,15 @@ const LessonPage = () => {
     [lesson?.dialogue]
   );
 
+  // Extra content sections (generated per lesson). Each one is hidden when empty.
+  const pronunciationTips = useMemo(() => (Array.isArray(lesson?.pronunciation) ? lesson.pronunciation : []), [lesson?.pronunciation]);
+  const commonMistakes = useMemo(() => (Array.isArray(lesson?.commonMistakes) ? lesson.commonMistakes : []), [lesson?.commonMistakes]);
+  const readingPassage = lesson?.reading?.passage || '';
+  const readingQuestions = useMemo(() => (Array.isArray(lesson?.reading?.questions) ? lesson.reading.questions : []), [lesson?.reading?.questions]);
+  const cultureNote = typeof lesson?.culture === 'string' ? lesson.culture : '';
+  const speakingPrompts = useMemo(() => (Array.isArray(lesson?.speakingPrompts) ? lesson.speakingPrompts : []), [lesson?.speakingPrompts]);
+  const recallItems = useMemo(() => (Array.isArray(lesson?.recall) ? lesson.recall : []), [lesson?.recall]);
+
   const dialogueSpeakers = useMemo(() => {
     const seen = [];
     for (const turn of dialogue) {
@@ -424,6 +433,18 @@ const LessonPage = () => {
                 : []),
               { key: 'vocabulary', title: 'Learn New Words', subtitle: 'Vocabulary' },
               { key: 'grammar', title: 'Grammar Rules', subtitle: 'Grammar' },
+              ...(pronunciationTips.length > 0
+                ? [{ key: 'pronunciation', title: 'Pronunciation', subtitle: 'Sounds' }]
+                : []),
+              ...(readingPassage
+                ? [{ key: 'reading', title: 'Reading', subtitle: 'Reading' }]
+                : []),
+              ...(cultureNote
+                ? [{ key: 'culture', title: 'Culture Note', subtitle: 'Culture' }]
+                : []),
+              ...(speakingPrompts.length > 0 || recallItems.length > 0
+                ? [{ key: 'speaking', title: 'Speak & Recall', subtitle: 'Speaking' }]
+                : []),
               { key: 'exercises', title: 'Practice Exercise', subtitle: 'Practice' },
             ].map((section, index) => {
               const isActive = currentSection === section.key;
@@ -584,6 +605,101 @@ const LessonPage = () => {
                 <p className="text-slate-500 dark:text-slate-400">
                   No grammar points for this lesson.
                 </p>
+              )}
+
+              {commonMistakes.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-50">Common Mistakes</h3>
+                  <div className="space-y-3">
+                    {commonMistakes.map((item, index) => (
+                      <div key={index} className="rounded-2xl border border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 p-4">
+                        <p className="text-sm text-rose-700 dark:text-rose-200 line-through">{item.mistake}</p>
+                        <p className="font-medium text-emerald-700 dark:text-emerald-200">{item.correction}</p>
+                        {item.why && <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{item.why}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {currentSection === 'pronunciation' && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-50">Pronunciation</h3>
+              {pronunciationTips.map((tip, index) => (
+                <div key={index} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 p-4 shadow-lg">
+                  <h4 className="font-semibold mb-1 text-slate-900 dark:text-slate-50">{tip.sound}</h4>
+                  <p className="text-slate-600 dark:text-slate-200 mb-2">{tip.tip}</p>
+                  {Array.isArray(tip.examples) && tip.examples.length > 0 && (
+                    <p className="text-sm text-slate-500 dark:text-slate-300">{tip.examples.join('  ·  ')}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {currentSection === 'reading' && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-50">Reading</h3>
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 p-5 shadow-lg">
+                <p className="text-lg leading-relaxed text-slate-800 dark:text-slate-100">{readingPassage}</p>
+              </div>
+              {readingQuestions.map((q, qi) => (
+                <div key={qi} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 p-4 shadow-lg">
+                  <p className="font-semibold mb-3 text-slate-900 dark:text-slate-50">{qi + 1}. {q.question}</p>
+                  <ul className="space-y-2">
+                    {(q.options || []).map((opt, oi) => (
+                      <li key={oi} className="text-sm text-slate-700 dark:text-slate-200">
+                        {String.fromCharCode(65 + oi)}. {opt}
+                        {oi === q.correctAnswer && <span className="ml-2 text-emerald-600 dark:text-emerald-300 font-medium">✓</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {currentSection === 'culture' && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-50">Culture Note</h3>
+              <div className="rounded-2xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-5">
+                <p className="text-slate-800 dark:text-slate-100 leading-relaxed">{cultureNote}</p>
+              </div>
+            </div>
+          )}
+
+          {currentSection === 'speaking' && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-50">Speak &amp; Recall</h3>
+              {speakingPrompts.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-2 text-slate-700 dark:text-slate-200">Say it out loud</h4>
+                  <ul className="space-y-2">
+                    {speakingPrompts.map((prompt, index) => (
+                      <li key={index} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 px-4 py-3 text-slate-800 dark:text-slate-100">
+                        {prompt}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-3">
+                    Practise these with the AI Tutor to get feedback on your speaking.
+                  </p>
+                </div>
+              )}
+              {recallItems.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-2 text-slate-700 dark:text-slate-200">Quick recall</h4>
+                  <div className="space-y-2">
+                    {recallItems.map((item, index) => (
+                      <details key={index} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 px-4 py-3">
+                        <summary className="cursor-pointer text-slate-800 dark:text-slate-100">{item.question}</summary>
+                        <p className="mt-2 text-emerald-700 dark:text-emerald-300 font-medium">{item.answer}</p>
+                      </details>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           )}
