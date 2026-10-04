@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import chatRepository from '../repositories/chatRepository.js';
+import { getLessonFocus, formatLessonFocus } from './lessonFocusService.js';
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
@@ -86,7 +87,11 @@ Remember: You're a world-class multilingual tutor ready to help with ANY languag
       const recentMessages = await chatRepository.getRecentMessages(sessionId, 6);
 
       // Build system prompt
-      const systemPrompt = this.generateSystemPrompt(languageInfo.language, languageInfo.proficiency);
+      const focus = await getLessonFocus(userId).catch(() => null);
+      const systemPrompt = this.generateSystemPrompt(languageInfo.language, languageInfo.proficiency)
+        + `
+
+${formatLessonFocus(focus)} When it fits the conversation, guide the learner to practise these.`;
 
       // Build conversation history
       const conversationHistory = this.buildConversationContext(recentMessages);

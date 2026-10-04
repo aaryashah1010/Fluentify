@@ -9,6 +9,7 @@ import { ERRORS } from '../utils/error.js';
 import authRepository from '../repositories/authRepository.js';
 import chatRepository from '../repositories/chatRepository.js';
 import courseRepository from '../repositories/courseRepository.js';
+import { getLessonFocus, formatLessonFocus } from '../services/lessonFocusService.js';
 
 /**
  * Look up what this learner is actually studying, so the voice agent doesn't
@@ -71,6 +72,9 @@ export const createRetellCall = async (req, res, next) => {
     }
 
     const voiceContext = await getLearnerVoiceContext(userId, courseId);
+    // Tell the voice tutor which lesson the learner is on so it drills that content
+    const focus = await getLessonFocus(userId, courseId).catch(() => null);
+    voiceContext.lesson_focus = formatLessonFocus(focus);
     console.log('🗣️  Voice call context:', voiceContext);
 
     // Call Retell API to create a web call
