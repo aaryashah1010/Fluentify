@@ -6,7 +6,7 @@ import TypingIndicator from '../../components/TypingIndicator';
 import Button from '../../components/Button';
 import ErrorMessage from '../../components/ErrorMessage';
 
-const TutorChat = ({ compact = false }) => {
+const TutorChat = ({ compact = false, courseId = null, courseLabel = null }) => {
   const token = localStorage.getItem('jwt');
   const {
     messages,
@@ -16,7 +16,7 @@ const TutorChat = ({ compact = false }) => {
     sendMessage,
     clearChat,
     clearError
-  } = useChat(token);
+  } = useChat(token, courseId);
 
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
@@ -49,11 +49,13 @@ const TutorChat = ({ compact = false }) => {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">Fluent - AI Tutor</h2>
-              <p className="text-sm text-teal-600 dark:text-teal-200">🌍 Multilingual Expert • Any Language, Any Context</p>
+              <p className="text-sm text-teal-600 dark:text-teal-200">
+                {courseLabel ? `📚 ${courseLabel} · Continues where you left off` : '🌍 Multilingual Expert • Any Language, Any Context'}
+              </p>
             </div>
           </div>
 
-          {messages.length > 0 && (
+          {!courseId && messages.length > 0 && (
             <Button
               variant="ghost"
               size="sm"
