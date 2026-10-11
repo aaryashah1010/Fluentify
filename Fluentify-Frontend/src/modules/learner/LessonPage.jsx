@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
@@ -31,6 +31,7 @@ const LessonPage = () => {
   const { courseId, unitId, lessonId } = useParams();
   const navigate = useNavigate();
   const [currentSection, setCurrentSection] = useState('vocabulary');
+  const contentSectionRef = useRef(null);
   const [userAnswers, setUserAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
   const [exerciseResults, setExerciseResults] = useState(null);
@@ -459,7 +460,10 @@ const LessonPage = () => {
                 <button
                   key={section.key}
                   type="button"
-                  onClick={() => setCurrentSection(section.key)}
+                  onClick={() => {
+                    setCurrentSection(section.key);
+                    contentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
                   className={`w-full flex items-center justify-between rounded-2xl bg-white/90 dark:bg-slate-900/80 px-5 py-4 shadow-md border transition-all hover:shadow-lg ${
                     isActive ? 'border-teal-400' : 'border-slate-200 dark:border-white/10'
                   }`}
@@ -494,7 +498,7 @@ const LessonPage = () => {
           </div>
         </section>
 
-        <section className="bg-white/90 dark:bg-slate-950/90 rounded-2xl shadow-2xl border border-slate-200 dark:border-white/15 mb-8 p-6">
+        <section ref={contentSectionRef} className="bg-white/90 dark:bg-slate-950/90 rounded-2xl shadow-2xl border border-slate-200 dark:border-white/15 mb-8 p-6 scroll-mt-24">
           {currentSection === 'dialogue' && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-50">
