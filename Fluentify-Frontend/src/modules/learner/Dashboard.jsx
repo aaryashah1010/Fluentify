@@ -124,6 +124,7 @@ const LearnerDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [showVoiceAiModal, setShowVoiceAiModal] = useState(false);
+  const [voiceModalCourseId, setVoiceModalCourseId] = useState(null);
   const [showGenerateForm, setShowGenerateForm] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [pendingGeneratedCourse, setPendingGeneratedCourse] = useState(false);
@@ -425,7 +426,7 @@ const LearnerDashboard = () => {
           <div className="space-y-6 md:col-span-1">
             <div
               className="w-full h-full text-left rounded-3xl border border-slate-200 dark:border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 group hover:scale-[1.005] cursor-pointer bg-white/90 dark:bg-slate-900/85 h-[360px] lg:h-[460px]"
-              onClick={() => setShowVoiceAiModal(true)}
+              onClick={() => { setVoiceModalCourseId(null); setShowVoiceAiModal(true); }}
             >
               <div className="relative overflow-hidden p-6 flex flex-col h-full">
                     <div className="flex items-start justify-between mb-4">
@@ -463,7 +464,7 @@ const LearnerDashboard = () => {
                     <div className="mt-auto">
                         <button
                           type="button"
-                          onClick={(e) => { e.stopPropagation(); setShowVoiceAiModal(true); }}
+                          onClick={(e) => { e.stopPropagation(); setVoiceModalCourseId(null); setShowVoiceAiModal(true); }}
                           className="w-full bg-gradient-to-r from-teal-500 to-orange-500 text-white hover:from-teal-600 hover:to-orange-600 px-4 py-3 rounded-xl flex items-center justify-center shadow-lg font-medium"
                         >
                           <Phone className="h-4 w-4 mr-2" />
@@ -525,6 +526,11 @@ const LearnerDashboard = () => {
                     key={course.id}
                     course={course}
                     onClick={(selectedCourse) => navigate(`/course/${selectedCourse.id}`)}
+                    onChat={(selectedCourse) => navigate(`/chat?courseId=${selectedCourse.id}`)}
+                    onVoice={(selectedCourse) => {
+                      setVoiceModalCourseId(selectedCourse.id);
+                      setShowVoiceAiModal(true);
+                    }}
                   />
                 ))}
               </div>
@@ -551,8 +557,9 @@ const LearnerDashboard = () => {
 
       <VoiceAIModal
         isOpen={showVoiceAiModal}
-        onClose={() => setShowVoiceAiModal(false)}
+        onClose={() => { setShowVoiceAiModal(false); setVoiceModalCourseId(null); }}
         courses={courses}
+        forcedCourseId={voiceModalCourseId}
       />
     </div>
   );

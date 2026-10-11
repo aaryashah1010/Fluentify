@@ -15,7 +15,7 @@ import { API_BASE_URL, handleResponse } from './apiHelpers';
  * @param {function} onError - Callback for errors
  * @returns {Promise<{sessionId: string}>}
  */
-export const sendMessageStream = async (message, sessionId, token, onChunk, onComplete, onError) => {
+export const sendMessageStream = async (message, sessionId, token, onChunk, onComplete, onError, courseId = null) => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/tutor/message`, {
       method: 'POST',
@@ -23,7 +23,7 @@ export const sendMessageStream = async (message, sessionId, token, onChunk, onCo
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ message, sessionId })
+      body: JSON.stringify(courseId ? { message, sessionId, courseId } : { message, sessionId })
     });
 
     if (!response.ok) {
@@ -96,6 +96,25 @@ export const sendMessageStream = async (message, sessionId, token, onChunk, onCo
     
     throw error;
   }
+};
+
+/**
+ * Open (or resume) the chat session tied to a specific course, with its past
+ * messages, so a learner continues that course's conversation where they left off
+ * @param {number} courseId - Course ID
+ * @param {string} token - JWT token
+ * @returns {Promise<{success: boolean, data: {session: object, messages: array}}>}
+ */
+export const openCourseChatSession = async (courseId, token) => {
+  const response = await fetch(`${API_BASE_URL}/api/tutor/sessions/course/${courseId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  return handleResponse(response);
 };
 
 /**

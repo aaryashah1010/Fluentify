@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import chatRepository from '../repositories/chatRepository.js';
 import { getLessonFocus, formatLessonFocus } from './lessonFocusService.js';
+import { getLearnerCourseContext } from './learnerCourseContextService.js';
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
@@ -78,20 +79,20 @@ Remember: You're a world-class multilingual tutor ready to help with ANY languag
    * Generate streaming AI response. Returns an async iterable of chunks
    * exposing a `.text()` method, matching the shape the controller expects.
    */
-  async generateStreamingResponse(userMessage, sessionId, userId) {
+  async generateStreamingResponse(userMessage, session, userId) {
     try {
-      // Get user's language info
-      const languageInfo = await chatRepository.getUserLanguageInfo(userId);
+      // Get recent conversation context for this specific session/thread
+      const recentMessages = await chatRepository.getRecentMessages(session.id, 6);
 
-      // Get recent conversation context
-      const recentMessages = await chatRepository.getRecentMessages(sessionId, 6);
-
-      // Build system prompt
-      const focus = await getLessonFocus(userId).catch(() => null);
-      const systemPrompt = this.generateSystemPrompt(languageInfo.language, languageInfo.proficiency)
+      // This session's own language/level (set when it was created - either from
+      // the specific course it was opened for, or the learner's onboarding info).
+      // The lesson focus follows session.course_id: a specific course if this
+      // session is scoped to one, otherwise the "most recently active" fallback.
+      const focus = await getLessonFocus(userId, session.course_id || null).catch(() => null);
+      const systemPrompt = this.generateSystemPrompt(session.language, session.proficiency_level)
         + `
 
-${formatLessonFocus(focus)} When it fits the conversation, guide the learner to practise these.`;
+${formatLessonFocus(focus)} When it fits the conversation, guide the learner to practise these. If they ask something unrelated to this, just answer it normally.`;
 
       // Build conversation history
       const conversationHistory = this.buildConversationContext(recentMessages);
@@ -152,7 +153,7 @@ ${formatLessonFocus(focus)} When it fits the conversation, guide the learner to 
   /**
    * Create or get chat session
    */
-  async getOrCreateSession(userId, sessionId = null) {
+  async getOrCreateSession(userId, sessionId = null, courseId = null) {
     try {
       if (sessionId) {
         // Try to get existing session
@@ -162,7 +163,23 @@ ${formatLessonFocus(focus)} When it fits the conversation, guide the learner to 
         }
       }
 
-      // Create new session
+      // Opening a specific course's chat - resume its existing conversation if
+      // one already exists, so the learner has their past messages for reference.
+      if (courseId) {
+        const existing = await chatRepository.getSessionByCourse(userId, courseId);
+        if (existing) {
+          return existing;
+        }
+        const context = await getLearnerCourseContext(userId, courseId);
+        return await chatRepository.createSession(
+          userId,
+          context.target_language,
+          context.proficiency_level,
+          courseId
+        );
+      }
+
+      // General chat (not opened from a specific course) - unchanged behaviour
       const languageInfo = await chatRepository.getUserLanguageInfo(userId);
       const newSession = await chatRepository.createSession(
         userId, 
@@ -175,6 +192,13 @@ ${formatLessonFocus(focus)} When it fits the conversation, guide the learner to 
       console.error('Error getting/creating session:', error);
       throw error;
     }
+  }
+
+  /**
+   * Full message history for one session (used to resume a course's chat)
+   */
+  async getSessionMessages(sessionId, limit = 50) {
+    return await chatRepository.getRecentMessages(sessionId, limit);
   }
 
   /**

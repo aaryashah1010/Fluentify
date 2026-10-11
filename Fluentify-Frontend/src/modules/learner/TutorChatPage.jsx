@@ -1,13 +1,21 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, LogOut } from 'lucide-react';
 import { useLogout } from '../../hooks/useAuth';
+import { useCourses } from '../../hooks/useCourses';
 import TutorChat from './TutorChat';
 import Button from '../../components/Button';
 
 const TutorChatPage = () => {
   const navigate = useNavigate();
   const logout = useLogout();
+  const [searchParams] = useSearchParams();
+  const courseIdParam = searchParams.get('courseId');
+  const courseId = courseIdParam ? parseInt(courseIdParam, 10) : null;
+
+  const { data: courses = [] } = useCourses();
+  const course = courseId ? courses.find((c) => c.id === courseId) : null;
+  const courseLabel = course ? `${course.title} (${course.language})` : null;
 
   const handleBack = () => {
     navigate('/dashboard');
@@ -51,7 +59,7 @@ const TutorChatPage = () => {
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 sm:px-6 lg:px-8">
         <div className="h-full">
-          <TutorChat />
+          <TutorChat courseId={courseId} courseLabel={courseLabel} />
         </div>
       </main>
     </div>

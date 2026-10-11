@@ -4,21 +4,43 @@ class ChatRepository {
   /**
    * Create a new chat session
    */
-  async createSession(userId, language, proficiencyLevel) {
+  async createSession(userId, language, proficiencyLevel, courseId = null) {
     const query = `
-      INSERT INTO chat_sessions (user_id, language, proficiency_level, title)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO chat_sessions (user_id, language, proficiency_level, title, course_id)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
     
     const title = `${language} Chat Session`;
-    const values = [userId, language, proficiencyLevel, title];
+    const values = [userId, language, proficiencyLevel, title, courseId];
     
     try {
       const result = await db.query(query, values);
       return result.rows[0];
     } catch (error) {
       console.error('Error creating chat session:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find this learner's existing chat session for a specific course, if any,
+   * so re-opening that course's chat resumes the conversation instead of
+   * starting a new one.
+   */
+  async getSessionByCourse(userId, courseId) {
+    const query = `
+      SELECT * FROM chat_sessions
+      WHERE user_id = $1 AND course_id = $2
+      ORDER BY last_activity DESC
+      LIMIT 1
+    `;
+
+    try {
+      const result = await db.query(query, [userId, courseId]);
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Error fetching course session:', error);
       throw error;
     }
   }

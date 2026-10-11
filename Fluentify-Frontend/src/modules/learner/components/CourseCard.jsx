@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Flame, CheckCircle, Trash2, AlertTriangle } from 'lucide-react';
+import { BookOpen, Flame, CheckCircle, Trash2, AlertTriangle, MessageCircle, Phone } from 'lucide-react';
 import { deleteCourse } from '../../../api/courses';
 import { useCourses } from '../../../hooks/useCourses';
 
@@ -8,8 +8,10 @@ import { useCourses } from '../../../hooks/useCourses';
  * @param {Object} props
  * @param {Object} props.course - Course object
  * @param {Function} props.onClick - Click handler
+ * @param {Function} [props.onChat] - Opens this course's own AI tutor chat
+ * @param {Function} [props.onVoice] - Opens a voice call scoped to this course
  */
-const CourseCard = ({ course, onClick }) => {
+const CourseCard = ({ course, onClick, onChat, onVoice }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -113,6 +115,25 @@ const CourseCard = ({ course, onClick }) => {
           <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800/80 rounded-xl flex items-center justify-center border border-slate-200 dark:border-white/10 overflow-hidden">
             <BookOpen className="w-5 h-5 text-teal-600 dark:text-teal-300" />
           </div>
+          {/* Practice with AI for THIS course specifically - not a general/inferred course */}
+          {onChat && (
+            <button
+              onClick={() => onChat(course)}
+              className="w-10 h-10 rounded-xl border border-teal-300 dark:border-teal-500/50 bg-white dark:bg-slate-900/80 flex items-center justify-center text-slate-500 dark:text-slate-300 hover:bg-teal-100 dark:hover:bg-teal-500/20 hover:text-teal-600 dark:hover:text-teal-200 transition-colors overflow-hidden"
+              title={`Chat about ${course.title}`}
+            >
+              <MessageCircle className="w-4 h-4" />
+            </button>
+          )}
+          {onVoice && (
+            <button
+              onClick={() => onVoice(course)}
+              className="w-10 h-10 rounded-xl border border-orange-300 dark:border-orange-500/50 bg-white dark:bg-slate-900/80 flex items-center justify-center text-slate-500 dark:text-slate-300 hover:bg-orange-100 dark:hover:bg-orange-500/20 hover:text-orange-600 dark:hover:text-orange-200 transition-colors overflow-hidden"
+              title={`Voice practice for ${course.title}`}
+            >
+              <Phone className="w-4 h-4" />
+            </button>
+          )}
           {/* Delete Button */}
           <button
             onClick={handleDelete}

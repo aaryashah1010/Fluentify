@@ -7,14 +7,15 @@ class TutorController {
    */
   async sendMessage(req, res, next) {
     try {
-      const { message, sessionId } = req.body;
+      const { message, sessionId, courseId } = req.body;
       const userId = req.user.id;
 
       // Validate message
       const validatedMessage = tutorService.validateMessage(message);
 
-      // Get or create session
-      const session = await tutorService.getOrCreateSession(userId, sessionId);
+      // Get or create session - courseId (if given) resumes that course's own
+      // conversation thread instead of starting a fresh general chat
+      const session = await tutorService.getOrCreateSession(userId, sessionId, courseId);
 
       // Set headers for streaming response
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
@@ -33,7 +34,7 @@ class TutorController {
         // Get streaming response from AI
         const stream = await tutorService.generateStreamingResponse(
           validatedMessage, 
-          session.id, 
+          session, 
           userId
         );
 
@@ -124,6 +125,37 @@ class TutorController {
 
     } catch (error) {
       console.error('Error fetching chat history:', error);
+      return next(ERRORS.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Open (or resume) the chat session tied to a specific course, with its
+   * past messages, so a learner can continue a course's conversation where
+   * they left off instead of starting over each time.
+   */
+  async openCourseSession(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const courseId = parseInt(req.params.courseId, 10);
+
+      if (!courseId) {
+        return res.status(400).json({
+          success: false,
+          error: 'validation_error',
+          message: 'A valid courseId is required',
+        });
+      }
+
+      const session = await tutorService.getOrCreateSession(userId, null, courseId);
+      const messages = await tutorService.getSessionMessages(session.id, 50);
+
+      res.json({
+        success: true,
+        data: { session, messages },
+      });
+    } catch (error) {
+      console.error('Error opening course chat session:', error);
       return next(ERRORS.INTERNAL_SERVER_ERROR);
     }
   }

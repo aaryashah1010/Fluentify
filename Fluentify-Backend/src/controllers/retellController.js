@@ -6,48 +6,8 @@
 import axios from 'axios';
 import { successResponse, createdResponse } from '../utils/response.js';
 import { ERRORS } from '../utils/error.js';
-import authRepository from '../repositories/authRepository.js';
-import chatRepository from '../repositories/chatRepository.js';
-import courseRepository from '../repositories/courseRepository.js';
+import { getLearnerCourseContext } from '../services/learnerCourseContextService.js';
 import { getLessonFocus, formatLessonFocus } from '../services/lessonFocusService.js';
-
-/**
- * Look up what this learner is actually studying, so the voice agent doesn't
- * have to interview them from scratch on every call. If the learner has more
- * than one course, `courseId` lets the frontend say explicitly which one they
- * picked; otherwise we fall back to whichever course they most recently
- * actually studied (see findMostRecentlyActiveCourse).
- */
-async function getLearnerVoiceContext(userId, courseId) {
-  const learner = await authRepository.findLearnerById(userId);
-
-  let course = null;
-  if (courseId) {
-    course = await courseRepository.findCourseByIdForUser(userId, courseId);
-  }
-  if (!course) {
-    course = await courseRepository.findMostRecentlyActiveCourse(userId);
-  }
-
-  if (course) {
-    const data = course.course_data || {};
-    return {
-      learner_name: learner?.name || 'there',
-      target_language: data.metadata?.language || data.course?.language || course.language || 'English',
-      proficiency_level: data.metadata?.expertise || data.course?.expertise || 'Beginner',
-      base_language: data.metadata?.baseLanguage || data.course?.baseLanguage || 'English',
-    };
-  }
-
-  // No courses generated yet - fall back to onboarding preferences
-  const languageInfo = await chatRepository.getUserLanguageInfo(userId);
-  return {
-    learner_name: learner?.name || 'there',
-    target_language: languageInfo.language,
-    proficiency_level: languageInfo.proficiency,
-    base_language: 'English',
-  };
-}
 
 /**
  * Create a Retell AI call and return access token
@@ -71,7 +31,13 @@ export const createRetellCall = async (req, res, next) => {
       throw ERRORS.RETELL_API_NOT_CONFIGURED;
     }
 
-    const voiceContext = await getLearnerVoiceContext(userId, courseId);
+    const context = await getLearnerCourseContext(userId, courseId);
+    const voiceContext = {
+      learner_name: context.learner_name,
+      target_language: context.target_language,
+      proficiency_level: context.proficiency_level,
+      base_language: context.base_language,
+    };
     // Tell the voice tutor which lesson the learner is on so it drills that content
     const focus = await getLessonFocus(userId, courseId).catch(() => null);
     voiceContext.lesson_focus = formatLessonFocus(focus);

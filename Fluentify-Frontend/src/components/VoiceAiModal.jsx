@@ -3,7 +3,7 @@ import { Mic, MicOff, Phone, X, Volume2, Loader } from 'lucide-react';
 import { RetellWebClient } from 'retell-client-js-sdk';
 import { createRetellCall } from '../api/retell';
 
-const VoiceAIModal = ({ isOpen, onClose, courses = [] }) => {
+const VoiceAIModal = ({ isOpen, onClose, courses = [], forcedCourseId = null }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -26,12 +26,14 @@ const VoiceAIModal = ({ isOpen, onClose, courses = [] }) => {
     return Array.from(byLanguage.values());
   }, [courses]);
 
-  const needsCourseSelection = languageOptions.length > 1;
+  // A course picked explicitly (e.g. clicking "Practice" on that course's card)
+  // skips the language picker entirely - no need to ask again.
+  const needsCourseSelection = !forcedCourseId && languageOptions.length > 1;
 
-  // Reset the picker each time the modal reopens
+  // Reset the picker each time the modal reopens; a forced course pre-selects itself
   useEffect(() => {
-    if (isOpen) setSelectedCourseId(null);
-  }, [isOpen]);
+    if (isOpen) setSelectedCourseId(forcedCourseId || null);
+  }, [isOpen, forcedCourseId]);
 
   // Initialize Retell client
   useEffect(() => {
